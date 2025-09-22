@@ -1,5 +1,5 @@
 import React from "react";
-import { BrowserRouter as Router, Routes, Route, Navigate, Link } from "react-router-dom";
+import { BrowserRouter as Router, Routes, Route, Navigate } from "react-router-dom";
 import Login from "./components/Login";
 import Register from "./components/Register";
 import Home from "./components/Home";
@@ -8,8 +8,10 @@ import Student from "./components/Student";
 import Recruiter from "./components/Recruiter";
 import "./index.css";
 
-// Check if user is logged in
-const isAuthenticated = () => localStorage.getItem("user") !== null;
+// Check if user logged in
+const isAuthenticated = () => {
+  return localStorage.getItem("user") !== null;
+};
 
 // Get role from localStorage
 const getUserRole = () => {
@@ -31,11 +33,6 @@ const ProtectedRoute = ({ children, allowedRoles }) => {
   return children;
 };
 
-// Redirect authenticated users from public pages
-const PublicRoute = ({ children }) => {
-  return isAuthenticated() ? <Navigate to="/" replace /> : children;
-};
-
 const App = () => {
   return (
     <Router>
@@ -44,22 +41,8 @@ const App = () => {
         <Route path="/" element={<Home />} />
 
         {/* Public routes */}
-        <Route
-          path="/login"
-          element={
-            <PublicRoute>
-              <Login />
-            </PublicRoute>
-          }
-        />
-        <Route
-          path="/register"
-          element={
-            <PublicRoute>
-              <Register />
-            </PublicRoute>
-          }
-        />
+        <Route path="/login" element={<Login />} />
+        <Route path="/register" element={<Register />} />
 
         {/* Protected routes */}
         <Route
@@ -87,7 +70,7 @@ const App = () => {
           }
         />
 
-        {/* Catch-all route */}
+        {/* Redirect unknown routes */}
         <Route path="*" element={<Navigate to="/" replace />} />
       </Routes>
     </Router>

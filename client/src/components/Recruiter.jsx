@@ -37,7 +37,7 @@ const Recruiter = ({ token }) => {
       setLoadingStudents(true);
       setErrorStudents("");
 
-      const res = await axios.get("http://localhost:5000/api/recruiter/students", {
+      const res = await axios.get("https://skillverify.onrender.com/api/recruiter/students", {
         headers: { Authorization: `Bearer ${token}` },
       });
 
