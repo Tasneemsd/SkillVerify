@@ -1,4 +1,5 @@
 import React, { useState } from "react";
+import API from "../api"; // 👈 import API
 
 export default function Register() {
   const [form, setForm] = useState({
@@ -20,18 +21,6 @@ export default function Register() {
     setForm((prev) => ({ ...prev, [name]: value }));
   };
 
-  // 🔹 Dummy backend for testing
-  const fakeRegisterAPI = (data) =>
-    new Promise((resolve, reject) => {
-      setTimeout(() => {
-        if (data.email === "test@example.com") {
-          reject({ message: "User already exists" });
-        } else {
-          resolve({ success: true });
-        }
-      }, 1200);
-    });
-
   const handleSubmit = async (e) => {
     e.preventDefault();
     setLoading(true);
@@ -45,7 +34,14 @@ export default function Register() {
     }
 
     try {
-      await fakeRegisterAPI(form);
+      // Call backend API
+      await API.post("/register", {
+        name: `${form.firstName} ${form.lastName}`,
+        email: form.email,
+        password: form.password,
+        role: form.role,
+      });
+
       setSubmitted(true);
       setForm({
         firstName: "",
@@ -57,7 +53,7 @@ export default function Register() {
         role: "student",
       });
     } catch (err) {
-      setError(err.message || "Registration failed");
+      setError(err.response?.data?.message || "Registration failed");
     } finally {
       setLoading(false);
     }

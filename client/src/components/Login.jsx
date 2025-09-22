@@ -1,5 +1,6 @@
 import React, { useState } from "react";
 import { useNavigate } from "react-router-dom";
+import API from "../api"; // 👈 import API
 
 export default function Login() {
     const [form, setForm] = useState({ email: "", password: "", role: "student" });
@@ -9,22 +10,27 @@ export default function Login() {
         setForm({ ...form, [e.target.name]: e.target.value });
     };
 
-    const handleSubmit = (e) => {
+    const handleSubmit = async (e) => {
         e.preventDefault();
+        try {
+            const res = await API.post("/login", {
+                email: form.email,
+                password: form.password,
+            });
 
-        // Mock login validation (replace with backend API later)
-        if (form.email && form.password) {
-            // Save user with role in localStorage
-            localStorage.setItem("user", JSON.stringify(form));
+            // Save JWT + user details
+            
+            localStorage.setItem("userToken", res.data.token);
+            localStorage.setItem("user", JSON.stringify(res.data.user));
 
-            alert(`Logged in as ${form.email} (${form.role})`);
+            alert(`Logged in as ${res.data.user.email} (${res.data.user.role})`);
 
-            // Redirect based on role
-            if (form.role === "student") navigate("/student");
-            else if (form.role === "admin") navigate("/admin");
-            else if (form.role === "recruiter") navigate("/recruiter");
-        } else {
-            alert("Invalid email or password!");
+            // Redirect based on backend role
+            if (res.data.user.role === "student") navigate("/student");
+            else if (res.data.user.role === "admin") navigate("/admin");
+            else if (res.data.user.role === "recruiter") navigate("/recruiter");
+        } catch (err) {
+            alert(err.response?.data?.message || "Invalid email or password!");
         }
     };
 
@@ -84,7 +90,7 @@ export default function Login() {
                             />
                         </div>
 
-                        {/* Role Selection */}
+                        {/* Role Selection (UI Only) */}
                         <div>
                             <label className="block text-sm font-medium text-gray-600 mb-1">
                                 Login as
