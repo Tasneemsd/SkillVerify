@@ -19,6 +19,13 @@ seedCourses();
 const app = express();
 app.use(cors());
 app.use(express.json({ limit: '10mb' }));
+const cors = require("cors");
+
+app.use(cors({
+  origin: ["https://skill-verify.vercel.app/"], // your frontend domain
+  credentials: true
+}));
+
 
 // Routes
 app.use('/api', require('./routes/auth'));
