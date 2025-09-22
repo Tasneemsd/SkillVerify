@@ -6,7 +6,7 @@ export default function Admin() {
   const [showForm, setShowForm] = useState(false);
 
   // ✅ Always arrays
-  const Adm_URL = "http://localhost:5000/api/student";
+  const Adm_URL = "https://skillverify.onrender.com/api/student";
   const [courses, setCourses] = useState([]);
   const [students, setStudents] = useState([]);
   const [jobs, setJobs] = useState([]);

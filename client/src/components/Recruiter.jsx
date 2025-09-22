@@ -17,7 +17,7 @@ const Recruiter = ({ token }) => {
       setErrorRecruiter("");
 
       const res = await axios.get(
-        `http://localhost:5000/api/recruiter/profile?email=${encodeURIComponent("recruiter@gmail.com")}`,
+        `https://skillverify.onrender.com/api/recruiter/profile?email=${encodeURIComponent("recruiter@gmail.com")}`,
         { headers: { Authorization: `Bearer ${token}` } }
       );
 

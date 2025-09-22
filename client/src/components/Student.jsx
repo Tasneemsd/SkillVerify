@@ -12,10 +12,10 @@ export default function Student() {
   const [error, setError] = useState(null);
   const navigate = useNavigate();
 
-  const API_URL = "http://localhost:5000/api/student";
-  const COURSES_URL = "http://localhost:5000/api/courses";
-  const APP_URL = "http://localhost:5000/api/applications";
-  const NOTIF_URL = "http://localhost:5000/api/notification";
+  const API_URL = "https://skillverify.onrender.com/api/student";
+  const COURSES_URL = "https://skillverify.onrender.com/api/courses";
+  const APP_URL = "https://skillverify.onrender.com/api/applications";
+  const NOTIF_URL = "https://skillverify.onrender.com/api/notification";
 
   const user = JSON.parse(localStorage.getItem("user"));
   const studentEmail = user?.email;
