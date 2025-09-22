@@ -19,7 +19,7 @@ export default function Login() {
             });
 
             // Save JWT + user details
-            
+
             localStorage.setItem("userToken", res.data.token);
             localStorage.setItem("user", JSON.stringify(res.data.user));
 
@@ -38,7 +38,7 @@ export default function Login() {
         <div className="min-h-screen flex items-center justify-center bg-gradient-to-r from-indigo-100 via-white to-indigo-50">
             {/* Wrapper */}
             <div className="bg-white rounded-2xl shadow-xl w-full max-w-4xl grid grid-cols-1 md:grid-cols-2 overflow-hidden">
-                
+
                 {/* Left Image */}
                 <div
                     className="hidden md:flex flex-1 bg-cover bg-center"
@@ -146,9 +146,9 @@ export default function Login() {
 
                     <p className="text-center text-sm text-gray-500 mt-6">
                         Don’t have an account?{" "}
-                        <a href="/register" className="text-indigo-600 font-medium hover:underline">
+                        <Link to="/register" className="text-indigo-600 font-medium hover:underline">
                             Register
-                        </a>
+                        </Link>
                     </p>
                 </div>
             </div>

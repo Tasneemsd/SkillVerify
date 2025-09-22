@@ -62,7 +62,7 @@ export default function Register() {
   return (
     <div className="h-screen w-screen flex items-center justify-center bg-gradient-to-r from-indigo-100 via-white to-indigo-50 p-4 overflow-hidden">
       <div className="bg-white rounded-2xl shadow-2xl w-full max-w-5xl flex flex-col md:flex-row overflow-hidden h-full ">
-        
+
         {/* Left Side - Illustration */}
         <div
           className="hidden md:flex flex-1 bg-cover bg-center"
@@ -192,11 +192,10 @@ export default function Register() {
                 {["student", "recruiter", "admin"].map((role) => (
                   <label
                     key={role}
-                    className={`px-4 py-2 border rounded-xl cursor-pointer flex-1 text-center capitalize min-w-[80px] ${
-                      form.role === role
+                    className={`px-4 py-2 border rounded-xl cursor-pointer flex-1 text-center capitalize min-w-[80px] ${form.role === role
                         ? "bg-indigo-50 border-indigo-500 text-indigo-600"
                         : "hover:bg-gray-50"
-                    }`}
+                      }`}
                   >
                     <input
                       type="radio"
@@ -236,12 +235,9 @@ export default function Register() {
 
           <p className="text-center text-sm text-gray-500 mt-6">
             Already have an account?{" "}
-            <a
-              href="/login"
-              className="text-indigo-600 font-medium hover:underline"
-            >
+            <Link to="/login" className="text-indigo-600 font-medium hover:underline">
               Login
-            </a>
+            </Link>
           </p>
         </div>
       </div>
