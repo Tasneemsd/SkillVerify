@@ -11,15 +11,15 @@ const Recruiter = ({ token }) => {
   const [errorRecruiter, setErrorRecruiter] = useState("");
   const [errorStudents, setErrorStudents] = useState("");
 
-  // Fetch recruiter info
   const fetchRecruiter = async () => {
     try {
       setLoadingRecruiter(true);
       setErrorRecruiter("");
 
-      const res = await axios.get("http://localhost:5000/api/recruiter/profile", {
-        headers: { Authorization: `Bearer ${token}` },
-      });
+      const res = await axios.get(
+        `http://localhost:5000/api/recruiter/profile?email=${encodeURIComponent("recruiter@gmail.com")}`,
+        { headers: { Authorization: `Bearer ${token}` } }
+      );
 
       setRecruiter(res.data);
     } catch (err) {
@@ -29,6 +29,7 @@ const Recruiter = ({ token }) => {
       setLoadingRecruiter(false);
     }
   };
+
 
   // Fetch students
   const fetchStudents = async () => {
