@@ -6,6 +6,7 @@ export default function Register() {
   const [form, setForm] = useState({
     firstName: "",
     lastName: "",
+    college: "",
     phone: "",
     email: "",
     password: "",
@@ -118,7 +119,22 @@ export default function Register() {
                   className="w-full px-4 py-2 border rounded-xl focus:ring-2 focus:ring-indigo-400 focus:outline-none"
                 />
               </div>
+              
             </div>
+            <div>
+                <label className="block text-sm font-medium text-gray-600 mb-1">
+                College Name
+                </label>
+                <input
+                  type="text"
+                  name="college"
+                  value={form.college}
+                  onChange={handleChange}
+                  placeholder="e.g., Stanford University"
+                  required
+                  className="w-full px-4 py-2 border rounded-xl focus:ring-2 focus:ring-indigo-400 focus:outline-none"
+                />
+              </div>
 
             {/* Phone */}
             <div>

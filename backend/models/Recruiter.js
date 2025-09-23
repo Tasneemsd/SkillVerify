@@ -1,14 +1,13 @@
-const mongoose = require('mongoose');
+const mongoose = require("mongoose");
 
 const recruiterSchema = new mongoose.Schema({
-  name: { type: String, required: true },
-  email: { type: String, required: true, unique: true },
-  password: { type: String, required: true },
-  companyName: { type: String },
-  position: { type: String },
-  contactNumber: { type: String },
-  profilePicture: { type: String },
-  // Add more fields as needed
+  name: String,
+  email: { type: String, unique: true },
+  company: String,
+  position: String,
+  phone: String,
+  bio: String,
+  createdAt: { type: Date, default: Date.now }
 });
 
-module.exports = mongoose.model('Recruiter', recruiterSchema);
+module.exports = mongoose.model("Recruiter", recruiterSchema);

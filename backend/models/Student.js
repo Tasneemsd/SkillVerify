@@ -4,6 +4,16 @@ const studentSchema = new mongoose.Schema({
   name: { type: String, required: true },
   email: { type: String, required: true, unique: true },
   password: { type: String, required: true },
+  
+  college: { type: String },
+  year: { type: Number },
+  course: { type: String },
+  skills: [{ type: String }],
+  verifiedSkillsCount: { type: Number, default: 0 },
+  isFavorite: { type: Boolean, default: false },
+  isShortlisted: { type: Boolean, default: false },
+  avatar: { type: String },
+  contactNumber: { type: String },
   registeredCourses: [
     { type: mongoose.Schema.Types.ObjectId, ref: "Course" }
   ],
