@@ -3,11 +3,12 @@ const cors = require("cors");
 const dotenv = require("dotenv");
 const connectDB = require("./config/db");
 
-// Load environment variables
+// Load env vars explicitly from .env
 dotenv.config({ path: "./.env" });
 
+// Debug log to confirm env is loaded
 if (!process.env.MONGO_URI) {
-  console.error("❌ MONGO_URI is missing. Check your .env file.");
+  console.error("❌ MONGO_URI is missing. Check your .env file placement and syntax.");
   process.exit(1);
 } else {
   console.log("✅ Loaded MONGO_URI from .env");
@@ -16,56 +17,35 @@ if (!process.env.MONGO_URI) {
 // Connect to MongoDB
 connectDB();
 
-// Seed dummy courses (optional)
+// Seed dummy courses
 const seedCourses = require("./seed/seedCourses");
 seedCourses();
 
 const app = express();
 
-// ✅ CORS setup for dev + prod
+// CORS setup
 app.use(
   cors({
-    origin: [
-      "http://localhost:5173",         // local dev frontend
-      "https://skill-verify.vercel.app", // deployed frontend
-      "https://skillverify.onrender.com" // if needed
-    ],
-    methods: ["GET", "POST", "PUT", "DELETE", "OPTIONS"],
+    origin: ["https://skill-verify.vercel.app"], // your frontend domain
     credentials: true,
   })
 );
 
-// Allow preflight requests globally
-app.options("*", cors());
-
-// Parse JSON bodies
 app.use(express.json({ limit: "10mb" }));
 
-// --- ROUTES ---
-// Authentication
+// Routes
 app.use("/api", require("./routes/auth"));
-
-// Courses
 app.use("/api/courses", require("./routes/courses"));
 app.use("/api/register-course", require("./routes/registerCourse"));
-
-// Student routes
-app.use("/api/student", require("./routes/student")); // general student routes, including /register
-app.use("/api/student/profile", require("./routes/studentProfile")); 
-app.use("/api/student/register-course", require("./routes/registerCourse")); // course enroll
-
-// Jobs & applications
+app.use("/api/student", require("./routes/student")); // general student routes
+app.use("/api/student/profile", require("./routes/studentProfile")); // fetch one/all students
+app.use("/api/student/register-course", require("./routes/registerCourse")); // enroll
 app.use("/api/jobs", require("./routes/jobs"));
 app.use("/api/applications", require("./routes/applications"));
-
-// Recruiter & admin
 app.use("/api/recruiter", require("./routes/recruiter"));
 app.use("/api/admin", require("./routes/admin"));
-
-// Notifications
 app.use("/api/notification", require("./routes/notification"));
 
-// Start server
 const PORT = process.env.PORT || 5000;
 app.listen(PORT, () => {
   console.log(`🚀 Server running on port ${PORT}`);
