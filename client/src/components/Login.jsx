@@ -1,6 +1,5 @@
 import React, { useState } from "react";
-
-import { useNavigate,Link } from "react-router-dom";
+import { useNavigate, Link } from "react-router-dom";
 import API from "../api"; // 👈 import API
 
 export default function Login() {
@@ -14,19 +13,24 @@ export default function Login() {
     const handleSubmit = async (e) => {
         e.preventDefault();
         try {
-            const res = await API.post("/login", {
+            // Role-based endpoint
+            const endpoint =
+                form.role === "student" ? "/student/login" :
+                form.role === "recruiter" ? "/recruiter/login" :
+                "/admin/login";
+
+            const res = await API.post(endpoint, {
                 email: form.email,
                 password: form.password,
             });
 
             // Save JWT + user details
-
             localStorage.setItem("userToken", res.data.token);
             localStorage.setItem("user", JSON.stringify(res.data.user));
 
             alert(`Logged in as ${res.data.user.email} (${res.data.user.role})`);
 
-            // Redirect based on backend role
+            // Redirect based on role
             if (res.data.user.role === "student") navigate("/student");
             else if (res.data.user.role === "admin") navigate("/admin");
             else if (res.data.user.role === "recruiter") navigate("/recruiter");
@@ -37,7 +41,6 @@ export default function Login() {
 
     return (
         <div className="min-h-screen flex items-center justify-center bg-gradient-to-r from-indigo-100 via-white to-indigo-50">
-            {/* Wrapper */}
             <div className="bg-white rounded-2xl shadow-xl w-full max-w-4xl grid grid-cols-1 md:grid-cols-2 overflow-hidden">
 
                 {/* Left Image */}
@@ -91,7 +94,7 @@ export default function Login() {
                             />
                         </div>
 
-                        {/* Role Selection (UI Only) */}
+                        {/* Role Selection */}
                         <div>
                             <label className="block text-sm font-medium text-gray-600 mb-1">
                                 Login as

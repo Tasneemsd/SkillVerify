@@ -7,6 +7,10 @@ export default function Register() {
     firstName: "",
     lastName: "",
     college: "",
+    year: "",
+    skills: "",
+    company: "",
+    designation: "",
     phone: "",
     email: "",
     password: "",
@@ -17,6 +21,7 @@ export default function Register() {
   const [loading, setLoading] = useState(false);
   const [submitted, setSubmitted] = useState(false);
   const [error, setError] = useState("");
+  const navigate = useNavigate();
 
   const handleChange = (e) => {
     const { name, value } = e.target;
@@ -36,24 +41,46 @@ export default function Register() {
     }
 
     try {
-      // Call backend API
-      await API.post("/register", {
+      // Prepare payload based on role
+      let payload = {
         name: `${form.firstName} ${form.lastName}`,
         email: form.email,
         password: form.password,
         role: form.role,
-      });
+        phone: form.phone,
+      };
+
+      if (form.role === "student") {
+        payload.college = form.college;
+        payload.year = form.year;
+        payload.skills = form.skills
+          .split(",")
+          .map((s) => s.trim())
+          .filter(Boolean);
+      } else if (form.role === "recruiter") {
+        payload.company = form.company;
+        payload.designation = form.designation;
+      }
+
+      await API.post("/register", payload);
 
       setSubmitted(true);
       setForm({
         firstName: "",
         lastName: "",
+        college: "",
+        year: "",
+        skills: "",
+        company: "",
+        designation: "",
         phone: "",
         email: "",
         password: "",
         confirmPassword: "",
         role: "student",
       });
+
+      setTimeout(() => navigate("/login"), 2000); // optional redirect
     } catch (err) {
       setError(err.response?.data?.message || "Registration failed");
     } finally {
@@ -91,141 +118,149 @@ export default function Register() {
           <form onSubmit={handleSubmit} className="space-y-5">
             {/* First + Last Name */}
             <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-              <div>
-                <label className="block text-sm font-medium text-gray-600 mb-1">
-                  First Name
-                </label>
-                <input
-                  type="text"
-                  name="firstName"
-                  value={form.firstName}
-                  onChange={handleChange}
-                  placeholder="John"
-                  required
-                  className="w-full px-4 py-2 border rounded-xl focus:ring-2 focus:ring-indigo-400 focus:outline-none"
-                />
-              </div>
-              <div>
-                <label className="block text-sm font-medium text-gray-600 mb-1">
-                  Last Name
-                </label>
-                <input
-                  type="text"
-                  name="lastName"
-                  value={form.lastName}
-                  onChange={handleChange}
-                  placeholder="Doe"
-                  required
-                  className="w-full px-4 py-2 border rounded-xl focus:ring-2 focus:ring-indigo-400 focus:outline-none"
-                />
-              </div>
-              
+              <input
+                type="text"
+                name="firstName"
+                value={form.firstName}
+                onChange={handleChange}
+                placeholder="First Name"
+                required
+                className="w-full px-4 py-2 border rounded-xl focus:ring-2 focus:ring-indigo-400 focus:outline-none"
+              />
+              <input
+                type="text"
+                name="lastName"
+                value={form.lastName}
+                onChange={handleChange}
+                placeholder="Last Name"
+                required
+                className="w-full px-4 py-2 border rounded-xl focus:ring-2 focus:ring-indigo-400 focus:outline-none"
+              />
             </div>
-            <div>
-                <label className="block text-sm font-medium text-gray-600 mb-1">
-                College Name
-                </label>
+
+            {/* Student Fields */}
+            {form.role === "student" && (
+              <>
                 <input
                   type="text"
                   name="college"
                   value={form.college}
                   onChange={handleChange}
-                  placeholder="e.g., Stanford University"
+                  placeholder="College Name"
                   required
                   className="w-full px-4 py-2 border rounded-xl focus:ring-2 focus:ring-indigo-400 focus:outline-none"
                 />
-              </div>
+                <input
+                  type="text"
+                  name="year"
+                  value={form.year}
+                  onChange={handleChange}
+                  placeholder="Year of Study (e.g., 3rd Year)"
+                  required
+                  className="w-full px-4 py-2 border rounded-xl focus:ring-2 focus:ring-indigo-400 focus:outline-none"
+                />
+                <input
+                  type="text"
+                  name="skills"
+                  value={form.skills}
+                  onChange={handleChange}
+                  placeholder="Skills (comma separated)"
+                  required
+                  className="w-full px-4 py-2 border rounded-xl focus:ring-2 focus:ring-indigo-400 focus:outline-none"
+                />
+              </>
+            )}
+
+            {/* Recruiter Fields */}
+            {form.role === "recruiter" && (
+              <>
+                <input
+                  type="text"
+                  name="company"
+                  value={form.company}
+                  onChange={handleChange}
+                  placeholder="Company Name"
+                  required
+                  className="w-full px-4 py-2 border rounded-xl focus:ring-2 focus:ring-indigo-400 focus:outline-none"
+                />
+                <input
+                  type="text"
+                  name="designation"
+                  value={form.designation}
+                  onChange={handleChange}
+                  placeholder="Designation"
+                  required
+                  className="w-full px-4 py-2 border rounded-xl focus:ring-2 focus:ring-indigo-400 focus:outline-none"
+                />
+              </>
+            )}
 
             {/* Phone */}
-            <div>
-              <label className="block text-sm font-medium text-gray-600 mb-1">
-                Phone Number
-              </label>
-              <input
-                type="tel"
-                name="phone"
-                value={form.phone}
-                onChange={handleChange}
-                placeholder="+91 98765 43210"
-                required
-                className="w-full px-4 py-2 border rounded-xl focus:ring-2 focus:ring-indigo-400 focus:outline-none"
-              />
-            </div>
+            <input
+              type="tel"
+              name="phone"
+              value={form.phone}
+              onChange={handleChange}
+              placeholder="Phone Number"
+              required
+              className="w-full px-4 py-2 border rounded-xl focus:ring-2 focus:ring-indigo-400 focus:outline-none"
+            />
 
             {/* Email */}
-            <div>
-              <label className="block text-sm font-medium text-gray-600 mb-1">
-                Email Address
-              </label>
-              <input
-                type="email"
-                name="email"
-                value={form.email}
-                onChange={handleChange}
-                placeholder="your@email.com"
-                required
-                className="w-full px-4 py-2 border rounded-xl focus:ring-2 focus:ring-indigo-400 focus:outline-none"
-              />
-            </div>
+            <input
+              type="email"
+              name="email"
+              value={form.email}
+              onChange={handleChange}
+              placeholder="Email"
+              required
+              className="w-full px-4 py-2 border rounded-xl focus:ring-2 focus:ring-indigo-400 focus:outline-none"
+            />
 
             {/* Password + Confirm Password */}
             <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-              <div>
-                <label className="block text-sm font-medium text-gray-600 mb-1">
-                  Password
-                </label>
-                <input
-                  type="password"
-                  name="password"
-                  value={form.password}
-                  onChange={handleChange}
-                  placeholder="Enter password"
-                  required
-                  className="w-full px-4 py-2 border rounded-xl focus:ring-2 focus:ring-indigo-400 focus:outline-none"
-                />
-              </div>
-              <div>
-                <label className="block text-sm font-medium text-gray-600 mb-1">
-                  Confirm Password
-                </label>
-                <input
-                  type="password"
-                  name="confirmPassword"
-                  value={form.confirmPassword}
-                  onChange={handleChange}
-                  placeholder="Re-enter password"
-                  required
-                  className="w-full px-4 py-2 border rounded-xl focus:ring-2 focus:ring-indigo-400 focus:outline-none"
-                />
-              </div>
+              <input
+                type="password"
+                name="password"
+                value={form.password}
+                onChange={handleChange}
+                placeholder="Password"
+                required
+                className="w-full px-4 py-2 border rounded-xl focus:ring-2 focus:ring-indigo-400 focus:outline-none"
+              />
+              <input
+                type="password"
+                name="confirmPassword"
+                value={form.confirmPassword}
+                onChange={handleChange}
+                placeholder="Confirm Password"
+                required
+                className="w-full px-4 py-2 border rounded-xl focus:ring-2 focus:ring-indigo-400 focus:outline-none"
+              />
             </div>
 
             {/* Role Selection */}
-            <div>
-              <label className="block text-sm font-medium text-gray-600 mb-1">
-                I am a...
-              </label>
-              <div className="flex gap-3 flex-wrap">
-                {["student", "recruiter", "admin"].map((role) => (
-                  <label
-                    key={role}
-                    className={`px-4 py-2 border rounded-xl cursor-pointer flex-1 text-center capitalize min-w-[80px] ${form.role === role
-                        ? "bg-indigo-50 border-indigo-500 text-indigo-600"
-                        : "hover:bg-gray-50"
-                      }`}
-                  >
-                    <input
-                      type="radio"
-                      name="role"
-                      value={role}
-                      checked={form.role === role}
-                      onChange={handleChange}
-                      className="hidden"
-                    />
-                    {role}
-                  </label>
-                ))}
-              </div>
+            <div className="flex gap-3 flex-wrap">
+              {["student", "recruiter", "admin"].map((role) => (
+                <label
+                  key={role}
+                  className={`px-4 py-2 border rounded-xl cursor-pointer flex-1 text-center capitalize min-w-[80px] ${
+                    form.role === role
+                      ? "bg-indigo-50 border-indigo-500 text-indigo-600"
+                      : "hover:bg-gray-50"
+                  }`}
+                >
+                  <input
+                    type="radio"
+                    name="role"
+                    value={role}
+                    checked={form.role === role}
+                    onChange={handleChange}
+                    className="hidden"
+                  />
+                  {role}
+                </label>
+              ))}
             </div>
 
             {/* Submit */}
