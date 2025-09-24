@@ -63,9 +63,9 @@ export default function Register() {
 
       // ✅ Choose correct API endpoint
       let endpoint = "";
-      if (form.role === "student") endpoint = "/student/register";
-      if (form.role === "recruiter") endpoint = "/recruiter/register";
-      if (form.role === "admin") endpoint = "/admin/register";
+      if (form.role === "student") endpoint = "/student";
+      if (form.role === "recruiter") endpoint = "/recruiter";
+      if (form.role === "admin") endpoint = "/admin";
 
       await API.post(endpoint, payload);
 
