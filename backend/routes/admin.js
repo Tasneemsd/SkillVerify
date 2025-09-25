@@ -1,19 +1,23 @@
-const express = require('express');
-const router = express.Router();
-const adminController = require('../controllers/adminController');
 
-// Courses
-router.get('/courses-with-registrations', adminController.getCoursesWithRegistrations);
+const express = require('express');
+const adminController = require('../controllers/adminController');
+const router = express.Router();
+// POST /api/admin/create-course
 router.post('/create-course', adminController.createCourse);
 
-// Students
+// GET /api/admin/courses-with-registrations
+router.get('/courses-with-registrations', adminController.getCoursesWithRegistrations);
+
+// GET /api/admin/registrations/:courseId
+router.get('/registrations/:courseId', adminController.getRegistrationsForCourse);
+
+// GET /api/admin/students-with-skills
 router.get('/students-with-skills', adminController.getAllStudentsWithSkills);
+
+// POST /api/admin/verify-skill
 router.post('/verify-skill', adminController.verifyStudentSkill);
 
-// Jobs
+// GET /api/admin/jobs
 router.get('/jobs', adminController.getAllJobs);
-
-// Optional: Get admin details
-router.get('/by-email', adminController.getAdminByEmail);
 
 module.exports = router;
