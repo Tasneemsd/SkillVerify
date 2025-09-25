@@ -5,8 +5,7 @@ export default function Admin() {
   const [activeTab, setActiveTab] = useState("courses"); // courses | jobs
   const [showForm, setShowForm] = useState(false);
 
-  // ✅ Always arrays
-  const Adm_URL = "https://skillverify.onrender.com/api/student";
+  // Always arrays
   const [courses, setCourses] = useState([]);
   const [students, setStudents] = useState([]);
   const [jobs, setJobs] = useState([]);
@@ -28,16 +27,31 @@ export default function Admin() {
     courseDescription: "",
   });
 
+  // small action loading state (for approve / create etc)
+  const [actionLoading, setActionLoading] = useState(false);
+
+  // read user/token safely from localStorage
+  const getStoredUser = () => {
+    try {
+      const raw = localStorage.getItem("user");
+      if (!raw) return null;
+      return JSON.parse(raw);
+    } catch (e) {
+      return null;
+    }
+  };
+
+  const storedUser = getStoredUser();
+  const token = storedUser?.token || localStorage.getItem("token") || null;
+  const studentEmail = storedUser?.email || "";
+
   useEffect(() => {
     const fetchAll = async () => {
       try {
         setLoading(true);
-        await Promise.all([
-          fetchCourses(),
-          fetchStudents(),
-          fetchJobs(),
-          fetchAdmin(),
-        ]);
+        await Promise.all([fetchCourses(), fetchStudents(), fetchJobs()]);
+        // fetch admin name (after other fetches or from localStorage)
+        await fetchAdmin();
       } catch (err) {
         console.error(err);
         setError("Failed to load dashboard data");
@@ -46,26 +60,40 @@ export default function Admin() {
       }
     };
     fetchAll();
+    // eslint-disable-next-line react-hooks/exhaustive-deps
   }, []);
 
-  // ✅ Fetch admin name
+  // Fetch admin name: prefer localStorage, fallback to API only if email/token exist
   const fetchAdmin = async () => {
     try {
-      const res = await axios.get(`${Adm_URL}?email=${encodeURIComponent(studentEmail)}`, {
-        headers: { Authorization: `Bearer ${token}` },
-      });
-      setAdminName(res.data);
-    } catch (err) {
-      console.warn("Could not fetch admin details, falling back...");
-      const storedUser = localStorage.getItem("user");
-      if (storedUser) {
-        const parsed = JSON.parse(storedUser);
-        setAdminName(parsed?.name || "Admin");
+      const stored = getStoredUser();
+      if (stored?.name) {
+        setAdminName(stored.name);
+        return;
       }
+
+      // if we have an email + token, try an API fetch (endpoint may vary in your backend)
+      if (!studentEmail || !token) {
+        // nothing to fetch — keep Admin default
+        return;
+      }
+
+      // NOTE: adjust endpoint if your backend expects a different route.
+      const res = await axios.get(`/api/admin/by-email?email=${encodeURIComponent(studentEmail)}`, {
+        headers: token ? { Authorization: `Bearer ${token}` } : {},
+      });
+
+      // set from response safely
+      const nameFromRes = res?.data?.name || res?.data?.adminName || res?.data;
+      setAdminName(typeof nameFromRes === "string" ? nameFromRes : JSON.stringify(nameFromRes));
+    } catch (err) {
+      console.warn("Could not fetch admin details, falling back to localStorage...");
+      const storedUser = getStoredUser();
+      if (storedUser) setAdminName(storedUser.name || "Admin");
     }
   };
 
-  // ✅ Fetch courses
+  // Fetch courses
   const fetchCourses = async () => {
     try {
       const res = await axios.get("/api/admin/courses-with-registrations");
@@ -76,7 +104,7 @@ export default function Admin() {
     }
   };
 
-  // ✅ Fetch students
+  // Fetch students
   const fetchStudents = async () => {
     try {
       const res = await axios.get("/api/admin/students-with-skills");
@@ -87,7 +115,7 @@ export default function Admin() {
     }
   };
 
-  // ✅ Fetch jobs
+  // Fetch jobs
   const fetchJobs = async () => {
     try {
       const res = await axios.get("/api/admin/jobs");
@@ -98,39 +126,74 @@ export default function Admin() {
     }
   };
 
-  // ✅ Student search
+  // Student search (partial, case-insensitive)
   const handleSearch = () => {
-    const found = students.find(
-      (s) => s.name?.toLowerCase() === searchQuery.toLowerCase()
-    );
+    if (!searchQuery.trim()) {
+      setSelectedStudent(null);
+      return;
+    }
+    const q = searchQuery.trim().toLowerCase();
+    const found = students.find((s) => (s.name || "").toLowerCase().includes(q));
     setSelectedStudent(found || null);
+    if (!found) setError("No student found with that name (partial matches allowed).");
+    else setError(null);
   };
 
-  // ✅ Approve skill
+  // Clear search / selection
+  const handleClearSearch = () => {
+    setSearchQuery("");
+    setSelectedStudent(null);
+    setError(null);
+  };
+
+  // Approve skill
   const handleApprove = async (skillName) => {
-    if (!selectedStudent) return;
+    if (!selectedStudent) {
+      setError("No student selected.");
+      return;
+    }
     try {
+      setActionLoading(true);
       await axios.post("/api/admin/verify-skill", {
         studentId: selectedStudent._id,
         skillName,
       });
+      // refresh students list and update selectedStudent locally for immediate feedback
       await fetchStudents();
-      setSelectedStudent((prev) => ({
-        ...prev,
-        skills: prev.skills.map((s) =>
-          s.name === skillName ? { ...s, verified: true } : s
-        ),
-      }));
+      setSelectedStudent((prev) => {
+        if (!prev) return prev;
+        return {
+          ...prev,
+          skills: (prev.skills || []).map((s) =>
+            s.name === skillName ? { ...s, verified: true } : s
+          ),
+        };
+      });
+      setError(null);
     } catch (err) {
       console.error("Failed to verify skill", err);
+      setError("Failed to verify skill. Try again.");
+    } finally {
+      setActionLoading(false);
     }
   };
 
-  // ✅ Create course
+  // Create course with small validation
   const handleCreateCourse = async (e) => {
     e.preventDefault();
+    const { courseName, courseId, courseFee } = courseForm;
+    if (!courseName.trim() || !courseId.trim()) {
+      setError("Course title and ID are required.");
+      return;
+    }
     try {
-      await axios.post("/api/admin/create-course", courseForm);
+      setActionLoading(true);
+      // ensure fee is number (backend may handle this)
+      const payload = {
+        ...courseForm,
+        courseFee: courseForm.courseFee ? Number(courseForm.courseFee) : 0,
+      };
+      await axios.post("/api/admin/create-course", payload);
       await fetchCourses();
       setShowForm(false);
       setCourseForm({
@@ -140,22 +203,18 @@ export default function Admin() {
         courseFee: "",
         courseDescription: "",
       });
+      setError(null);
     } catch (err) {
       console.error("Failed to create course", err);
+      setError("Failed to create course. Try again.");
+    } finally {
+      setActionLoading(false);
     }
   };
 
   // ====== UI ======
   if (loading) {
     return <p className="text-center p-6">Loading dashboard...</p>;
-  }
-
-  if (error) {
-    return (
-      <p className="text-center text-red-500 p-6">
-        {error}. Please refresh.
-      </p>
-    );
   }
 
   return (
@@ -205,6 +264,19 @@ export default function Admin() {
       </div>
 
       <div className="px-6 mt-6">
+        {/* show any error */}
+        {error && (
+          <div className="mb-4 text-center text-red-600">
+            {error}
+            <button
+              onClick={() => setError(null)}
+              className="ml-3 px-2 py-1 bg-gray-100 border rounded text-sm"
+            >
+              x
+            </button>
+          </div>
+        )}
+
         {/* ===== COURSES ===== */}
         {activeTab === "courses" && (
           <>
@@ -221,27 +293,30 @@ export default function Admin() {
             {/* Course Cards */}
             {courses.length > 0 ? (
               <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6 mb-6">
-                {courses.map((course, i) => (
-                  <div
-                    key={i}
-                    className="bg-white p-4 rounded-lg shadow border flex flex-col justify-between"
-                  >
-                    <div>
-                      <h3 className="font-semibold">{course.courseName}</h3>
-                      <p className="text-gray-500 text-sm mt-1">
-                        {course.courseDescription}
-                      </p>
+                {courses.map((course, i) => {
+                  const key = course._id || course.courseId || i;
+                  return (
+                    <div
+                      key={key}
+                      className="bg-white p-4 rounded-lg shadow border flex flex-col justify-between"
+                    >
+                      <div>
+                        <h3 className="font-semibold">{course.courseName}</h3>
+                        <p className="text-gray-500 text-sm mt-1">
+                          {course.courseDescription}
+                        </p>
+                      </div>
+                      <div className="flex justify-between items-center mt-4">
+                        <span className="text-green-600 font-semibold">
+                          ₹{course.courseFee ?? 0}
+                        </span>
+                        <span className="px-3 py-1 border rounded text-sm bg-gray-50">
+                          {course.registrations || 0} registrations
+                        </span>
+                      </div>
                     </div>
-                    <div className="flex justify-between items-center mt-4">
-                      <span className="text-green-600 font-semibold">
-                        ₹{course.courseFee}
-                      </span>
-                      <span className="px-3 py-1 border rounded text-sm bg-gray-50">
-                        {course.registrations || 0} registrations
-                      </span>
-                    </div>
-                  </div>
-                ))}
+                  );
+                })}
               </div>
             ) : (
               <p className="text-gray-500">No courses available</p>
@@ -306,13 +381,23 @@ export default function Admin() {
                   <div className="flex gap-3">
                     <button
                       type="submit"
-                      className="bg-black text-white px-4 py-2 rounded hover:bg-gray-800"
+                      disabled={actionLoading}
+                      className="bg-black text-white px-4 py-2 rounded hover:bg-gray-800 disabled:opacity-60"
                     >
-                      Create Course
+                      {actionLoading ? "Creating..." : "Create Course"}
                     </button>
                     <button
                       type="button"
-                      onClick={() => setShowForm(false)}
+                      onClick={() => {
+                        setShowForm(false);
+                        setCourseForm({
+                          courseName: "",
+                          courseId: "",
+                          courseDuration: "",
+                          courseFee: "",
+                          courseDescription: "",
+                        });
+                      }}
                       className="px-4 py-2 border rounded bg-gray-100 hover:bg-gray-200"
                     >
                       Cancel
@@ -330,7 +415,7 @@ export default function Admin() {
                   type="text"
                   value={searchQuery}
                   onChange={(e) => setSearchQuery(e.target.value)}
-                  placeholder="Search student by name"
+                  placeholder="Search student by name (partial)"
                   className="flex-1 border rounded px-3 py-2"
                 />
                 <button
@@ -339,23 +424,46 @@ export default function Admin() {
                 >
                   Search
                 </button>
+                <button
+                  onClick={handleClearSearch}
+                  className="px-4 py-2 border rounded bg-gray-100 hover:bg-gray-200"
+                >
+                  Clear
+                </button>
               </div>
               {selectedStudent ? (
                 <div className="border p-4 rounded bg-gray-50">
-                  <h3 className="font-semibold text-lg">{selectedStudent.name}</h3>
-                  <p className="text-gray-600 mt-1">Skills:</p>
-                  <ul className="list-disc pl-5 text-sm text-gray-700 mb-3">
-                    {selectedStudent.skills?.map((skill, i) => (
-                      <li key={i}>
+                  <div className="flex justify-between items-start">
+                    <div>
+                      <h3 className="font-semibold text-lg">{selectedStudent.name}</h3>
+                      <p className="text-gray-600 mt-1">Skills:</p>
+                    </div>
+                    <div>
+                      <button
+                        onClick={() => setSelectedStudent(null)}
+                        className="px-2 py-1 text-sm border rounded bg-white"
+                      >
+                        Close
+                      </button>
+                    </div>
+                  </div>
+
+                  <ul className="list-disc pl-5 text-sm text-gray-700 mb-3 mt-2">
+                    {(selectedStudent.skills || []).length === 0 && (
+                      <li className="text-gray-500">No skills listed</li>
+                    )}
+                    {(selectedStudent.skills || []).map((skill, i) => (
+                      <li key={skill._id || skill.name || i} className="mt-1">
                         {skill.name}{" "}
                         {skill.verified ? (
                           <span className="text-green-600">(Verified)</span>
                         ) : (
                           <button
                             onClick={() => handleApprove(skill.name)}
-                            className="ml-2 text-sm bg-green-600 text-white px-2 py-1 rounded"
+                            className="ml-2 text-sm bg-green-600 text-white px-2 py-1 rounded disabled:opacity-60"
+                            disabled={actionLoading}
                           >
-                            Verify
+                            {actionLoading ? "Verifying..." : "Verify"}
                           </button>
                         )}
                       </li>
@@ -375,25 +483,26 @@ export default function Admin() {
             <h2 className="text-lg font-semibold mb-4">Jobs</h2>
             {jobs.length > 0 ? (
               <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
-                {jobs.map((job, i) => (
-                  <div
-                    key={i}
-                    className="bg-white p-4 rounded-lg shadow border flex flex-col justify-between"
-                  >
-                    <div>
-                      <h3 className="font-semibold">{job.title}</h3>
-                      <p className="text-gray-500 text-sm mt-1">
-                        {job.description}
-                      </p>
+                {jobs.map((job, i) => {
+                  const key = job._id || `${job.title}-${i}`;
+                  return (
+                    <div
+                      key={key}
+                      className="bg-white p-4 rounded-lg shadow border flex flex-col justify-between"
+                    >
+                      <div>
+                        <h3 className="font-semibold">{job.title}</h3>
+                        <p className="text-gray-500 text-sm mt-1">{job.description}</p>
+                      </div>
+                      <div className="flex justify-between items-center mt-4 text-sm">
+                        <span className="text-blue-600">{job.company}</span>
+                        <span className="text-gray-500">
+                          Posted by {job.postedBy?.name || "Admin"}
+                        </span>
+                      </div>
                     </div>
-                    <div className="flex justify-between items-center mt-4 text-sm">
-                      <span className="text-blue-600">{job.company}</span>
-                      <span className="text-gray-500">
-                        Posted by {job.postedBy?.name || "Admin"}
-                      </span>
-                    </div>
-                  </div>
-                ))}
+                  );
+                })}
               </div>
             ) : (
               <p className="text-gray-500">No jobs available</p>
