@@ -1,72 +1,36 @@
-// src/api.js
 import axios from "axios";
 
 const API = axios.create({
-  baseURL: "https://skillverify.onrender.com/api", // 👈 your backend URL
+  baseURL: "https://skillverify.onrender.com/api"
 });
 
-// Attach JWT token automatically if exists
-API.interceptors.request.use((req) => {
+// Attach JWT token automatically
+API.interceptors.request.use(config => {
   const token = localStorage.getItem("userToken");
-  if (token) {
-    req.headers.Authorization = `Bearer ${token}`;
-  }
-  return req;
+  if (token) config.headers.Authorization = `Bearer ${token}`;
+  return config;
 });
 
+export default API;
 
-// Request interceptor to add auth token
-API.interceptors.request.use(
-  (config) => {
-    const token = getAuthToken();
-    if (token) {
-      config.headers.Authorization = `Bearer ${token}`;
-    }
-    return config;
-  },
-  (error) => {
-    return Promise.reject(error);
-  }
-);
-
-// Response interceptor for error handling
-API.interceptors.response.use(
-  (response) => response,
-  (error) => {
-    if (error.response?.status === 401) {
-      // Token expired or invalid
-      clearAuthToken();
-      // Optionally redirect to login
-      if (window.location.pathname !== '/login') {
-        window.location.href = '/login';
-      }
-    }
-    return Promise.reject(error);
-  }
-);
-
-// Token management functions
+// Helper functions
 export function setAuthToken(token) {
-  if (token) {
-    localStorage.setItem('token', token);
-    API.defaults.headers.common['Authorization'] = `Bearer ${token}`;
-  } else {
-    clearAuthToken();
-  }
+  localStorage.setItem("userToken", token);
 }
 
 export function getAuthToken() {
-  return localStorage.getItem('token');
+  return localStorage.getItem("userToken");
 }
 
-export function clearAuthToken() {
-  localStorage.removeItem('token');
-  delete API.defaults.headers.common['Authorization'];
+export function setUserData(user) {
+  localStorage.setItem("user", JSON.stringify(user));
 }
 
-// Initialize token on module load
-const savedToken = getAuthToken();
-if (savedToken) {
-  setAuthToken(savedToken);
+export function getUserData() {
+  return JSON.parse(localStorage.getItem("user") || "{}");
 }
-export default API;
+
+export function clearUserData() {
+  localStorage.removeItem("user");
+  localStorage.removeItem("userToken");
+}
