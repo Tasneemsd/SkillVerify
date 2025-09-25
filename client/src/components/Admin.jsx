@@ -21,8 +21,8 @@ export default function Admin() {
   const [adminName, setAdminName] = useState("Admin");
 
   // Loading states
-  const [actionLoading, setActionLoading] = useState(false); // course creation
-  const [loadingSkills, setLoadingSkills] = useState({}); // per-skill verification
+  const [actionLoading, setActionLoading] = useState(false);
+  const [loadingSkills, setLoadingSkills] = useState({});
 
   // Course form
   const [courseForm, setCourseForm] = useState({
@@ -37,9 +37,8 @@ export default function Admin() {
   const getStoredUser = () => {
     try {
       const raw = localStorage.getItem("user");
-      if (!raw) return null;
-      return JSON.parse(raw);
-    } catch (e) {
+      return raw ? JSON.parse(raw) : null;
+    } catch {
       return null;
     }
   };
@@ -48,13 +47,13 @@ export default function Admin() {
   const token = storedUser?.token || localStorage.getItem("token") || null;
   const studentEmail = storedUser?.email || "";
 
-  // ----- Fetch functions -----
+  // Fetch functions
   const fetchCourses = useCallback(async () => {
     try {
       const res = await axios.get("/api/admin/courses-with-registrations");
       setCourses(Array.isArray(res.data) ? res.data : []);
     } catch (err) {
-      console.error("Failed to fetch courses", err);
+      console.error(err);
       setCourses([]);
       setGlobalError("Failed to fetch courses");
     }
@@ -65,7 +64,7 @@ export default function Admin() {
       const res = await axios.get("/api/admin/students-with-skills");
       setStudents(Array.isArray(res.data) ? res.data : []);
     } catch (err) {
-      console.error("Failed to fetch students", err);
+      console.error(err);
       setStudents([]);
       setGlobalError("Failed to fetch students");
     }
@@ -76,7 +75,7 @@ export default function Admin() {
       const res = await axios.get("/api/admin/jobs");
       setJobs(Array.isArray(res.data) ? res.data : []);
     } catch (err) {
-      console.error("Failed to fetch jobs", err);
+      console.error(err);
       setJobs([]);
       setGlobalError("Failed to fetch jobs");
     }
@@ -90,28 +89,24 @@ export default function Admin() {
       }
       if (!studentEmail || !token) return;
 
-      const res = await axios.get(
-        `/api/admin/by-email?email=${encodeURIComponent(studentEmail)}`,
-        { headers: token ? { Authorization: `Bearer ${token}` } : {} }
-      );
+      const res = await axios.get(`/api/admin/by-email?email=${encodeURIComponent(studentEmail)}`, {
+        headers: token ? { Authorization: `Bearer ${token}` } : {},
+      });
 
       const nameFromRes = res?.data?.name || res?.data?.adminName || res?.data;
       setAdminName(typeof nameFromRes === "string" ? nameFromRes : JSON.stringify(nameFromRes));
-    } catch (err) {
-      console.warn("Could not fetch admin details, falling back to localStorage...");
+    } catch {
       if (storedUser) setAdminName(storedUser.name || "Admin");
     }
   }, [studentEmail, token, storedUser]);
 
-  // ----- Init -----
   useEffect(() => {
     const fetchAll = async () => {
       try {
         setLoading(true);
         await Promise.all([fetchCourses(), fetchStudents(), fetchJobs()]);
         await fetchAdmin();
-      } catch (err) {
-        console.error(err);
+      } catch {
         setGlobalError("Failed to load dashboard data");
       } finally {
         setLoading(false);
@@ -120,7 +115,7 @@ export default function Admin() {
     fetchAll();
   }, [fetchCourses, fetchStudents, fetchJobs, fetchAdmin]);
 
-  // ----- Handlers -----
+  // Handlers
   const handleSearch = () => {
     if (!searchQuery.trim()) {
       setSelectedStudent(null);
@@ -158,8 +153,7 @@ export default function Admin() {
         ),
       }));
       setStudentError(null);
-    } catch (err) {
-      console.error(err);
+    } catch {
       setStudentError("Failed to verify skill. Try again.");
     } finally {
       setLoadingSkills((prev) => ({ ...prev, [skillName]: false }));
@@ -181,15 +175,13 @@ export default function Admin() {
       setShowForm(false);
       setCourseForm({ courseName: "", courseId: "", courseDuration: "", courseFee: "", courseDescription: "" });
       setCourseError(null);
-    } catch (err) {
-      console.error(err);
+    } catch {
       setCourseError("Failed to create course. Try again.");
     } finally {
       setActionLoading(false);
     }
   };
 
-  // ----- UI -----
   if (loading) return <p className="text-center p-6">Loading dashboard...</p>;
 
   return (
@@ -219,19 +211,13 @@ export default function Admin() {
         <div className="flex bg-gray-100 rounded-md overflow-hidden">
           <button
             onClick={() => setActiveTab("courses")}
-            className={`px-6 py-2 font-medium ${activeTab === "courses"
-              ? "bg-white shadow text-black"
-              : "text-gray-500 hover:text-black"
-              }`}
+            className={`px-6 py-2 font-medium ${activeTab === "courses" ? "bg-white shadow text-black" : "text-gray-500 hover:text-black"}`}
           >
             Manage Courses
           </button>
           <button
             onClick={() => setActiveTab("jobs")}
-            className={`px-6 py-2 font-medium ${activeTab === "jobs"
-              ? "bg-white shadow text-black"
-              : "text-gray-500 hover:text-black"
-              }`}
+            className={`px-6 py-2 font-medium ${activeTab === "jobs" ? "bg-white shadow text-black" : "text-gray-500 hover:text-black"}`}
           >
             Manage Jobs
           </button>
@@ -239,33 +225,21 @@ export default function Admin() {
       </div>
 
       <div className="px-6 mt-6">
-        {/* Global error */}
         {globalError && (
           <div className="mb-4 text-center text-red-600">
             {globalError}
-            <button
-              onClick={() => setGlobalError(null)}
-              className="ml-3 px-2 py-1 bg-gray-100 border rounded text-sm"
-            >
-              x
-            </button>
+            <button onClick={() => setGlobalError(null)} className="ml-3 px-2 py-1 bg-gray-100 border rounded text-sm">x</button>
           </div>
         )}
 
-        {/* ===== COURSES ===== */}
+        {/* COURSES */}
         {activeTab === "courses" && (
           <>
             <div className="flex justify-between items-center mb-4">
               <h2 className="text-lg font-semibold">Courses</h2>
-              <button
-                onClick={() => setShowForm(true)}
-                className="flex items-center gap-2 bg-black text-white px-4 py-2 rounded hover:bg-gray-800"
-              >
-                + Add Course
-              </button>
+              <button onClick={() => setShowForm(true)} className="flex items-center gap-2 bg-black text-white px-4 py-2 rounded hover:bg-gray-800">+ Add Course</button>
             </div>
 
-            {/* Course Cards */}
             {courses.length > 0 ? (
               <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6 mb-6">
                 {courses.map((course, i) => (
@@ -281,11 +255,8 @@ export default function Admin() {
                   </div>
                 ))}
               </div>
-            ) : (
-              <p className="text-gray-500">No courses available</p>
-            )}
+            ) : <p className="text-gray-500">No courses available</p>}
 
-            {/* Course Form */}
             {showForm && (
               <div className="bg-white p-6 rounded-lg shadow border mb-6">
                 <h2 className="text-lg font-semibold mb-4">Create New Course</h2>
@@ -296,20 +267,17 @@ export default function Admin() {
                   <input type="text" placeholder="Duration" value={courseForm.courseDuration} onChange={(e) => setCourseForm({ ...courseForm, courseDuration: e.target.value })} className="w-full border rounded px-3 py-2" />
                   <input type="number" placeholder="Fee" value={courseForm.courseFee} onChange={(e) => setCourseForm({ ...courseForm, courseFee: e.target.value })} className="w-full border rounded px-3 py-2" />
                   <textarea rows="3" placeholder="Description" value={courseForm.courseDescription} onChange={(e) => setCourseForm({ ...courseForm, courseDescription: e.target.value })} className="w-full border rounded px-3 py-2" />
-
                   <div className="flex gap-3">
                     <button type="submit" disabled={actionLoading} className="bg-black text-white px-4 py-2 rounded hover:bg-gray-800 disabled:opacity-60">
                       {actionLoading ? "Creating..." : "Create Course"}
                     </button>
-                    <button type="button" onClick={() => { setShowForm(false); setCourseForm({ courseName: "", courseId: "", courseDuration: "", courseFee: "", courseDescription: "" }); setCourseError(null); }} className="px-4 py-2 border rounded bg-gray-100 hover:bg-gray-200">
-                      Cancel
-                    </button>
+                    <button type="button" onClick={() => { setShowForm(false); setCourseForm({ courseName: "", courseId: "", courseDuration: "", courseFee: "", courseDescription: "" }); setCourseError(null); }} className="px-4 py-2 border rounded bg-gray-100 hover:bg-gray-200">Cancel</button>
                   </div>
                 </form>
               </div>
             )}
 
-            {/* Students */}
+            {/* STUDENTS */}
             <div className="bg-white p-6 rounded-lg shadow border">
               <h2 className="text-lg font-semibold mb-4">Manage Students</h2>
               <div className="flex gap-3 mb-4">
@@ -345,14 +313,12 @@ export default function Admin() {
                     ))}
                   </ul>
                 </div>
-              ) : (
-                <p className="text-gray-500">No student selected</p>
-              )}
+              ) : <p className="text-gray-500">No student selected</p>}
             </div>
           </>
         )}
 
-        {/* ===== JOBS ===== */}
+        {/* JOBS */}
         {activeTab === "jobs" && (
           <div>
             <h2 className="text-lg font-semibold mb-4">Jobs</h2>
@@ -371,14 +337,11 @@ export default function Admin() {
                   </div>
                 ))}
               </div>
-            ) : (
-              <p className="text-gray-500">No jobs available</p>
-            )}
+            ) : <p className="text-gray-500">No jobs available</p>}
           </div>
         )}
       </div>
 
-      {/* Footer */}
       <footer className="flex justify-end px-6 py-4">
         <span className="text-sm text-gray-500 flex items-center gap-1">
           Koder Spark<span className="font-bold">Pvt Ltd</span>
