@@ -43,7 +43,7 @@ app.use("/api/student/register-course", require("./routes/registerCourse")); // 
 app.use("/api/jobs", require("./routes/jobs"));
 app.use("/api/applications", require("./routes/applications"));
 app.use("/api/recruiter", require("./routes/recruiter"));
-app.use("/api/recruiter", require("./routes/recruiterRoutes"));
+app.use("/api/recruiters", require("./routes/recruiterRoutes"));
 app.use("/api/admin", require("./routes/admin"));
 app.use("/api/notification", require("./routes/notification"));
 

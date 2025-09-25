@@ -1,4 +1,4 @@
-const Recruiter = require("../models/Recruiter");
+/* const Recruiter = require("../models/Recruiter");
 const Student = require("../models/Student");
 
 // GET /recruiter/jobs
@@ -45,3 +45,4 @@ exports.updateProfile = async (req, res) => {
     res.status(500).json({ message: err.message });
   }
 };
+ */

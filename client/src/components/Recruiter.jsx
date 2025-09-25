@@ -20,7 +20,6 @@ const Recruiter = () => {
   const [error, setError] = useState(null);
   const [activeTab, setActiveTab] = useState("dashboard");
 
-  // New job form
   const [newJob, setNewJob] = useState({
     title: "",
     description: "",
@@ -29,18 +28,17 @@ const Recruiter = () => {
     skillsRequired: "",
   });
 
-  // Settings form
   const [settings, setSettings] = useState({
     companyName: "",
     email: "",
   });
 
-  // Auth token
+  // ----- AUTH -----
   const getAuthToken = () => {
     try {
       const user = JSON.parse(localStorage.getItem("user") || "{}");
       return user.token || null;
-    } catch (error) {
+    } catch {
       return null;
     }
   };
@@ -50,16 +48,12 @@ const Recruiter = () => {
     return token ? { Authorization: `Bearer ${token}` } : {};
   };
 
-  // Fetch recruiter info
+  // ----- FETCH RECRUITER INFO -----
   const fetchRecruiter = async () => {
     try {
       const user = JSON.parse(localStorage.getItem("user") || "{}");
       if (!user.email) {
-        setRecruiter({
-          _id: "default-recruiter",
-          name: "Recruiter",
-          email: "recruiter@example.com",
-        });
+        setRecruiter({ _id: "default", name: "Recruiter", email: "recruiter@example.com" });
         return;
       }
       setRecruiter({
@@ -67,40 +61,36 @@ const Recruiter = () => {
         name: user.name || "Recruiter",
         email: user.email,
       });
-    } catch (error) {
-      setRecruiter({
-        _id: "default-recruiter",
-        name: "Recruiter",
-        email: "recruiter@example.com",
-      });
+    } catch {
+      setRecruiter({ _id: "default", name: "Recruiter", email: "recruiter@example.com" });
     }
   };
 
-  // Fetch jobs
+  // ----- FETCH JOBS -----
   const fetchJobs = async () => {
     try {
       const res = await axios.get(`${BASE_URL}/recruiter/jobs`, {
         headers: getAuthHeaders(),
       });
-      setJobs(res.data);
-    } catch (error) {
+      setJobs(res.data.jobs || res.data || []);
+    } catch {
       setJobs([]);
     }
   };
 
-  // Fetch candidates
+  // ----- FETCH CANDIDATES -----
   const fetchCandidates = async () => {
     try {
       const res = await axios.get(`${BASE_URL}/recruiter/candidates`, {
         headers: getAuthHeaders(),
       });
-      setCandidates(res.data);
-    } catch (error) {
+      setCandidates(res.data.candidates || res.data || []);
+    } catch {
       setCandidates([]);
     }
   };
 
-  // Create new job
+  // ----- CREATE NEW JOB -----
   const createJob = async (e) => {
     e.preventDefault();
     try {
@@ -109,41 +99,34 @@ const Recruiter = () => {
         description: newJob.description,
         location: newJob.location,
         salary: newJob.salary,
-        skillsRequired: newJob.skillsRequired
-          .split(",")
-          .map((s) => s.trim()),
+        skillsRequired: newJob.skillsRequired.split(",").map((s) => s.trim()),
       };
-      await axios.post(`${BASE_URL}/recruiter/create-job`, jobData, {
+      const res = await axios.post(`${BASE_URL}/recruiter/create-job`, jobData, {
         headers: getAuthHeaders(),
       });
+      setJobs((prev) => [...prev, res.data]);
+      setNewJob({ title: "", description: "", location: "", salary: "", skillsRequired: "" });
       alert("Job created successfully!");
-      setNewJob({
-        title: "",
-        description: "",
-        location: "",
-        salary: "",
-        skillsRequired: "",
-      });
-      fetchJobs();
-    } catch (error) {
+    } catch {
       alert("Failed to create job");
     }
   };
 
-  // Update settings
+  // ----- UPDATE SETTINGS -----
   const updateSettings = async (e) => {
     e.preventDefault();
     try {
-      await axios.post(`${BASE_URL}/recruiter/update-profile`, settings, {
+      const res = await axios.post(`${BASE_URL}/recruiter/update-profile`, settings, {
         headers: getAuthHeaders(),
       });
+      setRecruiter((prev) => ({ ...prev, ...res.data.recruiter }));
       alert("Profile updated!");
-    } catch (error) {
+    } catch {
       alert("Failed to update settings");
     }
   };
 
-  // Initial load
+  // ----- INITIAL LOAD -----
   useEffect(() => {
     const loadData = async () => {
       setLoading(true);
@@ -190,15 +173,11 @@ const Recruiter = () => {
           <div className="flex justify-between items-center py-6">
             <div className="flex items-center">
               <Briefcase className="h-8 w-8 text-blue-600 mr-3" />
-              <h1 className="text-2xl font-bold text-gray-900">
-                Recruiter Dashboard
-              </h1>
+              <h1 className="text-2xl font-bold text-gray-900">Recruiter Dashboard</h1>
             </div>
             {recruiter && (
               <div className="flex items-center space-x-4">
-                <span className="text-sm text-gray-600">
-                  Welcome, {recruiter.name}
-                </span>
+                <span className="text-sm text-gray-600">Welcome, {recruiter.name}</span>
                 <div className="h-8 w-8 bg-blue-600 rounded-full flex items-center justify-center">
                   <span className="text-white text-sm font-medium">
                     {recruiter.name?.charAt(0)?.toUpperCase() || "R"}
@@ -210,7 +189,7 @@ const Recruiter = () => {
         </div>
       </div>
 
-      {/* Navigation Tabs */}
+      {/* Tabs & Content */}
       <div className="bg-white border-b">
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
           <nav className="flex space-x-8">
@@ -238,20 +217,16 @@ const Recruiter = () => {
         </div>
       </div>
 
-      {/* Content */}
       <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
+        {/* Dashboard */}
         {activeTab === "dashboard" && (
           <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6 mb-8">
             <div className="bg-white p-6 rounded-lg shadow">
               <div className="flex items-center">
                 <Briefcase className="h-8 w-8 text-blue-600" />
                 <div className="ml-4">
-                  <p className="text-sm font-medium text-gray-600">
-                    Jobs Posted
-                  </p>
-                  <p className="text-2xl font-bold text-gray-900">
-                    {jobs.length}
-                  </p>
+                  <p className="text-sm font-medium text-gray-600">Jobs Posted</p>
+                  <p className="text-2xl font-bold text-gray-900">{jobs.length}</p>
                 </div>
               </div>
             </div>
@@ -259,157 +234,92 @@ const Recruiter = () => {
               <div className="flex items-center">
                 <Users className="h-8 w-8 text-green-600" />
                 <div className="ml-4">
-                  <p className="text-sm font-medium text-gray-600">
-                    Candidates
-                  </p>
-                  <p className="text-2xl font-bold text-gray-900">
-                    {candidates.length}
-                  </p>
+                  <p className="text-sm font-medium text-gray-600">Candidates</p>
+                  <p className="text-2xl font-bold text-gray-900">{candidates.length}</p>
                 </div>
               </div>
             </div>
           </div>
         )}
 
+        {/* Jobs */}
         {activeTab === "jobs" && (
           <div className="bg-white shadow rounded-lg">
             <div className="px-4 py-5 sm:p-6">
-              <h3 className="text-lg font-medium text-gray-900 mb-4">
-                Posted Jobs
-              </h3>
+              <h3 className="text-lg font-medium text-gray-900 mb-4">Posted Jobs</h3>
               <div className="grid gap-4">
                 {jobs.map((job) => (
                   <div key={job._id} className="border rounded-lg p-4">
                     <h4 className="font-semibold text-gray-900">{job.title}</h4>
                     <p className="text-gray-600">{job.description}</p>
-                    <p className="text-sm text-gray-500">
-                      Location: {job.location}
-                    </p>
-                    <p className="text-sm text-gray-500">
-                      Salary: {job.salary}
-                    </p>
+                    <p className="text-sm text-gray-500">Location: {job.location}</p>
+                    <p className="text-sm text-gray-500">Salary: {job.salary}</p>
                   </div>
                 ))}
                 {jobs.length === 0 && (
-                  <p className="text-gray-500 text-center py-8">
-                    No jobs posted yet
-                  </p>
+                  <p className="text-gray-500 text-center py-8">No jobs posted yet</p>
                 )}
               </div>
             </div>
           </div>
         )}
 
+        {/* Candidates */}
         {activeTab === "candidates" && (
           <div className="bg-white shadow rounded-lg">
             <div className="px-4 py-5 sm:p-6">
-              <h3 className="text-lg font-medium text-gray-900 mb-4">
-                Candidates
-              </h3>
+              <h3 className="text-lg font-medium text-gray-900 mb-4">Candidates</h3>
               <div className="grid gap-4">
                 {candidates.map((cand) => (
                   <div key={cand._id} className="border rounded-lg p-4">
-                    <h4 className="font-semibold text-gray-900">
-                      {cand.name}
-                    </h4>
+                    <h4 className="font-semibold text-gray-900">{cand.name}</h4>
                     <p className="text-gray-600">{cand.email}</p>
                     {cand.appliedJob && (
-                      <p className="text-sm text-gray-500">
-                        Applied for: {cand.appliedJob}
-                      </p>
+                      <p className="text-sm text-gray-500">Applied for: {cand.appliedJob}</p>
                     )}
                   </div>
                 ))}
                 {candidates.length === 0 && (
-                  <p className="text-gray-500 text-center py-8">
-                    No candidates found
-                  </p>
+                  <p className="text-gray-500 text-center py-8">No candidates found</p>
                 )}
               </div>
             </div>
           </div>
         )}
 
+        {/* Post Job */}
         {activeTab === "postjob" && (
           <div className="bg-white shadow rounded-lg">
             <div className="px-4 py-5 sm:p-6">
-              <h3 className="text-lg font-medium text-gray-900 mb-4">
-                Post New Job
-              </h3>
+              <h3 className="text-lg font-medium text-gray-900 mb-4">Post New Job</h3>
               <form onSubmit={createJob} className="space-y-4">
-                <div>
-                  <label className="block text-sm font-medium text-gray-700">
-                    Job Title
-                  </label>
-                  <input
-                    type="text"
-                    required
-                    value={newJob.title}
-                    onChange={(e) =>
-                      setNewJob({ ...newJob, title: e.target.value })
-                    }
-                    className="mt-1 block w-full border border-gray-300 rounded-md px-3 py-2 focus:ring-blue-500 focus:border-blue-500"
-                  />
-                </div>
-                <div>
-                  <label className="block text-sm font-medium text-gray-700">
-                    Description
-                  </label>
-                  <textarea
-                    required
-                    value={newJob.description}
-                    onChange={(e) =>
-                      setNewJob({ ...newJob, description: e.target.value })
-                    }
-                    rows={3}
-                    className="mt-1 block w-full border border-gray-300 rounded-md px-3 py-2 focus:ring-blue-500 focus:border-blue-500"
-                  />
-                </div>
-                <div>
-                  <label className="block text-sm font-medium text-gray-700">
-                    Location
-                  </label>
-                  <input
-                    type="text"
-                    required
-                    value={newJob.location}
-                    onChange={(e) =>
-                      setNewJob({ ...newJob, location: e.target.value })
-                    }
-                    className="mt-1 block w-full border border-gray-300 rounded-md px-3 py-2 focus:ring-blue-500 focus:border-blue-500"
-                  />
-                </div>
-                <div>
-                  <label className="block text-sm font-medium text-gray-700">
-                    Salary
-                  </label>
-                  <input
-                    type="text"
-                    required
-                    value={newJob.salary}
-                    onChange={(e) =>
-                      setNewJob({ ...newJob, salary: e.target.value })
-                    }
-                    className="mt-1 block w-full border border-gray-300 rounded-md px-3 py-2 focus:ring-blue-500 focus:border-blue-500"
-                  />
-                </div>
-                <div>
-                  <label className="block text-sm font-medium text-gray-700">
-                    Required Skills (comma separated)
-                  </label>
-                  <input
-                    type="text"
-                    required
-                    value={newJob.skillsRequired}
-                    onChange={(e) =>
-                      setNewJob({ ...newJob, skillsRequired: e.target.value })
-                    }
-                    className="mt-1 block w-full border border-gray-300 rounded-md px-3 py-2 focus:ring-blue-500 focus:border-blue-500"
-                  />
-                </div>
+                {["title", "description", "location", "salary", "skillsRequired"].map((field) => (
+                  <div key={field}>
+                    <label className="block text-sm font-medium text-gray-700">
+                      {field === "skillsRequired" ? "Required Skills (comma separated)" : field.charAt(0).toUpperCase() + field.slice(1)}
+                    </label>
+                    {field === "description" ? (
+                      <textarea
+                        required
+                        rows={3}
+                        value={newJob[field]}
+                        onChange={(e) => setNewJob({ ...newJob, [field]: e.target.value })}
+                        className="mt-1 block w-full border border-gray-300 rounded-md px-3 py-2 focus:ring-blue-500 focus:border-blue-500"
+                      />
+                    ) : (
+                      <input
+                        type={field === "salary" ? "number" : "text"}
+                        required
+                        value={newJob[field]}
+                        onChange={(e) => setNewJob({ ...newJob, [field]: e.target.value })}
+                        className="mt-1 block w-full border border-gray-300 rounded-md px-3 py-2 focus:ring-blue-500 focus:border-blue-500"
+                      />
+                    )}
+                  </div>
+                ))}
                 <button
                   type="submit"
-                  className="w-full bg-blue-600 text-white px-4 py-2 rounded-md hover:bg-blue-700"
+                  className="px-4 py-2 bg-blue-600 text-white rounded-md hover:bg-blue-700"
                 >
                   Post Job
                 </button>
@@ -418,44 +328,35 @@ const Recruiter = () => {
           </div>
         )}
 
+        {/* Settings */}
         {activeTab === "settings" && (
           <div className="bg-white shadow rounded-lg">
             <div className="px-4 py-5 sm:p-6">
-              <h3 className="text-lg font-medium text-gray-900 mb-4">
-                Recruiter Settings
-              </h3>
+              <h3 className="text-lg font-medium text-gray-900 mb-4">Profile Settings</h3>
               <form onSubmit={updateSettings} className="space-y-4">
                 <div>
-                  <label className="block text-sm font-medium text-gray-700">
-                    Company Name
-                  </label>
+                  <label className="block text-sm font-medium text-gray-700">Company Name</label>
                   <input
                     type="text"
                     value={settings.companyName}
-                    onChange={(e) =>
-                      setSettings({ ...settings, companyName: e.target.value })
-                    }
+                    onChange={(e) => setSettings({ ...settings, companyName: e.target.value })}
                     className="mt-1 block w-full border border-gray-300 rounded-md px-3 py-2 focus:ring-blue-500 focus:border-blue-500"
                   />
                 </div>
                 <div>
-                  <label className="block text-sm font-medium text-gray-700">
-                    Email
-                  </label>
+                  <label className="block text-sm font-medium text-gray-700">Email</label>
                   <input
                     type="email"
                     value={settings.email}
-                    onChange={(e) =>
-                      setSettings({ ...settings, email: e.target.value })
-                    }
+                    onChange={(e) => setSettings({ ...settings, email: e.target.value })}
                     className="mt-1 block w-full border border-gray-300 rounded-md px-3 py-2 focus:ring-blue-500 focus:border-blue-500"
                   />
                 </div>
                 <button
                   type="submit"
-                  className="w-full bg-green-600 text-white px-4 py-2 rounded-md hover:bg-green-700"
+                  className="px-4 py-2 bg-green-600 text-white rounded-md hover:bg-green-700"
                 >
-                  Update Profile
+                  Save Settings
                 </button>
               </form>
             </div>
