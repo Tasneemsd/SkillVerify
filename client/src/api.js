@@ -2,8 +2,8 @@
 import axios from "axios";
 
 const API = axios.create({
-  baseURL: "https://skillverify.onrender.com/api", 
-});
+  baseURL: ["https://skillverify.onrender.com/api" ,"http://localhost:5000/api", // switch to localhost for local dev
+]});
 
 // Attach JWT token automatically if exists
 API.interceptors.request.use((req) => {
