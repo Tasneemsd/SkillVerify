@@ -21,21 +21,29 @@ const Recruiter = () => {
   // Fetch recruiter details
   const fetchRecruiterDetails = useCallback(async () => {
     try {
+      console.log('Fetching recruiter details from:', `${API_BASE_URL}/recruiter/profile`);
+      
       const response = await fetch(`${API_BASE_URL}/recruiter/profile`, {
         method: 'GET',
         headers: {
           'Content-Type': 'application/json',
-          // Add authorization header if you have authentication
-          // 'Authorization': `Bearer ${localStorage.getItem('token')}`
         },
-        credentials: 'include'
+        // Remove credentials for now to test
+        // credentials: 'include'
       });
 
+      console.log('Recruiter response status:', response.status);
+      console.log('Recruiter response headers:', response.headers);
+
       if (!response.ok) {
-        throw new Error(`Failed to fetch recruiter details: ${response.status}`);
+        const errorText = await response.text();
+        console.error('Recruiter API error:', errorText);
+        throw new Error(`Failed to fetch recruiter details: ${response.status} - ${errorText}`);
       }
 
       const data = await response.json();
+      console.log('Recruiter data received:', data);
+      
       setRecruiter(data.recruiter || data);
     } catch (err) {
       console.error('Error fetching recruiter details:', err);
@@ -55,21 +63,28 @@ const Recruiter = () => {
       setStudentsLoading(true);
       setError(null);
       
+      console.log('Fetching students from:', `${API_BASE_URL}/student/profile/all`);
+      
       const response = await fetch(`${API_BASE_URL}/student/profile/all`, {
         method: 'GET',
         headers: {
           'Content-Type': 'application/json',
-          // Add authorization header if you have authentication
-          // 'Authorization': `Bearer ${localStorage.getItem('token')}`
         },
-        credentials: 'include'
+        // Remove credentials for now to test
+        // credentials: 'include'
       });
 
+      console.log('Students response status:', response.status);
+      console.log('Students response headers:', response.headers);
+
       if (!response.ok) {
-        throw new Error(`Failed to fetch students: ${response.status}`);
+        const errorText = await response.text();
+        console.error('Students API error:', errorText);
+        throw new Error(`Failed to fetch students: ${response.status} - ${errorText}`);
       }
 
       const data = await response.json();
+      console.log('Students data received:', data);
       
       // Handle different possible response structures
       let studentsData = [];
@@ -80,6 +95,8 @@ const Recruiter = () => {
       } else if (data.data && Array.isArray(data.data)) {
         studentsData = data.data;
       }
+      
+      console.log('Processed students data:', studentsData);
       
       // Add local state for favorites and shortlisted, ensure required fields exist
       const studentsWithLocalState = studentsData.map((student) => ({
@@ -112,10 +129,12 @@ const Recruiter = () => {
       setError(null);
       
       try {
+        console.log('Initializing data...');
         await Promise.all([
           fetchRecruiterDetails(),
           fetchStudents()
         ]);
+        console.log('Data initialization complete');
       } catch (err) {
         console.error('Error initializing data:', err);
         setError('Failed to load data');
@@ -228,6 +247,15 @@ const Recruiter = () => {
 
   return (
     <div className="space-y-6">
+      {/* Debug Info */}
+      <div className="bg-yellow-50 border border-yellow-200 rounded-lg p-4 text-sm">
+        <p><strong>Debug Info:</strong></p>
+        <p>API Base URL: {API_BASE_URL}</p>
+        <p>Recruiter loaded: {recruiter ? 'Yes' : 'No'}</p>
+        <p>Students count: {students.length}</p>
+        <p>Error: {error || 'None'}</p>
+      </div>
+
       {/* Profile Header */}
       <div className="bg-white rounded-lg shadow-sm p-6 flex items-center justify-between">
         <div className="flex items-center space-x-4">
