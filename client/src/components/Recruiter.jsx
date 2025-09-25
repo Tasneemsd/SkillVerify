@@ -1,64 +1,142 @@
-import React, { useState, useEffect } from "react";
+import React, { useState, useEffect, useCallback } from "react";
 import {
   Search, Filter, Download, Mail, Heart, BookmarkPlus,
   Users, GraduationCap, Calendar, Star, ChevronDown, ChevronUp,
-  User, Building
+  User, Building, Loader2, AlertCircle
 } from "lucide-react";
 
+const API_BASE_URL = "https://skillverify.onrender.com/api";
+
 const Recruiter = () => {
-  // Dummy recruiter data
-  const recruiter = {
-    name: "John Doe",
-    email: "john@company.com",
-    companyName: "TechCorp",
-    avatar: "",
-  };
-
-  // Dummy students
-  const dummyStudents = [
-    {
-      _id: "1",
-      name: "Alice Johnson",
-      email: "alice@student.com",
-      college: "ABC University",
-      year: 3,
-      course: "Computer Science",
-      skills: ["React", "Node.js", "Python", "MongoDB"],
-      verifiedSkillsCount: 2,
-      avatar: "",
-      isFavorite: false,
-      isShortlisted: false,
-    },
-    {
-      _id: "2",
-      name: "Bob Smith",
-      email: "bob@student.com",
-      college: "XYZ College",
-      year: 2,
-      course: "Information Technology",
-      skills: ["Java", "Spring", "SQL"],
-      verifiedSkillsCount: 1,
-      avatar: "",
-      isFavorite: true,
-      isShortlisted: false,
-    },
-  ];
-
   // States
-  const [students, setStudents] = useState(dummyStudents);
+  const [recruiter, setRecruiter] = useState(null);
+  const [students, setStudents] = useState([]);
+  const [loading, setLoading] = useState(true);
+  const [studentsLoading, setStudentsLoading] = useState(false);
+  const [error, setError] = useState(null);
   const [searchTerm, setSearchTerm] = useState("");
   const [filters, setFilters] = useState({ college: "", year: "", skills: "" });
   const [showFilters, setShowFilters] = useState(false);
 
+  // Fetch recruiter details
+  const fetchRecruiterDetails = useCallback(async () => {
+    try {
+      const response = await fetch(`${API_BASE_URL}/recruiter/profile`, {
+        method: 'GET',
+        headers: {
+          'Content-Type': 'application/json',
+          // Add authorization header if you have authentication
+          // 'Authorization': `Bearer ${localStorage.getItem('token')}`
+        },
+        credentials: 'include'
+      });
+
+      if (!response.ok) {
+        throw new Error(`Failed to fetch recruiter details: ${response.status}`);
+      }
+
+      const data = await response.json();
+      setRecruiter(data.recruiter || data);
+    } catch (err) {
+      console.error('Error fetching recruiter details:', err);
+      // Set default recruiter if API fails
+      setRecruiter({
+        name: "Recruiter",
+        email: "recruiter@company.com",
+        companyName: "Company",
+        avatar: ""
+      });
+    }
+  }, []);
+
+  // Fetch students
+  const fetchStudents = useCallback(async () => {
+    try {
+      setStudentsLoading(true);
+      setError(null);
+      
+      const response = await fetch(`${API_BASE_URL}/student/profile/all`, {
+        method: 'GET',
+        headers: {
+          'Content-Type': 'application/json',
+          // Add authorization header if you have authentication
+          // 'Authorization': `Bearer ${localStorage.getItem('token')}`
+        },
+        credentials: 'include'
+      });
+
+      if (!response.ok) {
+        throw new Error(`Failed to fetch students: ${response.status}`);
+      }
+
+      const data = await response.json();
+      
+      // Handle different possible response structures
+      let studentsData = [];
+      if (data.students) {
+        studentsData = data.students;
+      } else if (Array.isArray(data)) {
+        studentsData = data;
+      } else if (data.data && Array.isArray(data.data)) {
+        studentsData = data.data;
+      }
+      
+      // Add local state for favorites and shortlisted, ensure required fields exist
+      const studentsWithLocalState = studentsData.map((student) => ({
+        _id: student._id || student.id,
+        name: student.name || "Unknown Student",
+        email: student.email || "No email",
+        college: student.college || "Unknown College",
+        year: student.year || 1,
+        course: student.course || "Unknown Course",
+        skills: student.skills || [],
+        verifiedSkillsCount: student.verifiedSkillsCount || 0,
+        avatar: student.avatar || "",
+        isFavorite: false,
+        isShortlisted: false,
+      }));
+      
+      setStudents(studentsWithLocalState);
+    } catch (err) {
+      console.error('Error fetching students:', err);
+      setError(`Failed to load students: ${err.message}`);
+    } finally {
+      setStudentsLoading(false);
+    }
+  }, []);
+
+  // Initial data fetch
+  useEffect(() => {
+    const initializeData = async () => {
+      setLoading(true);
+      setError(null);
+      
+      try {
+        await Promise.all([
+          fetchRecruiterDetails(),
+          fetchStudents()
+        ]);
+      } catch (err) {
+        console.error('Error initializing data:', err);
+        setError('Failed to load data');
+      } finally {
+        setLoading(false);
+      }
+    };
+
+    initializeData();
+  }, [fetchRecruiterDetails, fetchStudents]);
+
   // Filtered students
   const filteredStudents = students.filter((student) => {
-    const matchesSearch = student.name.toLowerCase().includes(searchTerm.toLowerCase());
+    const matchesSearch = student.name.toLowerCase().includes(searchTerm.toLowerCase()) ||
+                         student.email.toLowerCase().includes(searchTerm.toLowerCase());
     const matchesCollege = filters.college
       ? student.college.toLowerCase().includes(filters.college.toLowerCase())
       : true;
     const matchesYear = filters.year ? String(student.year) === filters.year : true;
     const matchesSkills = filters.skills
-      ? student.skills.some((s) =>
+      ? student.skills && student.skills.some((s) =>
           s.toLowerCase().includes(filters.skills.toLowerCase())
         )
       : true;
@@ -66,32 +144,94 @@ const Recruiter = () => {
   });
 
   // Handlers
-  const handleFavoriteToggle = (id) => {
+  const handleFavoriteToggle = useCallback((id) => {
     setStudents((prev) =>
       prev.map((s) =>
         s._id === id ? { ...s, isFavorite: !s.isFavorite } : s
       )
     );
-  };
+  }, []);
 
-  const handleShortlistToggle = (id) => {
+  const handleShortlistToggle = useCallback((id) => {
     setStudents((prev) =>
       prev.map((s) =>
         s._id === id ? { ...s, isShortlisted: !s.isShortlisted } : s
       )
     );
-  };
+  }, []);
 
-  const handleContactStudent = (id, name) => {
-    alert(`Message sent to ${name}`);
-  };
+  const handleContactStudent = useCallback(async (id, name) => {
+    try {
+      // You can implement actual messaging functionality here
+      // For now, showing a simple alert
+      alert(`Message sent to ${name}`);
+      
+      // Example API call for contacting student:
+      // const response = await fetch(`${API_BASE_URL}/recruiter/contact-student`, {
+      //   method: 'POST',
+      //   headers: {
+      //     'Content-Type': 'application/json',
+      //     'Authorization': `Bearer ${localStorage.getItem('token')}`
+      //   },
+      //   body: JSON.stringify({ studentId: id, message: 'Hello!' }),
+      //   credentials: 'include'
+      // });
+    } catch (err) {
+      console.error('Error contacting student:', err);
+      alert('Failed to send message. Please try again.');
+    }
+  }, []);
+
+  // Clear filters
+  const clearFilters = useCallback(() => {
+    setFilters({ college: "", year: "", skills: "" });
+    setSearchTerm("");
+  }, []);
+
+  // Retry data fetch
+  const handleRetry = useCallback(() => {
+    setLoading(true);
+    setError(null);
+    fetchRecruiterDetails();
+    fetchStudents();
+  }, [fetchRecruiterDetails, fetchStudents]);
+
+  // Loading state
+  if (loading) {
+    return (
+      <div className="min-h-screen flex items-center justify-center">
+        <div className="text-center">
+          <Loader2 className="h-8 w-8 animate-spin text-blue-600 mx-auto mb-4" />
+          <p className="text-gray-600">Loading dashboard...</p>
+        </div>
+      </div>
+    );
+  }
+
+  // Error state
+  if (error && !recruiter && students.length === 0) {
+    return (
+      <div className="min-h-screen flex items-center justify-center">
+        <div className="text-center">
+          <AlertCircle className="h-8 w-8 text-red-500 mx-auto mb-4" />
+          <p className="text-red-600 mb-4">{error}</p>
+          <button
+            onClick={handleRetry}
+            className="px-4 py-2 bg-blue-600 text-white rounded-lg hover:bg-blue-700 transition-colors"
+          >
+            Retry
+          </button>
+        </div>
+      </div>
+    );
+  }
 
   return (
     <div className="space-y-6">
       {/* Profile Header */}
       <div className="bg-white rounded-lg shadow-sm p-6 flex items-center justify-between">
         <div className="flex items-center space-x-4">
-          {recruiter.avatar ? (
+          {recruiter?.avatar ? (
             <img
               src={recruiter.avatar}
               alt={recruiter.name}
@@ -103,12 +243,12 @@ const Recruiter = () => {
             </div>
           )}
           <div>
-            <h1 className="text-2xl font-bold">{recruiter.name}</h1>
+            <h1 className="text-2xl font-bold">{recruiter?.name || 'Loading...'}</h1>
             <div className="flex items-center text-gray-600 mt-1">
               <Building className="h-4 w-4 mr-2" />
-              {recruiter.companyName}
+              {recruiter?.companyName || 'Loading...'}
             </div>
-            <div className="text-sm text-gray-500 mt-1">{recruiter.email}</div>
+            <div className="text-sm text-gray-500 mt-1">{recruiter?.email || 'Loading...'}</div>
           </div>
         </div>
         <div className="text-right">
@@ -124,7 +264,7 @@ const Recruiter = () => {
             <Search className="absolute left-3 top-1/2 transform -translate-y-1/2 h-4 w-4 text-gray-400" />
             <input
               type="text"
-              placeholder="Search students..."
+              placeholder="Search students by name or email..."
               value={searchTerm}
               onChange={(e) => setSearchTerm(e.target.value)}
               className="w-full pl-10 pr-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent"
@@ -138,6 +278,14 @@ const Recruiter = () => {
               <Filter className="h-4 w-4 mr-2" />
               Filters {showFilters ? <ChevronUp className="h-4 w-4 ml-2" /> : <ChevronDown className="h-4 w-4 ml-2" />}
             </button>
+            {(searchTerm || filters.college || filters.year || filters.skills) && (
+              <button
+                onClick={clearFilters}
+                className="px-4 py-2 text-blue-600 hover:text-blue-700 transition-colors"
+              >
+                Clear All
+              </button>
+            )}
           </div>
         </div>
         {showFilters && (
@@ -182,10 +330,36 @@ const Recruiter = () => {
 
       {/* Students Grid */}
       <div className="bg-white rounded-lg shadow-sm">
-        {filteredStudents.length === 0 ? (
+        {studentsLoading ? (
+          <div className="p-8 text-center">
+            <Loader2 className="h-8 w-8 animate-spin text-blue-600 mx-auto mb-4" />
+            <p className="text-gray-600">Loading students...</p>
+          </div>
+        ) : error && students.length === 0 ? (
+          <div className="p-8 text-center">
+            <AlertCircle className="h-8 w-8 text-red-500 mx-auto mb-4" />
+            <p className="text-red-600 mb-4">{error}</p>
+            <button
+              onClick={() => fetchStudents()}
+              className="px-4 py-2 bg-blue-600 text-white rounded-lg hover:bg-blue-700 transition-colors"
+            >
+              Retry Loading Students
+            </button>
+          </div>
+        ) : filteredStudents.length === 0 ? (
           <div className="p-8 text-center">
             <Users className="h-12 w-12 text-gray-300 mx-auto mb-4" />
-            <p className="text-gray-500">No students found.</p>
+            <p className="text-gray-500">
+              {students.length === 0 ? 'No students available.' : 'No students match your search criteria.'}
+            </p>
+            {(searchTerm || filters.college || filters.year || filters.skills) && (
+              <button
+                onClick={clearFilters}
+                className="mt-2 text-blue-600 hover:text-blue-700 transition-colors"
+              >
+                Clear filters to see all students
+              </button>
+            )}
           </div>
         ) : (
           <div className="p-6 grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
@@ -245,7 +419,8 @@ const Recruiter = () => {
                     {student.college}
                   </div>
                   <div className="flex items-center text-sm text-gray-600">
-                    <Calendar className="h-4 w-4 mr-2" />Year {student.year} • {student.course}
+                    <Calendar className="h-4 w-4 mr-2" />
+                    Year {student.year} • {student.course}
                   </div>
                   {student.verifiedSkillsCount > 0 && (
                     <div className="flex items-center text-sm text-green-600">
