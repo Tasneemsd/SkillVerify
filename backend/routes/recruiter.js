@@ -2,6 +2,7 @@ const express = require("express");
 const router = express.Router();
 const Recruiter = require("../models/Recruiter");
 const Job = require("../models/Job");
+const Student = require("../models/Student"); // <- Add this
 const jwt = require("jsonwebtoken");
 
 // ===== GET recruiter profile by email =====
@@ -81,6 +82,27 @@ router.post("/create-job", async (req, res) => {
   } catch (err) {
     console.error("CREATE JOB ERROR:", err.message);
     res.status(500).json({ message: "Failed to create job", error: err.message });
+  }
+});
+
+// ===== GET students/candidates =====
+router.get("/students", async (req, res) => {
+  try {
+    const { college, year, skills } = req.query;
+
+    let query = {};
+    if (college) query.college = { $regex: college, $options: "i" };
+    if (year) query.year = parseInt(year);
+    if (skills) query["skills.verified"] = true; // only verified skills
+
+    const students = await Student.find(query).select(
+      "name course college year skills email initials"
+    );
+
+    res.json(students);
+  } catch (err) {
+    console.error("FETCH STUDENTS ERROR:", err.message);
+    res.status(500).json({ message: "Failed to fetch students", error: err.message });
   }
 });
 
