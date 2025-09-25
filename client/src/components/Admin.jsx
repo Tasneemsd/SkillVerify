@@ -63,27 +63,13 @@ const Admin = () => {
         return;
       }
 
-      // Try to fetch admin profile from backend
-      try {
-        const response = await axios.get(`${BASE_URL}/admin/profile`, {
-          headers: {
-            ...getAuthHeaders(),
-            'Content-Type': 'application/json'
-          },
-          params: { email: user.email }
-        });
-        setAdmin(response.data);
-      } catch (apiError) {
-        console.warn('Could not fetch admin profile from API, using localStorage data:', apiError.message);
-        
-        // Fallback: create admin object from localStorage
-        setAdmin({
-          _id: user._id || user.id || 'unknown',
-          name: user.name || 'Admin User',
-          email: user.email,
-          role: user.role || 'admin'
-        });
-      }
+      // Create admin object from localStorage (no admin profile endpoint needed)
+      setAdmin({
+        _id: user._id || user.id || 'unknown',
+        name: user.name || 'Admin User',
+        email: user.email,
+        role: user.role || 'admin'
+      });
     } catch (error) {
       console.error('Error setting up admin:', error.message);
       // Don't set error state, just use default admin
@@ -151,7 +137,15 @@ const Admin = () => {
   const createCourse = async (e) => {
     e.preventDefault();
     try {
-      const response = await axios.post(`${BASE_URL}/admin/create-course`, newCourse, {
+      const courseData = {
+        courseName: newCourse.title,
+        courseId: `COURSE_${Date.now()}`, // Generate unique course ID
+        courseDuration: newCourse.duration,
+        courseFee: 0, // Default fee, you can add this to the form if needed
+        courseDescription: newCourse.description
+      };
+      
+      const response = await axios.post(`${BASE_URL}/admin/create-course`, courseData, {
         headers: {
           ...getAuthHeaders(),
           'Content-Type': 'application/json'
@@ -163,7 +157,7 @@ const Admin = () => {
       fetchCoursesWithRegistrations(); // Refresh courses list
     } catch (error) {
       console.error('Error creating course:', error);
-      alert('Failed to create course. Please try again.');
+      alert(`Failed to create course: ${error.response?.data?.message || error.message}`);
     }
   };
 
@@ -173,8 +167,7 @@ const Admin = () => {
     try {
       const response = await axios.post(`${BASE_URL}/admin/verify-skill`, {
         studentId: skillVerification.studentId,
-        skillName: skillVerification.skillName,
-        verified: skillVerification.verified
+        skillName: skillVerification.skillName
       }, {
         headers: {
           ...getAuthHeaders(),
@@ -187,7 +180,7 @@ const Admin = () => {
       fetchStudentsWithSkills(); // Refresh students list
     } catch (error) {
       console.error('Error verifying skill:', error);
-      alert('Failed to verify skill. Please try again.');
+      alert(`Failed to verify skill: ${error.response?.data?.message || error.message}`);
     }
   };
 
@@ -363,14 +356,14 @@ const Admin = () => {
               <div className="grid gap-4">
                 {courses.map((course) => (
                   <div key={course._id} className="border rounded-lg p-4">
-                    <h4 className="font-semibold text-gray-900">{course.title}</h4>
-                    <p className="text-gray-600 mt-1">{course.description}</p>
+                    <h4 className="font-semibold text-gray-900">{course.courseName}</h4>
+                    <p className="text-gray-600 mt-1">{course.courseDescription}</p>
                     <div className="mt-2 flex items-center justify-between">
                       <span className="text-sm text-gray-500">
-                        Registrations: {course.registrations || 0}
+                        Duration: {course.courseDuration} | Fee: ${course.courseFee}
                       </span>
-                      <span className="px-2 py-1 bg-blue-100 text-blue-800 rounded-full text-xs">
-                        Active
+                      <span className="text-sm text-gray-500">
+                        Registrations: {course.registrations || 0}
                       </span>
                     </div>
                   </div>
@@ -394,13 +387,23 @@ const Admin = () => {
                   <div key={student._id} className="border rounded-lg p-4">
                     <h4 className="font-semibold text-gray-900">{student.name}</h4>
                     <p className="text-gray-600">{student.email}</p>
+                    {student.rollNo && (
+                      <p className="text-sm text-gray-500">Roll No: {student.rollNo}</p>
+                    )}
                     <div className="mt-2">
                       <p className="text-sm font-medium text-gray-700">Skills:</p>
                       <div className="flex flex-wrap gap-2 mt-1">
                         {student.skills && student.skills.length > 0 ? (
                           student.skills.map((skill, index) => (
-                            <span key={index} className="px-2 py-1 bg-green-100 text-green-800 rounded-full text-xs">
-                              {skill}
+                            <span 
+                              key={index} 
+                              className={`px-2 py-1 rounded-full text-xs ${
+                                skill.verified 
+                                  ? 'bg-green-100 text-green-800' 
+                                  : 'bg-yellow-100 text-yellow-800'
+                              }`}
+                            >
+                              {skill.name || skill} {skill.verified && '✓'}
                             </span>
                           ))
                         ) : (
@@ -428,12 +431,14 @@ const Admin = () => {
                 {jobs.map((job) => (
                   <div key={job._id} className="border rounded-lg p-4">
                     <h4 className="font-semibold text-gray-900">{job.title}</h4>
-                    <p className="text-gray-600">{job.company}</p>
+                    <p className="text-gray-600">{job.companyName}</p>
+                    <p className="text-sm text-gray-500">Location: {job.location}</p>
+                    <p className="text-sm text-gray-500">Salary: {job.salary}</p>
                     <div className="mt-2">
                       <p className="text-sm font-medium text-gray-700">Requirements:</p>
                       <div className="flex flex-wrap gap-2 mt-1">
-                        {job.requirements && job.requirements.length > 0 ? (
-                          job.requirements.map((req, index) => (
+                        {job.skillsRequired && job.skillsRequired.length > 0 ? (
+                          job.skillsRequired.map((req, index) => (
                             <span key={index} className="px-2 py-1 bg-purple-100 text-purple-800 rounded-full text-xs">
                               {req}
                             </span>
@@ -443,6 +448,11 @@ const Admin = () => {
                         )}
                       </div>
                     </div>
+                    {job.postedBy && (
+                      <p className="text-xs text-gray-400 mt-2">
+                        Posted by: {job.postedBy.name}
+                      </p>
+                    )}
                   </div>
                 ))}
                 {jobs.length === 0 && (
@@ -463,7 +473,7 @@ const Admin = () => {
                 <h3 className="text-lg leading-6 font-medium text-gray-900 mb-4">Create New Course</h3>
                 <form onSubmit={createCourse} className="space-y-4">
                   <div>
-                    <label className="block text-sm font-medium text-gray-700">Course Title</label>
+                    <label className="block text-sm font-medium text-gray-700">Course Name</label>
                     <input
                       type="text"
                       required
@@ -486,19 +496,10 @@ const Admin = () => {
                     <label className="block text-sm font-medium text-gray-700">Duration</label>
                     <input
                       type="text"
+                      required
                       value={newCourse.duration}
                       onChange={(e) => setNewCourse({ ...newCourse, duration: e.target.value })}
                       placeholder="e.g., 4 weeks"
-                      className="mt-1 block w-full border border-gray-300 rounded-md px-3 py-2 focus:outline-none focus:ring-blue-500 focus:border-blue-500"
-                    />
-                  </div>
-                  <div>
-                    <label className="block text-sm font-medium text-gray-700">Prerequisites</label>
-                    <input
-                      type="text"
-                      value={newCourse.prerequisites}
-                      onChange={(e) => setNewCourse({ ...newCourse, prerequisites: e.target.value })}
-                      placeholder="e.g., Basic programming knowledge"
                       className="mt-1 block w-full border border-gray-300 rounded-md px-3 py-2 focus:outline-none focus:ring-blue-500 focus:border-blue-500"
                     />
                   </div>
@@ -537,22 +538,11 @@ const Admin = () => {
                       className="mt-1 block w-full border border-gray-300 rounded-md px-3 py-2 focus:outline-none focus:ring-blue-500 focus:border-blue-500"
                     />
                   </div>
-                  <div className="flex items-center">
-                    <input
-                      type="checkbox"
-                      checked={skillVerification.verified}
-                      onChange={(e) => setSkillVerification({ ...skillVerification, verified: e.target.checked })}
-                      className="h-4 w-4 text-blue-600 focus:ring-blue-500 border-gray-300 rounded"
-                    />
-                    <label className="ml-2 block text-sm text-gray-900">
-                      Mark as verified
-                    </label>
-                  </div>
                   <button
                     type="submit"
                     className="w-full flex justify-center py-2 px-4 border border-transparent rounded-md shadow-sm text-sm font-medium text-white bg-green-600 hover:bg-green-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-green-500"
                   >
-                    Update Skill Verification
+                    Verify Skill
                   </button>
                 </form>
               </div>
