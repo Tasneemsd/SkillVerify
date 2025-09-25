@@ -1,7 +1,7 @@
 import React, { useState, useEffect } from "react";
 import axios from "axios";
 
-const BASE_URL = "https://skillverify.onrender.com/api/recruiter";
+const BASE_URL = "https://skillverify.onrender.com/api";
 
 const Recruiter = () => {
   const [recruiter, setRecruiter] = useState(null);
