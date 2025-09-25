@@ -4,7 +4,7 @@ import { Search, Filter, Mail, MapPin, GraduationCap, Calendar, Star, Users, Bui
 
 const BASE_API_URL = 'https://skillverify.onrender.com/api';
 
-const Recruiter = () => {
+const Recruiter = ({ user, onLogout }) => {
   const [recruiter, setRecruiter] = useState(null);
   const [students, setStudents] = useState([]);
   const [filteredStudents, setFilteredStudents] = useState([]);
@@ -32,16 +32,8 @@ const Recruiter = () => {
 
   const fetchRecruiterData = async () => {
     try {
-      const userStr = localStorage.getItem('user');
-      if (!userStr) {
+      if (!user || !user.email) {
         setError('No recruiter logged in');
-        setLoading(false);
-        return;
-      }
-
-      const user = JSON.parse(userStr);
-      if (!user.email) {
-        setError('No email found in user data');
         setLoading(false);
         return;
       }
@@ -103,13 +95,11 @@ const Recruiter = () => {
     try {
       setContactingStudent(studentEmail);
       
-      const userStr = localStorage.getItem('user');
-      if (!userStr) {
+      if (!user || !user.email) {
         alert('Please log in to contact students');
         return;
       }
 
-      const user = JSON.parse(userStr);
       const response = await axios.post(`${BASE_API_URL}/recruiter/contact-student`, {
         recruiterEmail: user.email,
         studentEmail: studentEmail,
@@ -183,15 +173,117 @@ const Recruiter = () => {
                 <p className="text-gray-600">{recruiter?.company || 'SkillVerify Platform'}</p>
               </div>
             </div>
-            <div className="flex items-center space-x-6 text-sm text-gray-600">
-              <div className="flex items-center space-x-2">
-                <Users className="w-4 h-4" />
-                <span>{filteredStudents.length} Students</span>
+            <div className="flex items-center space-x-6">
+              <div className="text-sm text-gray-600">
+                <div className="flex items-center space-x-2">
+                  <Users className="w-4 h-4" />
+                  <span>{filteredStudents.length} Students</span>
+                </div>
               </div>
+              <button
+                onClick={onLogout}
+                className="bg-gray-100 text-gray-700 px-4 py-2 rounded-lg hover:bg-gray-200 transition-colors text-sm font-medium"
+              >
+                Logout
+              </button>
             </div>
           </div>
         </div>
       </header>
+
+      <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
+        {/* Search and Filters */}
+        <div className="bg-white rounded-lg shadow-sm p-6 mb-8">
+          <div className="grid grid-cols-1 lg:grid-cols-4 gap-4">
+            {/* Search */}
+            <div className="lg:col-span-1">
+              <div className="relative">
+                <Search className="absolute left-3 top-3 w-4 h-4 text-gray-400" />
+                <input
+                  type="text"
+                  placeholder="Search students..."
+                  className="w-full pl-10 pr-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent"
+                  value={searchTerm}
+                  onChange={(e) => setSearchTerm(e.target.value)}
+                />
+              </div>
+            </div>
+
+            {/* Year Filter */}
+            <div>
+              <select
+                className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent"
+                value={selectedYear}
+                onChange={(e) => setSelectedYear(e.target.value)}
+              >
+                <option value="">All Years</option>
+                {uniqueYears.map(year => (
+                  <option key={year} value={year}>{year}</option>
+                ))}
+              </select>
+            </div>
+
+            {/* College Filter */}
+            <div>
+              <select
+                className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent"
+                value={selectedCollege}
+                onChange={(e) => setSelectedCollege(e.target.value)}
+              >
+                <option value="">All Colleges</option>
+                {uniqueColleges.map(college => (
+                  <option key={college} value={college}>{college}</option>
+                ))}
+              </select>
+            </div>
+
+            {/* Clear Filters */}
+            <div>
+              <button
+                onClick={() => {
+                  setSearchTerm('');
+                  setSelectedSkills([]);
+                  setSelectedYear('');
+                  setSelectedCollege('');
+                }}
+                className="w-full px-4 py-2 bg-gray-100 text-gray-700 rounded-lg hover:bg-gray-200 transition-colors"
+              >
+                Clear Filters
+              </button>
+            </div>
+          </div>
+
+          {/* Skills Filter */}
+          {uniqueSkills.length > 0 && (
+            <div className="mt-4">
+              <div className="flex items-center space-x-2">
+                <Filter className="w-4 h-4 text-gray-400" />
+                <span className="text-sm text-gray-600">Filter by Skills:</span>
+              </div>
+              <div className="flex flex-wrap gap-2">
+                {uniqueSkills.slice(0, 10).map(skill => (
+                  <button
+                    key={skill}
+                    onClick={() => toggleSkillFilter(skill)}
+                    className={`px-3 py-1 rounded-full text-sm transition-colors ${
+                      selectedSkills.includes(skill)
+                        ? 'bg-blue-600 text-white'
+                        : 'bg-gray-100 text-gray-700 hover:bg-gray-200'
+                    }`}
+                  >
+                    {skill}
+                  </button>
+                ))}
+                {uniqueSkills.length > 10 && (
+                  <span className="px-3 py-1 text-sm text-gray-500">
+                    +{uniqueSkills.length - 10} more
+                  </span>
+                )}
+              </div>
+            </div>
+          )}
+        </div>
+      </div>
 
       <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
         {/* Search and Filters */}
