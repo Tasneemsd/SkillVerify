@@ -1,5 +1,4 @@
 import React, { useState, useEffect } from "react";
-import axios from "axios";
 import {
   Briefcase,
   Users,
@@ -8,8 +7,8 @@ import {
   BarChart3,
   Settings,
 } from "lucide-react";
+import axios from "axios";
 
-// Replace with your backend base URL
 const BASE_URL = "https://skillverify.onrender.com/api";
 
 const Recruiter = () => {
@@ -33,7 +32,6 @@ const Recruiter = () => {
     email: "",
   });
 
-  // ----- AUTH -----
   const getAuthToken = () => {
     try {
       const user = JSON.parse(localStorage.getItem("user") || "{}");
@@ -48,8 +46,8 @@ const Recruiter = () => {
     return token ? { Authorization: `Bearer ${token}` } : {};
   };
 
-  // ----- FETCH RECRUITER INFO -----
-  const fetchRecruiter = async () => {
+  // Fetch recruiter info from localStorage
+  const fetchProfile = async () => {
     try {
       const user = JSON.parse(localStorage.getItem("user") || "{}");
       if (!user.email) {
@@ -61,12 +59,16 @@ const Recruiter = () => {
         name: user.name || "Recruiter",
         email: user.email,
       });
+      setSettings({
+        companyName: user.companyName || "",
+        email: user.email || "",
+      });
     } catch {
       setRecruiter({ _id: "default", name: "Recruiter", email: "recruiter@example.com" });
     }
   };
 
-  // ----- FETCH JOBS -----
+  // Fetch jobs posted by recruiter
   const fetchJobs = async () => {
     try {
       const res = await axios.get(`${BASE_URL}/recruiter/jobs`, {
@@ -78,19 +80,19 @@ const Recruiter = () => {
     }
   };
 
-  // ----- FETCH CANDIDATES -----
+  // Fetch candidates with verified skills
   const fetchCandidates = async () => {
     try {
-      const res = await axios.get(`${BASE_URL}/recruiter/candidates`, {
+      const res = await axios.get(`${BASE_URL}/recruiter/students`, {
         headers: getAuthHeaders(),
       });
-      setCandidates(res.data.candidates || res.data || []);
+      setCandidates(res.data || []);
     } catch {
       setCandidates([]);
     }
   };
 
-  // ----- CREATE NEW JOB -----
+  // Create new job
   const createJob = async (e) => {
     e.preventDefault();
     try {
@@ -100,11 +102,12 @@ const Recruiter = () => {
         location: newJob.location,
         salary: newJob.salary,
         skillsRequired: newJob.skillsRequired.split(",").map((s) => s.trim()),
+        email: recruiter.email,
       };
       const res = await axios.post(`${BASE_URL}/recruiter/create-job`, jobData, {
         headers: getAuthHeaders(),
       });
-      setJobs((prev) => [...prev, res.data]);
+      setJobs((prev) => [...prev, res.data.job || res.data]);
       setNewJob({ title: "", description: "", location: "", salary: "", skillsRequired: "" });
       alert("Job created successfully!");
     } catch {
@@ -112,11 +115,14 @@ const Recruiter = () => {
     }
   };
 
-  // ----- UPDATE SETTINGS -----
+  // Update recruiter profile
   const updateSettings = async (e) => {
     e.preventDefault();
     try {
-      const res = await axios.post(`${BASE_URL}/recruiter/update-profile`, settings, {
+      const res = await axios.post(`${BASE_URL}/recruiter/profile`, {
+        ...settings,
+        email: recruiter.email,
+      }, {
         headers: getAuthHeaders(),
       });
       setRecruiter((prev) => ({ ...prev, ...res.data.recruiter }));
@@ -126,11 +132,10 @@ const Recruiter = () => {
     }
   };
 
-  // ----- INITIAL LOAD -----
   useEffect(() => {
     const loadData = async () => {
       setLoading(true);
-      await fetchRecruiter();
+      await fetchProfile();
       await Promise.all([fetchJobs(), fetchCandidates()]);
       setLoading(false);
     };
@@ -189,7 +194,7 @@ const Recruiter = () => {
         </div>
       </div>
 
-      {/* Tabs & Content */}
+      {/* Tabs */}
       <div className="bg-white border-b">
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
           <nav className="flex space-x-8">
@@ -221,22 +226,18 @@ const Recruiter = () => {
         {/* Dashboard */}
         {activeTab === "dashboard" && (
           <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6 mb-8">
-            <div className="bg-white p-6 rounded-lg shadow">
-              <div className="flex items-center">
-                <Briefcase className="h-8 w-8 text-blue-600" />
-                <div className="ml-4">
-                  <p className="text-sm font-medium text-gray-600">Jobs Posted</p>
-                  <p className="text-2xl font-bold text-gray-900">{jobs.length}</p>
-                </div>
+            <div className="bg-white p-6 rounded-lg shadow flex items-center">
+              <Briefcase className="h-8 w-8 text-blue-600" />
+              <div className="ml-4">
+                <p className="text-sm font-medium text-gray-600">Jobs Posted</p>
+                <p className="text-2xl font-bold text-gray-900">{jobs.length}</p>
               </div>
             </div>
-            <div className="bg-white p-6 rounded-lg shadow">
-              <div className="flex items-center">
-                <Users className="h-8 w-8 text-green-600" />
-                <div className="ml-4">
-                  <p className="text-sm font-medium text-gray-600">Candidates</p>
-                  <p className="text-2xl font-bold text-gray-900">{candidates.length}</p>
-                </div>
+            <div className="bg-white p-6 rounded-lg shadow flex items-center">
+              <Users className="h-8 w-8 text-green-600" />
+              <div className="ml-4">
+                <p className="text-sm font-medium text-gray-600">Candidates</p>
+                <p className="text-2xl font-bold text-gray-900">{candidates.length}</p>
               </div>
             </div>
           </div>
@@ -266,23 +267,23 @@ const Recruiter = () => {
 
         {/* Candidates */}
         {activeTab === "candidates" && (
-          <div className="bg-white shadow rounded-lg">
-            <div className="px-4 py-5 sm:p-6">
-              <h3 className="text-lg font-medium text-gray-900 mb-4">Candidates</h3>
-              <div className="grid gap-4">
-                {candidates.map((cand) => (
-                  <div key={cand._id} className="border rounded-lg p-4">
-                    <h4 className="font-semibold text-gray-900">{cand.name}</h4>
-                    <p className="text-gray-600">{cand.email}</p>
-                    {cand.appliedJob && (
-                      <p className="text-sm text-gray-500">Applied for: {cand.appliedJob}</p>
-                    )}
-                  </div>
-                ))}
-                {candidates.length === 0 && (
-                  <p className="text-gray-500 text-center py-8">No candidates found</p>
-                )}
-              </div>
+          <div className="bg-white shadow rounded-lg mt-4 p-4">
+            <h3 className="text-lg font-medium mb-4">Candidates</h3>
+            <div className="grid gap-4">
+              {candidates.map((cand) => (
+                <div key={cand._id} className="border rounded-lg p-4">
+                  <h4 className="font-semibold text-gray-900">{cand.name}</h4>
+                  <p className="text-gray-600">{cand.email}</p>
+                  {cand.skills?.length > 0 && (
+                    <p className="text-sm text-gray-500">
+                      Verified Skills: {cand.skills.filter(s => s.verified).map(s => s.name).join(", ")}
+                    </p>
+                  )}
+                </div>
+              ))}
+              {candidates.length === 0 && (
+                <p className="text-gray-500 text-center py-8">No candidates found</p>
+              )}
             </div>
           </div>
         )}

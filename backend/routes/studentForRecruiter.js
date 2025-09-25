@@ -1,5 +1,5 @@
 const express = require("express");
-const Student = require("../models/Student"); // make sure you have Student model
+const Student = require("../models/Student"); // Make sure Student model exists
 const router = express.Router();
 
 // GET /api/recruiter/students
@@ -10,18 +10,22 @@ router.get("/students", async (req, res) => {
 
     let query = {};
 
+    // Filter by college
     if (college) query.college = { $regex: college, $options: "i" };
+    // Filter by year
     if (year) query.year = parseInt(year);
-    if (skills) query["skills.verified"] = true; // Only students with verified skills
+    // Only students with verified skills
+    if (skills) query["skills.verified"] = true;
 
+    // Fetch students
     const students = await Student.find(query).select(
       "name course college year skills initials email"
     );
 
     res.json(students);
   } catch (err) {
-    console.error(err);
-    res.status(500).json({ message: "Failed to fetch students" });
+    console.error("FETCH STUDENTS ERROR:", err);
+    res.status(500).json({ message: "Failed to fetch students", error: err.message });
   }
 });
 
