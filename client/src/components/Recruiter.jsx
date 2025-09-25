@@ -1,239 +1,288 @@
-import React, { useState, useEffect } from 'react';
-import axios from 'axios';
-import { 
-  Search, Filter, Mail, Users, Building, GraduationCap, Calendar, Star 
-} from 'lucide-react';
+import React, { useState, useEffect } from "react";
+import {
+  Search, Filter, Download, Mail, Heart, BookmarkPlus,
+  Users, GraduationCap, Calendar, Star, ChevronDown, ChevronUp,
+  User, Building
+} from "lucide-react";
 
-const BASE_API_URL = 'https://skillverify.onrender.com/api';
-
-const Recruiter = ({ user, onLogout }) => {
-  const [recruiter, setRecruiter] = useState(null);
-  const [students, setStudents] = useState([]);
-  const [filteredStudents, setFilteredStudents] = useState([]);
-  const [loading, setLoading] = useState(true);
-  const [error, setError] = useState(null);
-  const [searchTerm, setSearchTerm] = useState('');
-  const [selectedSkills, setSelectedSkills] = useState([]);
-  const [selectedYear, setSelectedYear] = useState('');
-  const [selectedCollege, setSelectedCollege] = useState('');
-  const [contactingStudent, setContactingStudent] = useState(null);
-
-  useEffect(() => {
-    fetchRecruiterData();
-    fetchStudents();
-  }, []);
-
-  useEffect(() => {
-    filterStudents();
-  }, [students, searchTerm, selectedSkills, selectedYear, selectedCollege]);
-
-  const fetchRecruiterData = async () => {
-    try {
-      if (!user?.email) throw new Error('No recruiter logged in');
-      const res = await axios.get(`${BASE_API_URL}/recruiter/profile?email=${user.email}`);
-      setRecruiter(res.data);
-    } catch (err) {
-      console.error(err);
-      setError('Failed to load recruiter profile');
-    }
+const Recruiter = () => {
+  // Dummy recruiter data
+  const recruiter = {
+    name: "John Doe",
+    email: "john@company.com",
+    companyName: "TechCorp",
+    avatar: "",
   };
 
-  const fetchStudents = async () => {
-    try {
-      const res = await axios.get(`${BASE_API_URL}/recruiter/students`);
-      setStudents(res.data);
-      setFilteredStudents(res.data);
-    } catch (err) {
-      console.error(err);
-      setError('Failed to load students');
-    } finally {
-      setLoading(false);
-    }
-  };
+  // Dummy students
+  const dummyStudents = [
+    {
+      _id: "1",
+      name: "Alice Johnson",
+      email: "alice@student.com",
+      college: "ABC University",
+      year: 3,
+      course: "Computer Science",
+      skills: ["React", "Node.js", "Python", "MongoDB"],
+      verifiedSkillsCount: 2,
+      avatar: "",
+      isFavorite: false,
+      isShortlisted: false,
+    },
+    {
+      _id: "2",
+      name: "Bob Smith",
+      email: "bob@student.com",
+      college: "XYZ College",
+      year: 2,
+      course: "Information Technology",
+      skills: ["Java", "Spring", "SQL"],
+      verifiedSkillsCount: 1,
+      avatar: "",
+      isFavorite: true,
+      isShortlisted: false,
+    },
+  ];
 
-  const filterStudents = () => {
-    let filtered = students;
+  // States
+  const [students, setStudents] = useState(dummyStudents);
+  const [searchTerm, setSearchTerm] = useState("");
+  const [filters, setFilters] = useState({ college: "", year: "", skills: "" });
+  const [showFilters, setShowFilters] = useState(false);
 
-    if (searchTerm) {
-      filtered = filtered.filter(s =>
-        s.name?.toLowerCase().includes(searchTerm.toLowerCase()) ||
-        s.email?.toLowerCase().includes(searchTerm.toLowerCase()) ||
-        s.skills?.some(skill => skill.toLowerCase().includes(searchTerm.toLowerCase()))
-      );
-    }
+  // Filtered students
+  const filteredStudents = students.filter((student) => {
+    const matchesSearch = student.name.toLowerCase().includes(searchTerm.toLowerCase());
+    const matchesCollege = filters.college
+      ? student.college.toLowerCase().includes(filters.college.toLowerCase())
+      : true;
+    const matchesYear = filters.year ? String(student.year) === filters.year : true;
+    const matchesSkills = filters.skills
+      ? student.skills.some((s) =>
+          s.toLowerCase().includes(filters.skills.toLowerCase())
+        )
+      : true;
+    return matchesSearch && matchesCollege && matchesYear && matchesSkills;
+  });
 
-    if (selectedSkills.length) {
-      filtered = filtered.filter(s => selectedSkills.every(skill => s.skills?.includes(skill)));
-    }
-
-    if (selectedYear) filtered = filtered.filter(s => s.year === selectedYear);
-    if (selectedCollege) filtered = filtered.filter(s => s.college === selectedCollege);
-
-    setFilteredStudents(filtered);
-  };
-
-  const handleContactStudent = async (email, name) => {
-    try {
-      if (!user?.email) return alert('Please login first');
-      setContactingStudent(email);
-
-      const res = await axios.post(`${BASE_API_URL}/recruiter/contact-student`, {
-        recruiterEmail: user.email,
-        studentEmail: email,
-        message: `Hello ${name}, I am interested in your profile.`,
-      });
-
-      alert(res.data.success ? 'Message sent!' : 'Failed to send message');
-    } catch (err) {
-      console.error(err);
-      alert('Error sending message');
-    } finally {
-      setContactingStudent(null);
-    }
-  };
-
-  const toggleSkillFilter = skill =>
-    setSelectedSkills(prev =>
-      prev.includes(skill) ? prev.filter(s => s !== skill) : [...prev, skill]
+  // Handlers
+  const handleFavoriteToggle = (id) => {
+    setStudents((prev) =>
+      prev.map((s) =>
+        s._id === id ? { ...s, isFavorite: !s.isFavorite } : s
+      )
     );
+  };
 
-  const uniqueSkills = [...new Set(students.flatMap(s => s.skills || []))];
-  const uniqueYears = [...new Set(students.map(s => s.year).filter(Boolean))];
-  const uniqueColleges = [...new Set(students.map(s => s.college).filter(Boolean))];
+  const handleShortlistToggle = (id) => {
+    setStudents((prev) =>
+      prev.map((s) =>
+        s._id === id ? { ...s, isShortlisted: !s.isShortlisted } : s
+      )
+    );
+  };
 
-  if (loading) return (
-    <div className="min-h-screen flex items-center justify-center">
-      <div className="animate-spin h-12 w-12 border-b-2 border-blue-600 rounded-full"></div>
-    </div>
-  );
-
-  if (error) return (
-    <div className="min-h-screen flex flex-col items-center justify-center text-center">
-      <p className="text-red-600 mb-4">{error}</p>
-      <button onClick={() => window.location.reload()} className="px-4 py-2 bg-blue-600 text-white rounded-lg">Retry</button>
-    </div>
-  );
+  const handleContactStudent = (id, name) => {
+    alert(`Message sent to ${name}`);
+  };
 
   return (
-    <div className="min-h-screen bg-gray-50">
-      {/* Header */}
-      <header className="bg-white shadow-sm border-b border-gray-200 p-6 flex justify-between items-center">
+    <div className="space-y-6">
+      {/* Profile Header */}
+      <div className="bg-white rounded-lg shadow-sm p-6 flex items-center justify-between">
         <div className="flex items-center space-x-4">
-          <div className="bg-blue-600 w-12 h-12 rounded-full flex items-center justify-center">
-            <Building className="w-6 h-6 text-white" />
-          </div>
+          {recruiter.avatar ? (
+            <img
+              src={recruiter.avatar}
+              alt={recruiter.name}
+              className="h-16 w-16 rounded-full object-cover"
+            />
+          ) : (
+            <div className="h-16 w-16 rounded-full bg-blue-500 flex items-center justify-center">
+              <User className="h-8 w-8 text-white" />
+            </div>
+          )}
           <div>
-            <h1 className="text-2xl font-bold">{recruiter?.name || 'Recruiter Dashboard'}</h1>
-            <p className="text-gray-600">{recruiter?.company || 'SkillVerify'}</p>
+            <h1 className="text-2xl font-bold">{recruiter.name}</h1>
+            <div className="flex items-center text-gray-600 mt-1">
+              <Building className="h-4 w-4 mr-2" />
+              {recruiter.companyName}
+            </div>
+            <div className="text-sm text-gray-500 mt-1">{recruiter.email}</div>
           </div>
         </div>
-        <div className="flex items-center space-x-6">
-          <div className="flex items-center space-x-2 text-gray-600">
-            <Users className="w-4 h-4" /> <span>{filteredStudents.length} Students</span>
-          </div>
-          <button onClick={onLogout} className="bg-gray-100 px-4 py-2 rounded-lg hover:bg-gray-200">Logout</button>
+        <div className="text-right">
+          <div className="text-2xl font-bold text-blue-600">{students.length}</div>
+          <div className="text-sm text-gray-500">Total Students</div>
         </div>
-      </header>
+      </div>
 
-      <main className="max-w-7xl mx-auto p-6 space-y-6">
-        {/* Filters */}
-        <div className="bg-white p-6 rounded-lg shadow-sm grid grid-cols-1 md:grid-cols-4 gap-4">
-          <div className="relative">
-            <Search className="absolute left-3 top-3 w-4 h-4 text-gray-400" />
+      {/* Search & Filters */}
+      <div className="bg-white rounded-lg shadow-sm p-6">
+        <div className="flex flex-col lg:flex-row lg:items-center lg:justify-between space-y-4 lg:space-y-0">
+          <div className="relative flex-1 max-w-md">
+            <Search className="absolute left-3 top-1/2 transform -translate-y-1/2 h-4 w-4 text-gray-400" />
             <input
               type="text"
               placeholder="Search students..."
-              className="w-full pl-10 pr-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500"
               value={searchTerm}
-              onChange={e => setSearchTerm(e.target.value)}
+              onChange={(e) => setSearchTerm(e.target.value)}
+              className="w-full pl-10 pr-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent"
             />
           </div>
-          <select
-            className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500"
-            value={selectedYear}
-            onChange={e => setSelectedYear(e.target.value)}
-          >
-            <option value="">All Years</option>
-            {uniqueYears.map(y => <option key={y} value={y}>{y}</option>)}
-          </select>
-          <select
-            className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500"
-            value={selectedCollege}
-            onChange={e => setSelectedCollege(e.target.value)}
-          >
-            <option value="">All Colleges</option>
-            {uniqueColleges.map(c => <option key={c} value={c}>{c}</option>)}
-          </select>
-          <button
-            onClick={() => { setSearchTerm(''); setSelectedSkills([]); setSelectedYear(''); setSelectedCollege(''); }}
-            className="px-4 py-2 bg-gray-100 rounded-lg hover:bg-gray-200"
-          >
-            Clear Filters
-          </button>
+          <div className="flex items-center space-x-3">
+            <button
+              onClick={() => setShowFilters(!showFilters)}
+              className="flex items-center px-4 py-2 border border-gray-300 rounded-lg hover:bg-gray-50 transition-colors"
+            >
+              <Filter className="h-4 w-4 mr-2" />
+              Filters {showFilters ? <ChevronUp className="h-4 w-4 ml-2" /> : <ChevronDown className="h-4 w-4 ml-2" />}
+            </button>
+          </div>
         </div>
-
-        {/* Skills Filter */}
-        {uniqueSkills.length > 0 && (
-          <div className="flex flex-wrap gap-2">
-            {uniqueSkills.map(skill => (
-              <button
-                key={skill}
-                onClick={() => toggleSkillFilter(skill)}
-                className={`px-3 py-1 rounded-full text-sm transition-colors ${
-                  selectedSkills.includes(skill) ? 'bg-blue-600 text-white' : 'bg-gray-100 hover:bg-gray-200'
-                }`}
+        {showFilters && (
+          <div className="mt-6 pt-6 border-t border-gray-200 grid grid-cols-1 md:grid-cols-3 gap-4">
+            <div>
+              <label className="block text-sm font-medium text-gray-700 mb-2">College</label>
+              <input
+                type="text"
+                placeholder="Filter by college..."
+                value={filters.college}
+                onChange={(e) => setFilters({ ...filters, college: e.target.value })}
+                className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent"
+              />
+            </div>
+            <div>
+              <label className="block text-sm font-medium text-gray-700 mb-2">Year</label>
+              <select
+                value={filters.year}
+                onChange={(e) => setFilters({ ...filters, year: e.target.value })}
+                className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent"
               >
-                {skill}
-              </button>
-            ))}
+                <option value="">All Years</option>
+                <option value="1">1st Year</option>
+                <option value="2">2nd Year</option>
+                <option value="3">3rd Year</option>
+                <option value="4">4th Year</option>
+              </select>
+            </div>
+            <div>
+              <label className="block text-sm font-medium text-gray-700 mb-2">Skills</label>
+              <input
+                type="text"
+                placeholder="e.g., React, Node.js, Python"
+                value={filters.skills}
+                onChange={(e) => setFilters({ ...filters, skills: e.target.value })}
+                className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent"
+              />
+            </div>
           </div>
         )}
+      </div>
 
-        {/* Students Grid */}
+      {/* Students Grid */}
+      <div className="bg-white rounded-lg shadow-sm">
         {filteredStudents.length === 0 ? (
-          <div className="bg-white p-12 rounded-lg shadow-sm text-center">
-            <Users className="w-16 h-16 text-gray-300 mx-auto mb-4" />
-            <p className="text-gray-600">No Students Found</p>
+          <div className="p-8 text-center">
+            <Users className="h-12 w-12 text-gray-300 mx-auto mb-4" />
+            <p className="text-gray-500">No students found.</p>
           </div>
         ) : (
-          <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
-            {filteredStudents.map(student => (
-              <div key={student.id || student.email} className="bg-white rounded-lg shadow-sm border border-gray-200 p-6">
-                <div className="flex justify-between items-start mb-4">
-                  <div>
-                    <h3 className="text-lg font-semibold">{student.name || 'Anonymous'}</h3>
-                    <p className="text-sm text-gray-600">{student.email}</p>
+          <div className="p-6 grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
+            {filteredStudents.map((student) => (
+              <div
+                key={student._id}
+                className="border border-gray-200 rounded-lg p-6 hover:shadow-md transition-shadow"
+              >
+                <div className="flex items-start justify-between mb-4">
+                  <div className="flex items-center space-x-3">
+                    {student.avatar ? (
+                      <img
+                        src={student.avatar}
+                        alt={student.name}
+                        className="h-12 w-12 rounded-full object-cover"
+                      />
+                    ) : (
+                      <div className="h-12 w-12 rounded-full bg-gray-200 flex items-center justify-center">
+                        <User className="h-6 w-6 text-gray-500" />
+                      </div>
+                    )}
+                    <div>
+                      <h3 className="font-semibold text-gray-900">{student.name}</h3>
+                      <p className="text-sm text-gray-500">{student.email}</p>
+                    </div>
                   </div>
-                  <button
-                    onClick={() => handleContactStudent(student.email, student.name)}
-                    disabled={contactingStudent === student.email}
-                    className="bg-blue-600 text-white p-2 rounded-lg hover:bg-blue-700 disabled:opacity-50"
-                  >
-                    {contactingStudent === student.email ? (
-                      <div className="animate-spin w-4 h-4 border-2 border-white border-t-transparent rounded-full"></div>
-                    ) : <Mail className="w-4 h-4" />}
-                  </button>
+                  <div className="flex space-x-2">
+                    <button
+                      onClick={() => handleFavoriteToggle(student._id)}
+                      className={`p-2 rounded-lg transition-colors ${
+                        student.isFavorite
+                          ? "bg-red-100 text-red-600 hover:bg-red-200"
+                          : "bg-gray-100 text-gray-600 hover:bg-gray-200"
+                      }`}
+                    >
+                      <Heart
+                        className={`h-4 w-4 ${student.isFavorite ? "fill-current" : ""}`}
+                      />
+                    </button>
+                    <button
+                      onClick={() => handleShortlistToggle(student._id)}
+                      className={`p-2 rounded-lg transition-colors ${
+                        student.isShortlisted
+                          ? "bg-blue-100 text-blue-600 hover:bg-blue-200"
+                          : "bg-gray-100 text-gray-600 hover:bg-gray-200"
+                      }`}
+                    >
+                      <BookmarkPlus
+                        className={`h-4 w-4 ${student.isShortlisted ? "fill-current" : ""}`}
+                      />
+                    </button>
+                  </div>
                 </div>
-
-                <div className="space-y-2 text-sm text-gray-600">
-                  {student.college && <div className="flex items-center"><GraduationCap className="w-4 h-4 mr-1" />{student.college}</div>}
-                  {student.year && <div className="flex items-center"><Calendar className="w-4 h-4 mr-1" />Year {student.year}</div>}
-                  {student.gpa && <div className="flex items-center"><Star className="w-4 h-4 mr-1" />GPA: {student.gpa}</div>}
+                <div className="space-y-2 mb-4">
+                  <div className="flex items-center text-sm text-gray-600">
+                    <GraduationCap className="h-4 w-4 mr-2" />
+                    {student.college}
+                  </div>
+                  <div className="flex items-center text-sm text-gray-600">
+                    <Calendar className="h-4 w-4 mr-2" />Year {student.year} • {student.course}
+                  </div>
+                  {student.verifiedSkillsCount > 0 && (
+                    <div className="flex items-center text-sm text-green-600">
+                      <Star className="h-4 w-4 mr-2" />
+                      {student.verifiedSkillsCount} verified skills
+                    </div>
+                  )}
                 </div>
-
-                {student.skills?.length > 0 && (
-                  <div className="mt-2 flex flex-wrap gap-1">
-                    {student.skills.slice(0, 4).map((skill, idx) => (
-                      <span key={idx} className="px-2 py-1 bg-blue-100 text-blue-800 text-xs rounded-full">{skill}</span>
+                {student.skills && student.skills.length > 0 && (
+                  <div className="mb-4 flex flex-wrap gap-2">
+                    {student.skills.slice(0, 3).map((skill, i) => (
+                      <span
+                        key={i}
+                        className="px-2 py-1 bg-blue-100 text-blue-800 text-xs rounded-full"
+                      >
+                        {skill}
+                      </span>
                     ))}
-                    {student.skills.length > 4 && <span className="px-2 py-1 bg-gray-100 text-gray-600 text-xs rounded-full">+{student.skills.length - 4} more</span>}
+                    {student.skills.length > 3 && (
+                      <span className="px-2 py-1 bg-gray-100 text-gray-600 text-xs rounded-full">
+                        +{student.skills.length - 3} more
+                      </span>
+                    )}
                   </div>
                 )}
+                <button
+                  onClick={() => handleContactStudent(student._id, student.name)}
+                  className="w-full flex items-center justify-center px-4 py-2 bg-blue-600 text-white rounded-lg hover:bg-blue-700 transition-colors"
+                >
+                  <Mail className="h-4 w-4 mr-2" />
+                  Contact Student
+                </button>
               </div>
             ))}
           </div>
         )}
-      </main>
+      </div>
     </div>
   );
 };
