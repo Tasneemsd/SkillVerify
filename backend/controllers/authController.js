@@ -1,3 +1,4 @@
+// authController.js
 const Student = require('../models/Student');
 const Recruiter = require('../models/Recruiter');
 const Admin = require('../models/Admin');
@@ -7,14 +8,23 @@ const jwt = require('jsonwebtoken');
 
 // ================= REGISTER =================
 exports.register = async (req, res) => {
-  const { name, email, password, role, rollNo, contactNumber, socialLinks, codingLinks, profilePicture } = req.body;
   try {
-    // Check if name or email exists in any collection
-    const studentExists = await Student.findOne({ $or: [{ email }, { name }] });
-    const recruiterExists = await Recruiter.findOne({ $or: [{ email }, { name }] });
-    const adminExists = await Admin.findOne({ $or: [{ email }, { name }] });
+    const { name, email, password, role, rollNo, contactNumber, socialLinks, codingLinks, profilePicture } = req.body;
 
-    if (studentExists || recruiterExists || adminExists) {
+    if (!name || !email || !password || !role) {
+      return res.status(400).json({ message: 'Name, email, password, and role are required' });
+    }
+
+    const normalizedEmail = email.toLowerCase().trim();
+
+    // Check if name or email exists in any collection
+    const exists = await Promise.all([
+      Student.findOne({ $or: [{ email: normalizedEmail }, { name }] }),
+      Recruiter.findOne({ $or: [{ email: normalizedEmail }, { name }] }),
+      Admin.findOne({ $or: [{ email: normalizedEmail }, { name }] })
+    ]);
+
+    if (exists.some(user => user)) {
       return res.status(409).json({ message: 'Name or email already exists as student, recruiter, or admin' });
     }
 
@@ -23,7 +33,7 @@ exports.register = async (req, res) => {
     if (role === 'student') {
       const student = new Student({
         name,
-        email,
+        email: normalizedEmail,
         password: hashedPassword,
         rollNo,
         contactNumber,
@@ -33,53 +43,59 @@ exports.register = async (req, res) => {
         skills: []
       });
       await student.save();
+      return res.status(201).json({ message: 'Student registered successfully', user: student });
 
-      return res.status(201).json({ message: 'Student registered successfully', student });
-    } 
-    else if (role === 'recruiter') {
-      const recruiter = new Recruiter({ name, email, password: hashedPassword });
+    } else if (role === 'recruiter') {
+      const recruiter = new Recruiter({
+        name,
+        email: normalizedEmail,
+        password: hashedPassword,
+        companyName: "",
+        position: "",
+        phone: "",
+        bio: ""
+      });
       await recruiter.save();
-      return res.status(201).json({ message: 'Recruiter registered successfully' });
-    } 
-    else if (role === 'admin') {
-      const admin = new Admin({ name, email, password: hashedPassword });
+      return res.status(201).json({ message: 'Recruiter registered successfully', user: recruiter });
+
+    } else if (role === 'admin') {
+      const admin = new Admin({ name, email: normalizedEmail, password: hashedPassword });
       await admin.save();
-      return res.status(201).json({ message: 'Admin registered successfully' });
-    } 
-    else {
+      return res.status(201).json({ message: 'Admin registered successfully', user: admin });
+
+    } else {
       return res.status(400).json({ message: 'Invalid role' });
     }
   } catch (err) {
-    if (err.code === 11000) {
-      return res.status(409).json({ message: 'Email already exists' });
-    }
+    console.error("Register error:", err);
+    if (err.code === 11000) return res.status(409).json({ message: 'Email already exists' });
     return res.status(500).json({ message: 'Server error', error: err.message });
   }
 };
 
 // ================= LOGIN =================
 exports.login = async (req, res) => {
-  const { email, password } = req.body;
   try {
-    let user = await Student.findOne({ email });
-    let role = "student";
+    const { email, password } = req.body;
+    if (!email || !password) return res.status(400).json({ message: 'Email and password are required' });
+
+    const normalizedEmail = email.toLowerCase().trim();
+
+    let user = await Student.findOne({ email: normalizedEmail });
+    let role = 'student';
 
     if (!user) {
-      user = await Recruiter.findOne({ email });
-      role = user ? "recruiter" : null;
+      user = await Recruiter.findOne({ email: normalizedEmail });
+      role = user ? 'recruiter' : null;
     }
     if (!user) {
-      user = await Admin.findOne({ email });
-      role = user ? "admin" : null;
+      user = await Admin.findOne({ email: normalizedEmail });
+      role = user ? 'admin' : null;
     }
-    if (!user) {
-      return res.status(401).json({ message: 'Invalid credentials' });
-    }
+    if (!user) return res.status(401).json({ message: 'Invalid credentials' });
 
     const isMatch = await bcrypt.compare(password, user.password);
-    if (!isMatch) {
-      return res.status(401).json({ message: 'Invalid credentials' });
-    }
+    if (!isMatch) return res.status(401).json({ message: 'Invalid credentials' });
 
     // Generate JWT
     const token = jwt.sign(
@@ -88,6 +104,7 @@ exports.login = async (req, res) => {
       { expiresIn: '2h' }
     );
 
+    // Build user object for response
     let userObj = {
       _id: user._id,
       name: user.name,
@@ -95,7 +112,7 @@ exports.login = async (req, res) => {
       role
     };
 
-    if (role === "student") {
+    if (role === 'student') {
       await user.populate({ path: "registeredCourses", select: "courseName courseId" });
       userObj = {
         ...userObj,
@@ -118,7 +135,9 @@ exports.login = async (req, res) => {
       token,
       user: userObj
     });
+
   } catch (err) {
+    console.error("Login error:", err);
     return res.status(500).json({ message: 'Server error', error: err.message });
   }
 };
