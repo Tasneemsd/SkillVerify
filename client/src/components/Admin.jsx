@@ -1,413 +1,567 @@
-import React, { useState, useEffect } from "react";
-import axios from "axios";
+import React, { useState, useEffect } from 'react';
+import axios from 'axios';
+import { Users, BookOpen, Briefcase, CheckCircle, PlusCircle, AlertCircle, BarChart3 } from 'lucide-react';
 
-export default function Admin() {
-  const [activeTab, setActiveTab] = useState("courses"); // courses | jobs
-  const [showForm, setShowForm] = useState(false);
+// Use absolute URL for your backend
+const BASE_URL = "https://skillverify.onrender.com/api";
 
-  // ✅ Always arrays
-  const Adm_URL = "https://skillverify.onrender.com/api/student";
+const Admin = () => {
   const [courses, setCourses] = useState([]);
   const [students, setStudents] = useState([]);
   const [jobs, setJobs] = useState([]);
-
-  const [searchQuery, setSearchQuery] = useState("");
-  const [selectedStudent, setSelectedStudent] = useState(null);
-
+  const [admin, setAdmin] = useState(null);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState(null);
+  const [activeTab, setActiveTab] = useState('dashboard');
 
-  const [adminName, setAdminName] = useState("Admin");
-
-  // Course form
-  const [courseForm, setCourseForm] = useState({
-    courseName: "",
-    courseId: "",
-    courseDuration: "",
-    courseFee: "",
-    courseDescription: "",
+  // New course form
+  const [newCourse, setNewCourse] = useState({
+    title: '',
+    description: '',
+    duration: '',
+    prerequisites: ''
   });
 
-  useEffect(() => {
-    const fetchAll = async () => {
-      try {
-        setLoading(true);
-        await Promise.all([
-          fetchCourses(),
-          fetchStudents(),
-          fetchJobs(),
-          fetchAdmin(),
-        ]);
-      } catch (err) {
-        console.error(err);
-        setError("Failed to load dashboard data");
-      } finally {
-        setLoading(false);
-      }
-    };
-    fetchAll();
-  }, []);
+  // Skill verification form
+  const [skillVerification, setSkillVerification] = useState({
+    studentId: '',
+    skillName: '',
+    verified: false
+  });
 
-  // ✅ Fetch admin name
-  const fetchAdmin = async () => {
+  // Get authentication token from localStorage
+  const getAuthToken = () => {
     try {
-      const res = await axios.get(`${Adm_URL}?email=${encodeURIComponent(studentEmail)}`, {
-        headers: { Authorization: `Bearer ${token}` },
-      });
-      setAdminName(res.data);
-    } catch (err) {
-      console.warn("Could not fetch admin details, falling back...");
-      const storedUser = localStorage.getItem("user");
-      if (storedUser) {
-        const parsed = JSON.parse(storedUser);
-        setAdminName(parsed?.name || "Admin");
-      }
+      const user = JSON.parse(localStorage.getItem('user') || '{}');
+      return user.token || null;
+    } catch (error) {
+      console.error('Error parsing user from localStorage:', error);
+      return null;
     }
   };
 
-  // ✅ Fetch courses
-  const fetchCourses = async () => {
+  // Get authentication headers
+  const getAuthHeaders = () => {
+    const token = getAuthToken();
+    return token ? { Authorization: `Bearer ${token}` } : {};
+  };
+
+  // Fetch admin details from localStorage with fallback
+  const fetchAdmin = async () => {
     try {
-      const res = await axios.get("/api/admin/courses-with-registrations");
-      setCourses(Array.isArray(res.data) ? res.data : []);
-    } catch (err) {
-      console.error("Failed to fetch courses", err);
+      const user = JSON.parse(localStorage.getItem('user') || '{}');
+      
+      // If no user data in localStorage, create a default admin
+      if (!user.email) {
+        console.warn('No admin credentials found in localStorage, using default admin');
+        setAdmin({
+          _id: 'default-admin',
+          name: 'Default Admin',
+          email: 'admin@example.com',
+          role: 'admin'
+        });
+        return;
+      }
+
+      // Try to fetch admin profile from backend
+      try {
+        const response = await axios.get(`${BASE_URL}/admin/profile`, {
+          headers: {
+            ...getAuthHeaders(),
+            'Content-Type': 'application/json'
+          },
+          params: { email: user.email }
+        });
+        setAdmin(response.data);
+      } catch (apiError) {
+        console.warn('Could not fetch admin profile from API, using localStorage data:', apiError.message);
+        
+        // Fallback: create admin object from localStorage
+        setAdmin({
+          _id: user._id || user.id || 'unknown',
+          name: user.name || 'Admin User',
+          email: user.email,
+          role: user.role || 'admin'
+        });
+      }
+    } catch (error) {
+      console.error('Error setting up admin:', error.message);
+      // Don't set error state, just use default admin
+      setAdmin({
+        _id: 'default-admin',
+        name: 'Default Admin',
+        email: 'admin@example.com',
+        role: 'admin'
+      });
+    }
+  };
+
+  // Fetch courses with registrations
+  const fetchCoursesWithRegistrations = async () => {
+    try {
+      const response = await axios.get(`${BASE_URL}/admin/courses-with-registrations`, {
+        headers: {
+          ...getAuthHeaders(),
+          'Content-Type': 'application/json'
+        }
+      });
+      setCourses(response.data);
+    } catch (error) {
+      console.error('Error fetching courses with registrations:', error.message);
+      // Don't set error state, just use empty array
       setCourses([]);
     }
   };
 
-  // ✅ Fetch students
-  const fetchStudents = async () => {
+  // Fetch students with skills
+  const fetchStudentsWithSkills = async () => {
     try {
-      const res = await axios.get("/api/admin/students-with-skills");
-      setStudents(Array.isArray(res.data) ? res.data : []);
-    } catch (err) {
-      console.error("Failed to fetch students", err);
+      const response = await axios.get(`${BASE_URL}/admin/students-with-skills`, {
+        headers: {
+          ...getAuthHeaders(),
+          'Content-Type': 'application/json'
+        }
+      });
+      setStudents(response.data);
+    } catch (error) {
+      console.error('Error fetching students with skills:', error.message);
+      // Don't set error state, just use empty array
       setStudents([]);
     }
   };
 
-  // ✅ Fetch jobs
+  // Fetch jobs
   const fetchJobs = async () => {
     try {
-      const res = await axios.get("/api/admin/jobs");
-      setJobs(Array.isArray(res.data) ? res.data : []);
-    } catch (err) {
-      console.error("Failed to fetch jobs", err);
+      const response = await axios.get(`${BASE_URL}/admin/jobs`, {
+        headers: {
+          ...getAuthHeaders(),
+          'Content-Type': 'application/json'
+        }
+      });
+      setJobs(response.data);
+    } catch (error) {
+      console.error('Error fetching jobs:', error.message);
+      // Don't set error state, just use empty array
       setJobs([]);
     }
   };
 
-  // ✅ Student search
-  const handleSearch = () => {
-    const found = students.find(
-      (s) => s.name?.toLowerCase() === searchQuery.toLowerCase()
-    );
-    setSelectedStudent(found || null);
-  };
-
-  // ✅ Approve skill
-  const handleApprove = async (skillName) => {
-    if (!selectedStudent) return;
-    try {
-      await axios.post("/api/admin/verify-skill", {
-        studentId: selectedStudent._id,
-        skillName,
-      });
-      await fetchStudents();
-      setSelectedStudent((prev) => ({
-        ...prev,
-        skills: prev.skills.map((s) =>
-          s.name === skillName ? { ...s, verified: true } : s
-        ),
-      }));
-    } catch (err) {
-      console.error("Failed to verify skill", err);
-    }
-  };
-
-  // ✅ Create course
-  const handleCreateCourse = async (e) => {
+  // Create new course
+  const createCourse = async (e) => {
     e.preventDefault();
     try {
-      await axios.post("/api/admin/create-course", courseForm);
-      await fetchCourses();
-      setShowForm(false);
-      setCourseForm({
-        courseName: "",
-        courseId: "",
-        courseDuration: "",
-        courseFee: "",
-        courseDescription: "",
+      const response = await axios.post(`${BASE_URL}/admin/create-course`, newCourse, {
+        headers: {
+          ...getAuthHeaders(),
+          'Content-Type': 'application/json'
+        }
       });
-    } catch (err) {
-      console.error("Failed to create course", err);
+      
+      alert('Course created successfully!');
+      setNewCourse({ title: '', description: '', duration: '', prerequisites: '' });
+      fetchCoursesWithRegistrations(); // Refresh courses list
+    } catch (error) {
+      console.error('Error creating course:', error);
+      alert('Failed to create course. Please try again.');
     }
   };
 
-  // ====== UI ======
-  if (loading) {
-    return <p className="text-center p-6">Loading dashboard...</p>;
-  }
+  // Verify skill
+  const verifySkill = async (e) => {
+    e.preventDefault();
+    try {
+      const response = await axios.post(`${BASE_URL}/admin/verify-skill`, {
+        studentId: skillVerification.studentId,
+        skillName: skillVerification.skillName,
+        verified: skillVerification.verified
+      }, {
+        headers: {
+          ...getAuthHeaders(),
+          'Content-Type': 'application/json'
+        }
+      });
+      
+      alert('Skill verification updated successfully!');
+      setSkillVerification({ studentId: '', skillName: '', verified: false });
+      fetchStudentsWithSkills(); // Refresh students list
+    } catch (error) {
+      console.error('Error verifying skill:', error);
+      alert('Failed to verify skill. Please try again.');
+    }
+  };
 
-  if (error) {
+  // Load all data on component mount
+  useEffect(() => {
+    const loadData = async () => {
+      setLoading(true);
+      
+      await fetchAdmin();
+      await Promise.all([
+        fetchCoursesWithRegistrations(),
+        fetchStudentsWithSkills(),
+        fetchJobs()
+      ]);
+      
+      setLoading(false);
+    };
+
+    loadData();
+  }, []);
+
+  // Show loading state
+  if (loading) {
     return (
-      <p className="text-center text-red-500 p-6">
-        {error}. Please refresh.
-      </p>
+      <div className="min-h-screen bg-gray-50 flex items-center justify-center">
+        <div className="text-center">
+          <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-blue-600 mx-auto mb-4"></div>
+          <p className="text-gray-600">Loading admin dashboard...</p>
+        </div>
+      </div>
     );
   }
+
+  // Only show error state for critical errors, not network issues
+  if (error) {
+    return (
+      <div className="min-h-screen bg-gray-50 flex items-center justify-center">
+        <div className="text-center">
+          <AlertCircle className="h-12 w-12 text-red-500 mx-auto mb-4" />
+          <p className="text-red-600 mb-4">{error}</p>
+          <button 
+            onClick={() => window.location.reload()}
+            className="px-4 py-2 bg-blue-600 text-white rounded-md hover:bg-blue-700"
+          >
+            Retry
+          </button>
+        </div>
+      </div>
+    );
+  }
+
+  // Add network status indicator
+  const hasNetworkIssues = courses.length === 0 && students.length === 0 && jobs.length === 0;
 
   return (
     <div className="min-h-screen bg-gray-50">
-      {/* Header */}
-      <header className="flex justify-between items-center px-6 py-4 bg-white shadow">
-        <div className="flex items-center gap-2">
-          <div className="bg-red-600 text-white font-bold p-2 rounded-md">SV</div>
-          <h1 className="text-xl font-semibold">SkillVerify Admin</h1>
+      {/* Network Status Banner */}
+      {hasNetworkIssues && (
+        <div className="bg-yellow-50 border-l-4 border-yellow-400 p-4">
+          <div className="flex">
+            <div className="flex-shrink-0">
+              <AlertCircle className="h-5 w-5 text-yellow-400" />
+            </div>
+            <div className="ml-3">
+              <p className="text-sm text-yellow-700">
+                Unable to connect to the backend server. Some features may not work properly.
+                Please check your internet connection or try again later.
+              </p>
+            </div>
+          </div>
         </div>
-        <div className="flex items-center gap-4">
-          <span className="text-gray-600">Welcome, {adminName}</span>
-          <button
-            onClick={() => {
-              localStorage.removeItem("user");
-              window.location.href = "/login";
-            }}
-            className="px-4 py-2 border rounded bg-gray-100 hover:bg-gray-200"
-          >
-            Logout
-          </button>
-        </div>
-      </header>
+      )}
 
-      {/* Tabs */}
-      <div className="flex justify-center mt-4">
-        <div className="flex bg-gray-100 rounded-md overflow-hidden">
-          <button
-            onClick={() => setActiveTab("courses")}
-            className={`px-6 py-2 font-medium ${activeTab === "courses"
-                ? "bg-white shadow text-black"
-                : "text-gray-500 hover:text-black"
-              }`}
-          >
-            Manage Courses
-          </button>
-          <button
-            onClick={() => setActiveTab("jobs")}
-            className={`px-6 py-2 font-medium ${activeTab === "jobs"
-                ? "bg-white shadow text-black"
-                : "text-gray-500 hover:text-black"
-              }`}
-          >
-            Manage Jobs
-          </button>
+      {/* Header */}
+      <div className="bg-white shadow-sm border-b">
+        <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+          <div className="flex justify-between items-center py-6">
+            <div className="flex items-center">
+              <BarChart3 className="h-8 w-8 text-blue-600 mr-3" />
+              <h1 className="text-2xl font-bold text-gray-900">Admin Dashboard</h1>
+            </div>
+            {admin && (
+              <div className="flex items-center space-x-4">
+                <span className="text-sm text-gray-600">Welcome, {admin.name}</span>
+                <div className="h-8 w-8 bg-blue-600 rounded-full flex items-center justify-center">
+                  <span className="text-white text-sm font-medium">
+                    {admin.name?.charAt(0)?.toUpperCase() || 'A'}
+                  </span>
+                </div>
+              </div>
+            )}
+          </div>
         </div>
       </div>
 
-      <div className="px-6 mt-6">
-        {/* ===== COURSES ===== */}
-        {activeTab === "courses" && (
-          <>
-            <div className="flex justify-between items-center mb-4">
-              <h2 className="text-lg font-semibold">Courses</h2>
+      {/* Navigation Tabs */}
+      <div className="bg-white border-b">
+        <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+          <nav className="flex space-x-8">
+            {[
+              { id: 'dashboard', label: 'Dashboard', icon: BarChart3 },
+              { id: 'courses', label: 'Courses', icon: BookOpen },
+              { id: 'students', label: 'Students', icon: Users },
+              { id: 'jobs', label: 'Jobs', icon: Briefcase },
+              { id: 'actions', label: 'Actions', icon: PlusCircle }
+            ].map((tab) => (
               <button
-                onClick={() => setShowForm(true)}
-                className="flex items-center gap-2 bg-black text-white px-4 py-2 rounded hover:bg-gray-800"
+                key={tab.id}
+                onClick={() => setActiveTab(tab.id)}
+                className={`flex items-center px-3 py-4 text-sm font-medium border-b-2 ${
+                  activeTab === tab.id
+                    ? 'border-blue-600 text-blue-600'
+                    : 'border-transparent text-gray-500 hover:text-gray-700 hover:border-gray-300'
+                }`}
               >
-                + Add Course
+                <tab.icon className="h-4 w-4 mr-2" />
+                {tab.label}
               </button>
-            </div>
+            ))}
+          </nav>
+        </div>
+      </div>
 
-            {/* Course Cards */}
-            {courses.length > 0 ? (
-              <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6 mb-6">
-                {courses.map((course, i) => (
-                  <div
-                    key={i}
-                    className="bg-white p-4 rounded-lg shadow border flex flex-col justify-between"
-                  >
-                    <div>
-                      <h3 className="font-semibold">{course.courseName}</h3>
-                      <p className="text-gray-500 text-sm mt-1">
-                        {course.courseDescription}
-                      </p>
-                    </div>
-                    <div className="flex justify-between items-center mt-4">
-                      <span className="text-green-600 font-semibold">
-                        ₹{course.courseFee}
-                      </span>
-                      <span className="px-3 py-1 border rounded text-sm bg-gray-50">
-                        {course.registrations || 0} registrations
-                      </span>
-                    </div>
-                  </div>
-                ))}
-              </div>
-            ) : (
-              <p className="text-gray-500">No courses available</p>
-            )}
-
-            {/* Course Form */}
-            {showForm && (
-              <div className="bg-white p-6 rounded-lg shadow border mb-6">
-                <h2 className="text-lg font-semibold mb-4">Create New Course</h2>
-                <form className="space-y-4" onSubmit={handleCreateCourse}>
-                  <input
-                    type="text"
-                    value={courseForm.courseName}
-                    onChange={(e) =>
-                      setCourseForm({ ...courseForm, courseName: e.target.value })
-                    }
-                    placeholder="Course Title"
-                    className="w-full border rounded px-3 py-2"
-                  />
-                  <input
-                    type="text"
-                    value={courseForm.courseId}
-                    onChange={(e) =>
-                      setCourseForm({ ...courseForm, courseId: e.target.value })
-                    }
-                    placeholder="Course ID"
-                    className="w-full border rounded px-3 py-2"
-                  />
-                  <input
-                    type="text"
-                    value={courseForm.courseDuration}
-                    onChange={(e) =>
-                      setCourseForm({
-                        ...courseForm,
-                        courseDuration: e.target.value,
-                      })
-                    }
-                    placeholder="Duration"
-                    className="w-full border rounded px-3 py-2"
-                  />
-                  <input
-                    type="number"
-                    value={courseForm.courseFee}
-                    onChange={(e) =>
-                      setCourseForm({ ...courseForm, courseFee: e.target.value })
-                    }
-                    placeholder="Fee"
-                    className="w-full border rounded px-3 py-2"
-                  />
-                  <textarea
-                    rows="3"
-                    value={courseForm.courseDescription}
-                    onChange={(e) =>
-                      setCourseForm({
-                        ...courseForm,
-                        courseDescription: e.target.value,
-                      })
-                    }
-                    placeholder="Description"
-                    className="w-full border rounded px-3 py-2"
-                  />
-                  <div className="flex gap-3">
-                    <button
-                      type="submit"
-                      className="bg-black text-white px-4 py-2 rounded hover:bg-gray-800"
-                    >
-                      Create Course
-                    </button>
-                    <button
-                      type="button"
-                      onClick={() => setShowForm(false)}
-                      className="px-4 py-2 border rounded bg-gray-100 hover:bg-gray-200"
-                    >
-                      Cancel
-                    </button>
-                  </div>
-                </form>
-              </div>
-            )}
-
-            {/* Students */}
-            <div className="bg-white p-6 rounded-lg shadow border">
-              <h2 className="text-lg font-semibold mb-4">Manage Students</h2>
-              <div className="flex gap-3 mb-4">
-                <input
-                  type="text"
-                  value={searchQuery}
-                  onChange={(e) => setSearchQuery(e.target.value)}
-                  placeholder="Search student by name"
-                  className="flex-1 border rounded px-3 py-2"
-                />
-                <button
-                  onClick={handleSearch}
-                  className="bg-black text-white px-4 py-2 rounded hover:bg-gray-800"
-                >
-                  Search
-                </button>
-              </div>
-              {selectedStudent ? (
-                <div className="border p-4 rounded bg-gray-50">
-                  <h3 className="font-semibold text-lg">{selectedStudent.name}</h3>
-                  <p className="text-gray-600 mt-1">Skills:</p>
-                  <ul className="list-disc pl-5 text-sm text-gray-700 mb-3">
-                    {selectedStudent.skills?.map((skill, i) => (
-                      <li key={i}>
-                        {skill.name}{" "}
-                        {skill.verified ? (
-                          <span className="text-green-600">(Verified)</span>
-                        ) : (
-                          <button
-                            onClick={() => handleApprove(skill.name)}
-                            className="ml-2 text-sm bg-green-600 text-white px-2 py-1 rounded"
-                          >
-                            Verify
-                          </button>
-                        )}
-                      </li>
-                    ))}
-                  </ul>
+      {/* Content */}
+      <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
+        {activeTab === 'dashboard' && (
+          <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6 mb-8">
+            <div className="bg-white p-6 rounded-lg shadow">
+              <div className="flex items-center">
+                <BookOpen className="h-8 w-8 text-blue-600" />
+                <div className="ml-4">
+                  <p className="text-sm font-medium text-gray-600">Total Courses</p>
+                  <p className="text-2xl font-bold text-gray-900">{courses.length}</p>
                 </div>
-              ) : (
-                <p className="text-gray-500">No student selected</p>
-              )}
+              </div>
             </div>
-          </>
+            <div className="bg-white p-6 rounded-lg shadow">
+              <div className="flex items-center">
+                <Users className="h-8 w-8 text-green-600" />
+                <div className="ml-4">
+                  <p className="text-sm font-medium text-gray-600">Total Students</p>
+                  <p className="text-2xl font-bold text-gray-900">{students.length}</p>
+                </div>
+              </div>
+            </div>
+            <div className="bg-white p-6 rounded-lg shadow">
+              <div className="flex items-center">
+                <Briefcase className="h-8 w-8 text-purple-600" />
+                <div className="ml-4">
+                  <p className="text-sm font-medium text-gray-600">Available Jobs</p>
+                  <p className="text-2xl font-bold text-gray-900">{jobs.length}</p>
+                </div>
+              </div>
+            </div>
+            <div className="bg-white p-6 rounded-lg shadow">
+              <div className="flex items-center">
+                <CheckCircle className="h-8 w-8 text-orange-600" />
+                <div className="ml-4">
+                  <p className="text-sm font-medium text-gray-600">Verified Skills</p>
+                  <p className="text-2xl font-bold text-gray-900">
+                    {students.reduce((acc, student) => acc + (student.skills?.length || 0), 0)}
+                  </p>
+                </div>
+              </div>
+            </div>
+          </div>
         )}
 
-        {/* ===== JOBS ===== */}
-        {activeTab === "jobs" && (
-          <div>
-            <h2 className="text-lg font-semibold mb-4">Jobs</h2>
-            {jobs.length > 0 ? (
-              <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
-                {jobs.map((job, i) => (
-                  <div
-                    key={i}
-                    className="bg-white p-4 rounded-lg shadow border flex flex-col justify-between"
-                  >
-                    <div>
-                      <h3 className="font-semibold">{job.title}</h3>
-                      <p className="text-gray-500 text-sm mt-1">
-                        {job.description}
-                      </p>
-                    </div>
-                    <div className="flex justify-between items-center mt-4 text-sm">
-                      <span className="text-blue-600">{job.company}</span>
-                      <span className="text-gray-500">
-                        Posted by {job.postedBy?.name || "Admin"}
+        {activeTab === 'courses' && (
+          <div className="bg-white shadow rounded-lg">
+            <div className="px-4 py-5 sm:p-6">
+              <h3 className="text-lg leading-6 font-medium text-gray-900 mb-4">Courses with Registrations</h3>
+              <div className="grid gap-4">
+                {courses.map((course) => (
+                  <div key={course._id} className="border rounded-lg p-4">
+                    <h4 className="font-semibold text-gray-900">{course.title}</h4>
+                    <p className="text-gray-600 mt-1">{course.description}</p>
+                    <div className="mt-2 flex items-center justify-between">
+                      <span className="text-sm text-gray-500">
+                        Registrations: {course.registrations || 0}
+                      </span>
+                      <span className="px-2 py-1 bg-blue-100 text-blue-800 rounded-full text-xs">
+                        Active
                       </span>
                     </div>
                   </div>
                 ))}
+                {courses.length === 0 && (
+                  <p className="text-gray-500 text-center py-8">
+                    {hasNetworkIssues ? 'Unable to load courses - check network connection' : 'No courses available'}
+                  </p>
+                )}
               </div>
-            ) : (
-              <p className="text-gray-500">No jobs available</p>
-            )}
+            </div>
+          </div>
+        )}
+
+        {activeTab === 'students' && (
+          <div className="bg-white shadow rounded-lg">
+            <div className="px-4 py-5 sm:p-6">
+              <h3 className="text-lg leading-6 font-medium text-gray-900 mb-4">Students with Skills</h3>
+              <div className="grid gap-4">
+                {students.map((student) => (
+                  <div key={student._id} className="border rounded-lg p-4">
+                    <h4 className="font-semibold text-gray-900">{student.name}</h4>
+                    <p className="text-gray-600">{student.email}</p>
+                    <div className="mt-2">
+                      <p className="text-sm font-medium text-gray-700">Skills:</p>
+                      <div className="flex flex-wrap gap-2 mt-1">
+                        {student.skills && student.skills.length > 0 ? (
+                          student.skills.map((skill, index) => (
+                            <span key={index} className="px-2 py-1 bg-green-100 text-green-800 rounded-full text-xs">
+                              {skill}
+                            </span>
+                          ))
+                        ) : (
+                          <span className="text-gray-400 text-sm">No skills verified</span>
+                        )}
+                      </div>
+                    </div>
+                  </div>
+                ))}
+                {students.length === 0 && (
+                  <p className="text-gray-500 text-center py-8">
+                    {hasNetworkIssues ? 'Unable to load students - check network connection' : 'No students found'}
+                  </p>
+                )}
+              </div>
+            </div>
+          </div>
+        )}
+
+        {activeTab === 'jobs' && (
+          <div className="bg-white shadow rounded-lg">
+            <div className="px-4 py-5 sm:p-6">
+              <h3 className="text-lg leading-6 font-medium text-gray-900 mb-4">Available Jobs</h3>
+              <div className="grid gap-4">
+                {jobs.map((job) => (
+                  <div key={job._id} className="border rounded-lg p-4">
+                    <h4 className="font-semibold text-gray-900">{job.title}</h4>
+                    <p className="text-gray-600">{job.company}</p>
+                    <div className="mt-2">
+                      <p className="text-sm font-medium text-gray-700">Requirements:</p>
+                      <div className="flex flex-wrap gap-2 mt-1">
+                        {job.requirements && job.requirements.length > 0 ? (
+                          job.requirements.map((req, index) => (
+                            <span key={index} className="px-2 py-1 bg-purple-100 text-purple-800 rounded-full text-xs">
+                              {req}
+                            </span>
+                          ))
+                        ) : (
+                          <span className="text-gray-400 text-sm">No requirements listed</span>
+                        )}
+                      </div>
+                    </div>
+                  </div>
+                ))}
+                {jobs.length === 0 && (
+                  <p className="text-gray-500 text-center py-8">
+                    {hasNetworkIssues ? 'Unable to load jobs - check network connection' : 'No jobs available'}
+                  </p>
+                )}
+              </div>
+            </div>
+          </div>
+        )}
+
+        {activeTab === 'actions' && (
+          <div className="grid grid-cols-1 lg:grid-cols-2 gap-8">
+            {/* Create Course Form */}
+            <div className="bg-white shadow rounded-lg">
+              <div className="px-4 py-5 sm:p-6">
+                <h3 className="text-lg leading-6 font-medium text-gray-900 mb-4">Create New Course</h3>
+                <form onSubmit={createCourse} className="space-y-4">
+                  <div>
+                    <label className="block text-sm font-medium text-gray-700">Course Title</label>
+                    <input
+                      type="text"
+                      required
+                      value={newCourse.title}
+                      onChange={(e) => setNewCourse({ ...newCourse, title: e.target.value })}
+                      className="mt-1 block w-full border border-gray-300 rounded-md px-3 py-2 focus:outline-none focus:ring-blue-500 focus:border-blue-500"
+                    />
+                  </div>
+                  <div>
+                    <label className="block text-sm font-medium text-gray-700">Description</label>
+                    <textarea
+                      required
+                      value={newCourse.description}
+                      onChange={(e) => setNewCourse({ ...newCourse, description: e.target.value })}
+                      className="mt-1 block w-full border border-gray-300 rounded-md px-3 py-2 focus:outline-none focus:ring-blue-500 focus:border-blue-500"
+                      rows={3}
+                    />
+                  </div>
+                  <div>
+                    <label className="block text-sm font-medium text-gray-700">Duration</label>
+                    <input
+                      type="text"
+                      value={newCourse.duration}
+                      onChange={(e) => setNewCourse({ ...newCourse, duration: e.target.value })}
+                      placeholder="e.g., 4 weeks"
+                      className="mt-1 block w-full border border-gray-300 rounded-md px-3 py-2 focus:outline-none focus:ring-blue-500 focus:border-blue-500"
+                    />
+                  </div>
+                  <div>
+                    <label className="block text-sm font-medium text-gray-700">Prerequisites</label>
+                    <input
+                      type="text"
+                      value={newCourse.prerequisites}
+                      onChange={(e) => setNewCourse({ ...newCourse, prerequisites: e.target.value })}
+                      placeholder="e.g., Basic programming knowledge"
+                      className="mt-1 block w-full border border-gray-300 rounded-md px-3 py-2 focus:outline-none focus:ring-blue-500 focus:border-blue-500"
+                    />
+                  </div>
+                  <button
+                    type="submit"
+                    className="w-full flex justify-center py-2 px-4 border border-transparent rounded-md shadow-sm text-sm font-medium text-white bg-blue-600 hover:bg-blue-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-blue-500"
+                  >
+                    Create Course
+                  </button>
+                </form>
+              </div>
+            </div>
+
+            {/* Skill Verification Form */}
+            <div className="bg-white shadow rounded-lg">
+              <div className="px-4 py-5 sm:p-6">
+                <h3 className="text-lg leading-6 font-medium text-gray-900 mb-4">Verify Student Skill</h3>
+                <form onSubmit={verifySkill} className="space-y-4">
+                  <div>
+                    <label className="block text-sm font-medium text-gray-700">Student ID</label>
+                    <input
+                      type="text"
+                      required
+                      value={skillVerification.studentId}
+                      onChange={(e) => setSkillVerification({ ...skillVerification, studentId: e.target.value })}
+                      className="mt-1 block w-full border border-gray-300 rounded-md px-3 py-2 focus:outline-none focus:ring-blue-500 focus:border-blue-500"
+                    />
+                  </div>
+                  <div>
+                    <label className="block text-sm font-medium text-gray-700">Skill Name</label>
+                    <input
+                      type="text"
+                      required
+                      value={skillVerification.skillName}
+                      onChange={(e) => setSkillVerification({ ...skillVerification, skillName: e.target.value })}
+                      className="mt-1 block w-full border border-gray-300 rounded-md px-3 py-2 focus:outline-none focus:ring-blue-500 focus:border-blue-500"
+                    />
+                  </div>
+                  <div className="flex items-center">
+                    <input
+                      type="checkbox"
+                      checked={skillVerification.verified}
+                      onChange={(e) => setSkillVerification({ ...skillVerification, verified: e.target.checked })}
+                      className="h-4 w-4 text-blue-600 focus:ring-blue-500 border-gray-300 rounded"
+                    />
+                    <label className="ml-2 block text-sm text-gray-900">
+                      Mark as verified
+                    </label>
+                  </div>
+                  <button
+                    type="submit"
+                    className="w-full flex justify-center py-2 px-4 border border-transparent rounded-md shadow-sm text-sm font-medium text-white bg-green-600 hover:bg-green-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-green-500"
+                  >
+                    Update Skill Verification
+                  </button>
+                </form>
+              </div>
+            </div>
           </div>
         )}
       </div>
-
-      {/* Footer */}
-      <footer className="flex justify-end px-6 py-4">
-        <span className="text-sm text-gray-500 flex items-center gap-1">
-          Koder Spark<span className="font-bold">Pvt Ltd</span>
-        </span>
-      </footer>
     </div>
   );
-}
+};
+
+export default Admin;
