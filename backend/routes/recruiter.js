@@ -8,10 +8,13 @@ router.get("/profile", async (req, res) => {
   try {
     const { email } = req.query;
     if (!email) return res.status(400).json({ message: "Email is required" });
+
     const recruiter = await Recruiter.findOne({ email: email.toLowerCase().trim() });
     if (!recruiter) return res.status(404).json({ message: "Recruiter not found" });
+
     res.json(recruiter);
   } catch (err) {
+    console.error("Profile fetch error:", err);
     res.status(500).json({ message: "Server error", error: err.message });
   }
 });
@@ -27,8 +30,10 @@ router.post("/profile", async (req, res) => {
       { name, companyName, position, phone, bio },
       { new: true, upsert: true, runValidators: true }
     );
+
     res.json({ message: "Profile saved successfully", recruiter });
   } catch (err) {
+    console.error("Profile save error:", err);
     if (err.code === 11000) return res.status(400).json({ message: "Email already exists" });
     res.status(500).json({ message: "Server error", error: err.message });
   }
@@ -46,6 +51,7 @@ router.get("/jobs", async (req, res) => {
     const jobs = await Job.find({ postedBy: recruiter._id }).sort({ postedAt: -1 });
     res.json(jobs);
   } catch (err) {
+    console.error("Jobs fetch error:", err);
     res.status(500).json({ message: "Failed to fetch jobs", error: err.message });
   }
 });
@@ -66,7 +72,7 @@ router.post("/create-job", async (req, res) => {
       description,
       location,
       salary,
-      skillsRequired,
+      skills: skillsRequired?.split(",").map(s => s.trim()) || [],
       postedBy: recruiter._id,
       postedByEmail: recruiter.email
     });
@@ -74,6 +80,7 @@ router.post("/create-job", async (req, res) => {
     await job.save();
     res.json({ message: "Job created successfully", job });
   } catch (err) {
+    console.error("Job creation error:", err);
     res.status(500).json({ message: "Failed to create job", error: err.message });
   }
 });
