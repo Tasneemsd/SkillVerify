@@ -1,47 +1,81 @@
 const express = require("express");
 const router = express.Router();
 const Recruiter = require("../models/Recruiter");
+const Job = require("../models/Job");
+const Student = require("../models/Student");
+const jwt = require("jsonwebtoken");
 
-// GET recruiter profile
-router.get("/profile", async (req, res) => {
+// Middleware to verify recruiter JWT
+const verifyRecruiter = async (req, res, next) => {
   try {
-    const { email } = req.query;
-    if (!email) return res.status(400).json({ message: "Email is required" });
+    const token = req.headers.authorization?.split(" ")[1];
+    if (!token) return res.status(401).json({ message: "No token provided" });
+    const decoded = jwt.verify(token, process.env.JWT_SECRET);
+    if (decoded.role !== "recruiter") return res.status(403).json({ message: "Only recruiters allowed" });
+    req.recruiterEmail = decoded.email;
+    next();
+  } catch (err) {
+    return res.status(401).json({ message: "Invalid token", error: err.message });
+  }
+};
 
-    const recruiter = await Recruiter.findOne({ email: email.toLowerCase().trim() });
+// GET /api/recruiter/profile
+router.get("/profile", verifyRecruiter, async (req, res) => {
+  try {
+    const recruiter = await Recruiter.findOne({ email: req.recruiterEmail });
     if (!recruiter) return res.status(404).json({ message: "Recruiter not found" });
-
     res.json(recruiter);
   } catch (err) {
-    console.error("Error fetching recruiter:", err.message);
     res.status(500).json({ message: "Server error", error: err.message });
   }
 });
 
-// POST /profile - create or update recruiter
-router.post("/profile", async (req, res) => {
+// POST /api/recruiter/profile - create/update profile
+router.post("/profile", verifyRecruiter, async (req, res) => {
   try {
-    const { email, name, companyName, position, phone, bio } = req.body;
-    if (!email) return res.status(400).json({ message: "Email is required" });
-
-    const normalizedEmail = email.toLowerCase().trim();
-
+    const { name, companyName, position, phone, bio } = req.body;
     const recruiter = await Recruiter.findOneAndUpdate(
-      { email: normalizedEmail },
-      { $set: { name, email: normalizedEmail, companyName, position, phone, bio } },
-      { new: true, upsert: true, runValidators: true } // ✅ upsert creates new if not exists
+      { email: req.recruiterEmail },
+      { $set: { name, companyName, position, phone, bio } },
+      { new: true, upsert: true, runValidators: true }
     );
-
-    res.json({ message: "Recruiter profile saved successfully", recruiter });
+    res.json({ message: "Profile saved", recruiter });
   } catch (err) {
-    console.error("Error updating recruiter:", err.message);
-
-    // Handle duplicate key error gracefully
-    if (err.code === 11000) {
-      return res.status(400).json({ message: "Email already exists" });
-    }
-
+    if (err.code === 11000) return res.status(400).json({ message: "Email already exists" });
     res.status(500).json({ message: "Server error", error: err.message });
+  }
+});
+
+// GET /api/recruiter/jobs - jobs posted by this recruiter
+router.get("/jobs", verifyRecruiter, async (req, res) => {
+  try {
+    const recruiter = await Recruiter.findOne({ email: req.recruiterEmail });
+    const jobs = await Job.find({ postedBy: recruiter._id }).sort({ postedAt: -1 });
+    res.json(jobs);
+  } catch (err) {
+    res.status(500).json({ message: "Failed to fetch jobs", error: err.message });
+  }
+});
+
+// POST /api/recruiter/jobs - post new job
+router.post("/jobs", verifyRecruiter, async (req, res) => {
+  try {
+    const recruiter = await Recruiter.findOne({ email: req.recruiterEmail });
+    const job = new Job({ ...req.body, postedBy: recruiter._id, postedByEmail: recruiter.email });
+    await job.save();
+    res.json({ message: "Job posted successfully", job });
+  } catch (err) {
+    res.status(500).json({ message: "Failed to post job", error: err.message });
+  }
+});
+
+// GET /api/recruiter/candidates - all students
+router.get("/candidates", verifyRecruiter, async (req, res) => {
+  try {
+    const students = await Student.find().select("name email appliedJob skills");
+    res.json(students);
+  } catch (err) {
+    res.status(500).json({ message: "Failed to fetch candidates", error: err.message });
   }
 });
 
