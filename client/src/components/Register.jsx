@@ -1,6 +1,6 @@
 import React, { useState } from "react";
 import { Link } from "react-router-dom";
-import API from "../api"; // 👈 import your API instance
+import API from "../api"; // 👈 your API instance
 
 export default function Register() {
   const [form, setForm] = useState({
@@ -67,7 +67,7 @@ export default function Register() {
 
         {/* Left Side - Illustration */}
         <div
-          className="hidden md:flex flex-1 bg-cover bg-center"
+          className="hidden md:flex flex-1 bg-cover bg-center min-h-[300px]"
           style={{
             backgroundImage:
               "url('https://storage.googleapis.com/joblist-content/hero-images/Work-Abroad-for-a-Year.png')",
@@ -75,7 +75,7 @@ export default function Register() {
         ></div>
 
         {/* Right Side - Register Form */}
-        <div className="flex flex-col justify-center p-6 md:p-10 flex-1 overflow-y-auto">
+        <div className="flex flex-col justify-center p-6 md:p-10 flex-1 overflow-y-auto min-h-[400px]">
           {/* Header */}
           <div className="text-center mb-6 md:mb-8">
             <h2 className="text-2xl md:text-3xl font-bold text-gray-800">

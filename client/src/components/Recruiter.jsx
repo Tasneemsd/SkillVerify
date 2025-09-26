@@ -180,7 +180,7 @@ const Recruiter = () => {
   return (
     <div className="min-h-screen bg-gray-50">
       {/* Header */}
-      <div className="bg-white shadow-sm border-b">
+      <div className="bg-white shadow-sm border-b sticky top-0 z-50">
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 flex justify-between items-center py-6">
           <div className="flex items-center">
             <Briefcase className="h-8 w-8 text-blue-600 mr-3" />
