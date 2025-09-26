@@ -31,21 +31,23 @@ export default function Student() {
       try {
         setLoading(true);
 
+        // Fetch student profile
         const studentRes = await axios.get(
           `${API_URL}?email=${encodeURIComponent(studentEmail)}`,
           { headers: { Authorization: `Bearer ${token}` } }
         );
         setStudent(studentRes.data);
 
+        // Fetch all courses
         const coursesRes = await axios.get(COURSES_URL);
         setAllCourses(coursesRes.data);
 
-        if (studentRes.data._id) {
-          const appsRes = await axios.get(`${APP_URL}/${studentRes.data._id}`, {
-            headers: { Authorization: `Bearer ${token}` },
-          });
-          setApplications(appsRes.data || []);
-        }
+        // ✅ FIXED: Fetch applications by studentEmail instead of student._id
+        const appsRes = await axios.get(
+          `${APP_URL}?studentEmail=${encodeURIComponent(studentEmail)}`,
+          { headers: { Authorization: `Bearer ${token}` } }
+        );
+        setApplications(appsRes.data || []);
       } catch (err) {
         console.error(err);
         setError(err.response?.data?.message || "Failed to fetch data");
@@ -66,7 +68,10 @@ export default function Student() {
         );
         setNotifications(res.data);
       } catch (err) {
-        console.error("Error fetching notifications:", err.response?.data || err.message);
+        console.error(
+          "Error fetching notifications:",
+          err.response?.data || err.message
+        );
       }
     };
 
@@ -124,10 +129,13 @@ export default function Student() {
     <div className="min-h-screen bg-gray-50">
       {/* Header */}
       <header className="bg-white shadow px-4 sm:px-6 py-4 flex flex-col sm:flex-row justify-between items-center sticky top-0 z-10 gap-3 sm:gap-0">
-        <h1 className="text-xl sm:text-2xl font-bold text-blue-600">SkillVerify</h1>
+        <h1 className="text-xl sm:text-2xl font-bold text-blue-600">
+          SkillVerify
+        </h1>
         <div className="text-gray-600 flex flex-col sm:flex-row items-center gap-2 sm:gap-4">
           <span>
-            Welcome, <span className="font-semibold">{student?.name || "Student"}</span>
+            Welcome,{" "}
+            <span className="font-semibold">{student?.name || "Student"}</span>
           </span>
           <button
             onClick={handleLogout}
@@ -141,7 +149,14 @@ export default function Student() {
       {/* Tabs */}
       <div className="max-w-5xl mx-auto mt-6 border-b border-gray-200 px-4 sm:px-0 overflow-x-auto">
         <div className="flex flex-nowrap gap-3 sm:gap-4">
-          {["profile", "skills", "registeredCourses", "courses", "notifications", "applications"].map((tab) => (
+          {[
+            "profile",
+            "skills",
+            "registeredCourses",
+            "courses",
+            "notifications",
+            "applications",
+          ].map((tab) => (
             <button
               key={tab}
               onClick={() => setActiveTab(tab)}
@@ -161,7 +176,6 @@ export default function Student() {
           ))}
         </div>
       </div>
-
       {/* Tab Content */}
       <div className="max-w-5xl mx-auto mt-6 px-4 sm:px-0 space-y-6">
         {/* Profile */}
@@ -357,7 +371,6 @@ export default function Student() {
           </div>
         )}
 
-        {/* Applications */}
         {activeTab === "applications" && (
           <div>
             {applications.length > 0 ? (
@@ -375,8 +388,8 @@ export default function Student() {
                       app.status === "hired"
                         ? "text-green-600"
                         : app.status === "rejected"
-                          ? "text-red-600"
-                          : "text-yellow-600"
+                        ? "text-red-600"
+                        : "text-yellow-600"
                     }
                   >
                     {app.status}
@@ -388,7 +401,6 @@ export default function Student() {
             )}
           </div>
         )}
-
       </div>
     </div>
   );
