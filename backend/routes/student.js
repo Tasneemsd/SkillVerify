@@ -31,7 +31,7 @@ router.post("/register", async (req, res) => {
 
     await newStudent.save();
 
-    res.status(201).json({ message: "Student registered successfully!" });
+    res.status(201).json({ message: "Student registered successfully!", student: newStudent });
   } catch (err) {
     console.error(err);
     res.status(500).json({ message: "Server error" });
@@ -103,7 +103,7 @@ router.get("/", async (req, res) => {
   }
 });
 
-// --- GET STUDENT BY ID (optional, if needed) ---
+// --- GET STUDENT BY ID ---
 router.get("/:id", async (req, res) => {
   try {
     const student = await Student.findById(req.params.id).populate("registeredCourses");

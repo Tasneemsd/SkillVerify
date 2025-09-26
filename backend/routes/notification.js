@@ -2,13 +2,13 @@ const express = require("express");
 const Notification = require("../models/Notification");
 const router = express.Router();
 
-// GET /api/notification?studentEmail=...
+// GET /api/notification?studentId=...
 router.get("/", async (req, res) => {
   try {
-    const { studentEmail } = req.query;
-    if (!studentEmail) return res.status(400).json({ message: "Student email required" });
+    const { studentId } = req.query;
+    if (!studentId) return res.status(400).json({ message: "studentId required" });
 
-    const notifications = await Notification.find({ studentEmail }).sort({ createdAt: -1 });
+    const notifications = await Notification.find({ student: studentId }).sort({ createdAt: -1 });
     res.json(notifications);
   } catch (err) {
     console.error(err);

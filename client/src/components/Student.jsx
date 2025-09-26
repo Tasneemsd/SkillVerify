@@ -19,13 +19,12 @@ export default function Student() {
   const NOTIF_URL = "https://skillverify.onrender.com/api/notification";
 
   const user = JSON.parse(localStorage.getItem("user"));
-  const studentEmail = user?.email;
   const token = localStorage.getItem("userToken");
 
   // Redirect if not logged in
   useEffect(() => {
-    if (!studentEmail) navigate("/login");
-  }, [studentEmail, navigate]);
+    if (!user?.email) navigate("/login");
+  }, [user, navigate]);
 
   // Fetch student profile, courses, applications
   useEffect(() => {
@@ -33,23 +32,24 @@ export default function Student() {
       try {
         setLoading(true);
 
-        // ✅ Student profile
+        // Student profile
         const studentRes = await axios.get(
-          `${API_URL}?email=${encodeURIComponent(studentEmail)}`,
+          `${API_URL}?email=${encodeURIComponent(user.email)}`,
           { headers: { Authorization: `Bearer ${token}` } }
         );
         setStudent(studentRes.data);
 
-        // ✅ All courses
+        // All courses
         const coursesRes = await axios.get(COURSES_URL);
         setAllCourses(coursesRes.data);
 
-        // ✅ Applications by student email
-        const appsRes = await axios.get(
-          `${APP_URL}?studentEmail=${encodeURIComponent(studentEmail)}`,
-          { headers: { Authorization: `Bearer ${token}` } }
-        );
-        setApplications(appsRes.data || []);
+        // Applications by studentId
+        if (studentRes.data._id) {
+          const appsRes = await axios.get(`${APP_URL}?studentId=${studentRes.data._id}`, {
+            headers: { Authorization: `Bearer ${token}` },
+          });
+          setApplications(appsRes.data || []);
+        }
       } catch (err) {
         console.error(err);
         setError(err.response?.data?.message || "Failed to fetch data");
@@ -58,25 +58,24 @@ export default function Student() {
       }
     };
 
-    if (studentEmail) fetchData();
-  }, [studentEmail, token]);
+    if (user?.email) fetchData();
+  }, [user, token]);
 
   // Fetch notifications when tab active
   useEffect(() => {
     const fetchNotifications = async () => {
       try {
-        const res = await axios.get(
-          `${NOTIF_URL}?studentEmail=${studentEmail}`,
-          { headers: { Authorization: `Bearer ${token}` } }
-        );
+        if (!student?._id) return;
+        const res = await axios.get(`${NOTIF_URL}?studentId=${student._id}`, {
+          headers: { Authorization: `Bearer ${token}` },
+        });
         setNotifications(res.data || []);
       } catch (err) {
         console.error("Error fetching notifications:", err.response?.data || err.message);
       }
     };
-
     if (activeTab === "notifications") fetchNotifications();
-  }, [activeTab, studentEmail, token]);
+  }, [activeTab, student, token]);
 
   const handleLogout = () => {
     localStorage.removeItem("user");
@@ -88,13 +87,11 @@ export default function Student() {
     try {
       const res = await axios.post(
         `${API_URL}/enroll`,
-        { courseId, email: studentEmail },
+        { courseId, email: user.email },
         { headers: { Authorization: `Bearer ${token}` } }
       );
 
       alert(res.data.message || "Enrolled successfully!");
-
-      // Update student state locally
       const enrolledCourse = allCourses.find((c) => c._id === courseId);
       if (enrolledCourse) {
         setStudent((prev) => ({
@@ -323,9 +320,7 @@ export default function Student() {
               notifications.map((n) => (
                 <div key={n._id} className="bg-white p-3 shadow rounded mb-2">
                   <p>{n.message}</p>
-                  {n.adminMessage && (
-                    <p className="text-sm text-gray-500">{n.adminMessage}</p>
-                  )}
+                  {n.adminMessage && <p className="text-sm text-gray-500">{n.adminMessage}</p>}
                 </div>
               ))
             ) : (

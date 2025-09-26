@@ -10,6 +10,7 @@ router.get("/", async (req, res) => {
   try {
     const { studentId } = req.query;
     if (!studentId) return res.status(400).json({ message: "studentId required" });
+
     const applications = await Application.find({ student: studentId });
     res.json(applications);
   } catch (err) {
@@ -22,17 +23,23 @@ router.post("/", async (req, res) => {
   try {
     const token = req.headers.authorization?.split(" ")[1];
     if (!token) return res.status(401).json({ message: "No token provided" });
+
     const decoded = jwt.verify(token, process.env.JWT_SECRET);
     if (decoded.role !== "student") return res.status(403).json({ message: "Only students can apply" });
+
     const student = await Student.findOne({ email: decoded.email });
     if (!student) return res.status(404).json({ message: "Student not found" });
+
     const { jobId } = req.body;
     if (!jobId) return res.status(400).json({ message: "Job ID required" });
+
     const job = await Job.findById(jobId);
     if (!job) return res.status(404).json({ message: "Job not found" });
+
     // Prevent duplicate applications
     const existing = await Application.findOne({ job: jobId, student: student._id });
     if (existing) return res.status(409).json({ message: "Already applied to this job" });
+
     const app = new Application({ job: jobId, student: student._id });
     await app.save();
     res.json({ message: "Application submitted", application: app });
@@ -46,14 +53,16 @@ router.get("/job/:jobId", async (req, res) => {
   try {
     const token = req.headers.authorization?.split(" ")[1];
     if (!token) return res.status(401).json({ message: "No token provided" });
+
     const decoded = jwt.verify(token, process.env.JWT_SECRET);
     if (decoded.role !== "recruiter") return res.status(403).json({ message: "Only recruiters can view applications" });
+
     const job = await Job.findById(req.params.jobId);
     if (!job) return res.status(404).json({ message: "Job not found" });
-    // Only allow recruiter who posted the job
-    if (String(job.postedBy) !== String(decoded.id)) {
+
+    if (String(job.postedBy) !== String(decoded.id))
       return res.status(403).json({ message: "You can only view applications for your own jobs" });
-    }
+
     const applications = await Application.find({ job: job._id }).populate("student");
     res.json(applications);
   } catch (err) {
@@ -62,25 +71,29 @@ router.get("/job/:jobId", async (req, res) => {
 });
 
 // PATCH /api/applications/:id/status - recruiter updates application status
-router.patch('/:id/status', async (req, res) => {
+router.patch("/:id/status", async (req, res) => {
   try {
-    const token = req.headers.authorization?.split(' ')[1];
-    if (!token) return res.status(401).json({ message: 'No token provided' });
+    const token = req.headers.authorization?.split(" ")[1];
+    if (!token) return res.status(401).json({ message: "No token provided" });
+
     const decoded = jwt.verify(token, process.env.JWT_SECRET);
-    if (decoded.role !== 'recruiter') return res.status(403).json({ message: 'Only recruiters can update status' });
+    if (decoded.role !== "recruiter") return res.status(403).json({ message: "Only recruiters can update status" });
+
     const { status } = req.body;
-    if (!['accepted', 'rejected'].includes(status)) return res.status(400).json({ message: 'Invalid status' });
-    const app = await Application.findById(req.params.id).populate('job');
-    if (!app) return res.status(404).json({ message: 'Application not found' });
-    // Only allow recruiter who posted the job
-    if (String(app.job.postedBy) !== String(decoded.id)) {
-      return res.status(403).json({ message: 'You can only update applications for your own jobs' });
-    }
+    if (!["accepted", "rejected"].includes(status))
+      return res.status(400).json({ message: "Invalid status" });
+
+    const app = await Application.findById(req.params.id).populate("job");
+    if (!app) return res.status(404).json({ message: "Application not found" });
+
+    if (String(app.job.postedBy) !== String(decoded.id))
+      return res.status(403).json({ message: "You can only update applications for your own jobs" });
+
     app.status = status;
     await app.save();
-    res.json({ message: 'Status updated', application: app });
+    res.json({ message: "Status updated", application: app });
   } catch (err) {
-    res.status(500).json({ message: 'Failed to update status', error: err.message });
+    res.status(500).json({ message: "Failed to update status", error: err.message });
   }
 });
 
