@@ -1,6 +1,6 @@
 import React, { useState } from "react";
 import { Link } from "react-router-dom";
-import API from "../api"; // 👈 your API instance
+import API from "../api"; // your API instance
 
 export default function Register() {
   const [form, setForm] = useState({
@@ -11,6 +11,8 @@ export default function Register() {
     email: "",
     password: "",
     confirmPassword: "",
+    company: "",
+    department: "",
     role: "student",
   });
 
@@ -36,12 +38,25 @@ export default function Register() {
     }
 
     try {
-      await API.post("/register", {
+      // Send dynamic data based on role
+      const payload = {
         name: `${form.firstName} ${form.lastName}`,
         email: form.email,
         password: form.password,
         role: form.role,
-      });
+      };
+
+      if (form.role === "student") {
+        payload.college = form.college;
+        payload.phone = form.phone;
+      } else if (form.role === "recruiter") {
+        payload.company = form.company;
+        payload.phone = form.phone;
+      } else if (form.role === "admin") {
+        payload.department = form.department;
+      }
+
+      await API.post("/register", payload);
 
       setSubmitted(true);
       setForm({
@@ -52,6 +67,8 @@ export default function Register() {
         email: "",
         password: "",
         confirmPassword: "",
+        company: "",
+        department: "",
         role: "student",
       });
     } catch (err) {
@@ -74,9 +91,8 @@ export default function Register() {
           }}
         ></div>
 
-        {/* Right Side - Register Form */}
+        {/* Right Side - Form */}
         <div className="flex flex-col justify-center p-6 md:p-10 flex-1 overflow-y-auto min-h-[400px]">
-          {/* Header */}
           <div className="text-center mb-6 md:mb-8">
             <h2 className="text-2xl md:text-3xl font-bold text-gray-800">
               Create Your Account
@@ -87,7 +103,6 @@ export default function Register() {
             </p>
           </div>
 
-          {/* Form */}
           <form onSubmit={handleSubmit} className="space-y-5">
             {/* Name Fields */}
             <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
@@ -121,39 +136,91 @@ export default function Register() {
               </div>
             </div>
 
-            {/* College */}
-            <div>
-              <label className="block text-sm font-medium text-gray-600 mb-1">
-                College Name
-              </label>
-              <input
-                type="text"
-                name="college"
-                value={form.college}
-                onChange={handleChange}
-                placeholder="e.g., Stanford University"
-                required
-                className="w-full px-4 py-2 border rounded-xl focus:ring-2 focus:ring-indigo-400 focus:outline-none transition"
-              />
-            </div>
+            {/* Role Specific Fields */}
+            {form.role === "student" && (
+              <>
+                <div>
+                  <label className="block text-sm font-medium text-gray-600 mb-1">
+                    College Name
+                  </label>
+                  <input
+                    type="text"
+                    name="college"
+                    value={form.college}
+                    onChange={handleChange}
+                    placeholder="e.g., Stanford University"
+                    required
+                    className="w-full px-4 py-2 border rounded-xl focus:ring-2 focus:ring-indigo-400 focus:outline-none transition"
+                  />
+                </div>
+                <div>
+                  <label className="block text-sm font-medium text-gray-600 mb-1">
+                    Phone Number
+                  </label>
+                  <input
+                    type="tel"
+                    name="phone"
+                    value={form.phone}
+                    onChange={handleChange}
+                    placeholder="+91 98765 43210"
+                    required
+                    className="w-full px-4 py-2 border rounded-xl focus:ring-2 focus:ring-indigo-400 focus:outline-none transition"
+                  />
+                </div>
+              </>
+            )}
 
-            {/* Phone */}
-            <div>
-              <label className="block text-sm font-medium text-gray-600 mb-1">
-                Phone Number
-              </label>
-              <input
-                type="tel"
-                name="phone"
-                value={form.phone}
-                onChange={handleChange}
-                placeholder="+91 98765 43210"
-                required
-                className="w-full px-4 py-2 border rounded-xl focus:ring-2 focus:ring-indigo-400 focus:outline-none transition"
-              />
-            </div>
+            {form.role === "recruiter" && (
+              <>
+                <div>
+                  <label className="block text-sm font-medium text-gray-600 mb-1">
+                    Company Name
+                  </label>
+                  <input
+                    type="text"
+                    name="company"
+                    value={form.company}
+                    onChange={handleChange}
+                    placeholder="e.g., TechCorp"
+                    required
+                    className="w-full px-4 py-2 border rounded-xl focus:ring-2 focus:ring-indigo-400 focus:outline-none transition"
+                  />
+                </div>
+                <div>
+                  <label className="block text-sm font-medium text-gray-600 mb-1">
+                    Phone Number
+                  </label>
+                  <input
+                    type="tel"
+                    name="phone"
+                    value={form.phone}
+                    onChange={handleChange}
+                    placeholder="+91 98765 43210"
+                    required
+                    className="w-full px-4 py-2 border rounded-xl focus:ring-2 focus:ring-indigo-400 focus:outline-none transition"
+                  />
+                </div>
+              </>
+            )}
 
-            {/* Email */}
+            {form.role === "admin" && (
+              <div>
+                <label className="block text-sm font-medium text-gray-600 mb-1">
+                  Department
+                </label>
+                <input
+                  type="text"
+                  name="department"
+                  value={form.department}
+                  onChange={handleChange}
+                  placeholder="e.g., HR"
+                  required
+                  className="w-full px-4 py-2 border rounded-xl focus:ring-2 focus:ring-indigo-400 focus:outline-none transition"
+                />
+              </div>
+            )}
+
+            {/* Email & Passwords */}
             <div>
               <label className="block text-sm font-medium text-gray-600 mb-1">
                 Email Address
@@ -169,7 +236,6 @@ export default function Register() {
               />
             </div>
 
-            {/* Passwords */}
             <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
               <div>
                 <label className="block text-sm font-medium text-gray-600 mb-1">
