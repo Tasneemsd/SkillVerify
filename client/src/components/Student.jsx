@@ -11,6 +11,7 @@ export default function Student() {
   const [notifications, setNotifications] = useState([]);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState(null);
+  const [editMode, setEditMode] = useState(false);
 
   const navigate = useNavigate();
   const API_URL = "https://skillverify.onrender.com/api/student";
@@ -110,6 +111,7 @@ export default function Student() {
         { headers: { Authorization: `Bearer ${token}` } }
       );
       alert(res.data.message || "Profile updated!");
+      setEditMode(false); // Switch back to read-only mode
     } catch (err) {
       console.error(err);
       alert(err.response?.data?.message || "Update failed. Try again.");
@@ -143,14 +145,7 @@ export default function Student() {
       {/* Tabs */}
       <div className="max-w-5xl mx-auto mt-6 border-b border-gray-200 px-4 sm:px-0 overflow-x-auto">
         <div className="flex flex-nowrap gap-3 sm:gap-4">
-          {[
-            "profile",
-            "skills",
-            "registeredCourses",
-            "courses",
-            "notifications",
-            "applications",
-          ].map((tab) => (
+          {["profile","skills","registeredCourses","courses","notifications","applications"].map((tab) => (
             <button
               key={tab}
               onClick={() => setActiveTab(tab)}
@@ -183,66 +178,93 @@ export default function Student() {
                 className="w-28 h-28 rounded-full object-cover border"
                 onError={(e) => (e.currentTarget.src = DEFAULT_AVATAR)}
               />
-              <div className="flex-1 space-y-3">
-                {["name", "rollNo", "college", "course", "year", "contactNumber"].map((field) => (
-                  <input
-                    key={field}
-                    type={field === "year" ? "number" : "text"}
-                    value={student[field] || ""}
-                    onChange={(e) => setStudent({ ...student, [field]: e.target.value })}
-                    className="border p-2 rounded w-full"
-                    placeholder={field.charAt(0).toUpperCase() + field.slice(1)}
-                  />
-                ))}
-              </div>
+
+              {/* Editable Mode */}
+              {editMode ? (
+                <div className="flex-1 space-y-3">
+                  {["name", "rollNo", "college", "course", "year", "contactNumber"].map((field) => (
+                    <input
+                      key={field}
+                      type={field === "year" ? "number" : "text"}
+                      value={student[field] || ""}
+                      onChange={(e) => setStudent({ ...student, [field]: e.target.value })}
+                      className="border p-2 rounded w-full"
+                      placeholder={field.charAt(0).toUpperCase() + field.slice(1)}
+                    />
+                  ))}
+                </div>
+              ) : (
+                /* Read-Only Mode */
+                <div className="flex-1 space-y-2">
+                  <p><strong>Name:</strong> {student.name}</p>
+                  <p><strong>Roll No:</strong> {student.rollNo}</p>
+                  <p><strong>College:</strong> {student.college}</p>
+                  <p><strong>Course:</strong> {student.course}</p>
+                  <p><strong>Year:</strong> {student.year}</p>
+                  <p><strong>Contact:</strong> {student.contactNumber}</p>
+                </div>
+              )}
             </div>
 
-            {/* Social Links */}
-            <div>
-              <h3 className="font-semibold text-gray-800">Social Links</h3>
-              {["facebook", "github", "linkedin", "instagram"].map((key) => (
-                <input
-                  key={key}
-                  type="url"
-                  value={student?.socialLinks?.[key] || ""}
-                  onChange={(e) =>
-                    setStudent({
-                      ...student,
-                      socialLinks: { ...student.socialLinks, [key]: e.target.value },
-                    })
-                  }
-                  className="border p-2 rounded w-full mt-2"
-                  placeholder={`${key} link`}
-                />
-              ))}
-            </div>
+            {/* Social & Coding Links in Edit Mode */}
+            {editMode && (
+              <>
+                <div>
+                  <h3 className="font-semibold text-gray-800">Social Links</h3>
+                  {["facebook", "github", "linkedin", "instagram"].map((key) => (
+                    <input
+                      key={key}
+                      type="url"
+                      value={student?.socialLinks?.[key] || ""}
+                      onChange={(e) =>
+                        setStudent({
+                          ...student,
+                          socialLinks: { ...student.socialLinks, [key]: e.target.value },
+                        })
+                      }
+                      className="border p-2 rounded w-full mt-2"
+                      placeholder={`${key} link`}
+                    />
+                  ))}
+                </div>
 
-            {/* Coding Links */}
-            <div>
-              <h3 className="font-semibold text-gray-800">Coding Profiles</h3>
-              {["leetcode", "hackerrank", "codeforces", "codechef"].map((key) => (
-                <input
-                  key={key}
-                  type="url"
-                  value={student?.codingLinks?.[key] || ""}
-                  onChange={(e) =>
-                    setStudent({
-                      ...student,
-                      codingLinks: { ...student.codingLinks, [key]: e.target.value },
-                    })
-                  }
-                  className="border p-2 rounded w-full mt-2"
-                  placeholder={`${key} link`}
-                />
-              ))}
-            </div>
+                <div>
+                  <h3 className="font-semibold text-gray-800">Coding Profiles</h3>
+                  {["leetcode", "hackerrank", "codeforces", "codechef"].map((key) => (
+                    <input
+                      key={key}
+                      type="url"
+                      value={student?.codingLinks?.[key] || ""}
+                      onChange={(e) =>
+                        setStudent({
+                          ...student,
+                          codingLinks: { ...student.codingLinks, [key]: e.target.value },
+                        })
+                      }
+                      className="border p-2 rounded w-full mt-2"
+                      placeholder={`${key} link`}
+                    />
+                  ))}
+                </div>
+              </>
+            )}
 
-            <button
-              onClick={handleUpdateProfile}
-              className="bg-blue-600 text-white px-4 py-2 rounded-lg font-medium hover:bg-blue-700 transition"
-            >
-              Save Changes
-            </button>
+            {/* Buttons */}
+            {editMode ? (
+              <button
+                onClick={handleUpdateProfile}
+                className="bg-blue-600 text-white px-4 py-2 rounded-lg font-medium hover:bg-blue-700 transition"
+              >
+                Save Changes
+              </button>
+            ) : (
+              <button
+                onClick={() => setEditMode(true)}
+                className="bg-gray-200 text-gray-800 px-4 py-2 rounded-lg font-medium hover:bg-gray-300 transition"
+              >
+                Edit Profile
+              </button>
+            )}
           </div>
         )}
 
@@ -293,31 +315,39 @@ export default function Student() {
         {/* Available Courses Tab */}
         {activeTab === "courses" && (
           <div>
-            {allCourses.map((course) => (
-              <div
-                key={course._id}
-                className="bg-white p-4 rounded-lg shadow flex justify-between mb-3"
-              >
-                <div className="flex items-center gap-2">
-                  <img
-                    src={DEFAULT_COURSE_IMG}
-                    alt={course.courseName}
-                    className="w-12 h-12 object-cover rounded"
-                    onError={(e) => (e.currentTarget.src = DEFAULT_COURSE_IMG)}
-                  />
-                  <div>
-                    <h3 className="font-semibold">{course.courseName}</h3>
-                    <p className="text-gray-600">{course.courseId}</p>
-                  </div>
-                </div>
-                <button
-                  onClick={() => handleEnroll(course._id)}
-                  className="bg-blue-600 text-white px-4 py-1 rounded"
+            {allCourses.map((course) => {
+              const alreadyEnrolled = student?.registeredCourses?.some((c) => c._id === course._id);
+              return (
+                <div
+                  key={course._id}
+                  className="bg-white p-4 rounded-lg shadow flex justify-between mb-3"
                 >
-                  Enroll
-                </button>
-              </div>
-            ))}
+                  <div className="flex items-center gap-2">
+                    <img
+                      src={DEFAULT_COURSE_IMG}
+                      alt={course.courseName}
+                      className="w-12 h-12 object-cover rounded"
+                      onError={(e) => (e.currentTarget.src = DEFAULT_COURSE_IMG)}
+                    />
+                    <div>
+                      <h3 className="font-semibold">{course.courseName}</h3>
+                      <p className="text-gray-600">{course.courseId}</p>
+                    </div>
+                  </div>
+                  <button
+                    onClick={() => handleEnroll(course._id)}
+                    disabled={alreadyEnrolled}
+                    className={`px-4 py-1 rounded ${
+                      alreadyEnrolled
+                        ? "bg-gray-400 text-white cursor-not-allowed"
+                        : "bg-blue-600 text-white hover:bg-blue-700"
+                    }`}
+                  >
+                    {alreadyEnrolled ? "Enrolled" : "Enroll"}
+                  </button>
+                </div>
+              );
+            })}
           </div>
         )}
 
