@@ -12,21 +12,21 @@ router.post("/register", async (req, res) => {
     if (!name || !email || !password)
       return res.status(400).json({ message: "Name, email, and password are required" });
 
-    // Check if student already exists
-    let existing = await Student.findOne({ email });
+    const existing = await Student.findOne({ email });
     if (existing) return res.status(400).json({ message: "Email already registered" });
 
-    // Prepare skills array
-    const skillsArray = (skills || []).map(s => ({ name: s, verified: false }));
+    const skillsArray = (skills || []).map((s) => ({ name: s, verified: false }));
 
     const newStudent = new Student({
       name,
       email,
-      password, // TODO: hash password before saving for production
+      password, // TODO: hash password in production
       college: college || "",
       year: year || "",
       skills: skillsArray,
       registeredCourses: [],
+      socialLinks: {},
+      codingLinks: {},
     });
 
     await newStudent.save();
@@ -41,11 +41,14 @@ router.post("/register", async (req, res) => {
 // --- ENROLL IN COURSE ---
 router.post("/enroll", async (req, res) => {
   try {
-    const { courseId, email } = req.body; // frontend sends email
-    if (!email) return res.status(400).json({ message: "Student email required" });
+    const { courseId, email } = req.body;
+    if (!email || !courseId) return res.status(400).json({ message: "Email and courseId required" });
 
     const student = await Student.findOne({ email });
     if (!student) return res.status(404).json({ message: "Student not found" });
+
+    const course = await Course.findById(courseId);
+    if (!course) return res.status(404).json({ message: "Course not found" });
 
     if (!student.registeredCourses.includes(courseId)) {
       student.registeredCourses.push(courseId);
@@ -59,7 +62,7 @@ router.post("/enroll", async (req, res) => {
   }
 });
 
-// --- GET STUDENT INFO ---
+// --- GET STUDENT BY EMAIL ---
 router.get("/", async (req, res) => {
   try {
     const { email } = req.query;
@@ -71,7 +74,7 @@ router.get("/", async (req, res) => {
     const applications = await Application.find({ student: student._id });
 
     res.json({
-      _id: student._id,   // ✅ add this
+      _id: student._id,
       name: student.name,
       email: student.email,
       rollNo: student.rollNo || "",
@@ -79,13 +82,14 @@ router.get("/", async (req, res) => {
       college: student.college || "",
       year: student.year || "",
       socialLinks: student.socialLinks || {},
+      codingLinks: student.codingLinks || {},
       skills: student.skills || [],
-      registeredCourses: student.registeredCourses.map(c => ({
+      registeredCourses: student.registeredCourses.map((c) => ({
         _id: c._id,
         courseName: c.courseName,
         courseId: c.courseId,
       })),
-      applications: applications.map(app => ({
+      applications: applications.map((app) => ({
         _id: app._id,
         jobTitle: app.jobTitle,
         company: app.company,
@@ -99,5 +103,32 @@ router.get("/", async (req, res) => {
   }
 });
 
+// --- GET STUDENT BY ID (optional, if needed) ---
+router.get("/:id", async (req, res) => {
+  try {
+    const student = await Student.findById(req.params.id).populate("registeredCourses");
+    if (!student) return res.status(404).json({ message: "Student not found" });
+    res.json(student);
+  } catch (err) {
+    console.error(err);
+    res.status(500).json({ message: "Error fetching student by ID" });
+  }
+});
+
+// --- UPDATE PROFILE ---
+router.post("/profile", async (req, res) => {
+  try {
+    const { email, ...updateData } = req.body;
+    if (!email) return res.status(400).json({ message: "Email required" });
+
+    const student = await Student.findOneAndUpdate({ email }, updateData, { new: true });
+    if (!student) return res.status(404).json({ message: "Student not found" });
+
+    res.json({ message: "Profile updated successfully!", student });
+  } catch (err) {
+    console.error(err);
+    res.status(500).json({ message: "Failed to update profile" });
+  }
+});
 
 module.exports = router;

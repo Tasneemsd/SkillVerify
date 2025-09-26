@@ -22,27 +22,29 @@ export default function Student() {
   const studentEmail = user?.email;
   const token = localStorage.getItem("userToken");
 
+  // Redirect if not logged in
   useEffect(() => {
     if (!studentEmail) navigate("/login");
   }, [studentEmail, navigate]);
 
+  // Fetch student profile, courses, applications
   useEffect(() => {
     const fetchData = async () => {
       try {
         setLoading(true);
 
-        // Fetch student profile
+        // ✅ Student profile
         const studentRes = await axios.get(
           `${API_URL}?email=${encodeURIComponent(studentEmail)}`,
           { headers: { Authorization: `Bearer ${token}` } }
         );
         setStudent(studentRes.data);
 
-        // Fetch all courses
+        // ✅ All courses
         const coursesRes = await axios.get(COURSES_URL);
         setAllCourses(coursesRes.data);
 
-        // ✅ FIXED: Fetch applications by studentEmail instead of student._id
+        // ✅ Applications by student email
         const appsRes = await axios.get(
           `${APP_URL}?studentEmail=${encodeURIComponent(studentEmail)}`,
           { headers: { Authorization: `Bearer ${token}` } }
@@ -59,6 +61,7 @@ export default function Student() {
     if (studentEmail) fetchData();
   }, [studentEmail, token]);
 
+  // Fetch notifications when tab active
   useEffect(() => {
     const fetchNotifications = async () => {
       try {
@@ -66,12 +69,9 @@ export default function Student() {
           `${NOTIF_URL}?studentEmail=${studentEmail}`,
           { headers: { Authorization: `Bearer ${token}` } }
         );
-        setNotifications(res.data);
+        setNotifications(res.data || []);
       } catch (err) {
-        console.error(
-          "Error fetching notifications:",
-          err.response?.data || err.message
-        );
+        console.error("Error fetching notifications:", err.response?.data || err.message);
       }
     };
 
@@ -94,6 +94,7 @@ export default function Student() {
 
       alert(res.data.message || "Enrolled successfully!");
 
+      // Update student state locally
       const enrolledCourse = allCourses.find((c) => c._id === courseId);
       if (enrolledCourse) {
         setStudent((prev) => ({
@@ -107,7 +108,6 @@ export default function Student() {
     }
   };
 
-  // ✅ FIXED: Use POST /profile instead of PUT /update/:id
   const handleUpdateProfile = async () => {
     try {
       const res = await axios.post(
@@ -129,13 +129,10 @@ export default function Student() {
     <div className="min-h-screen bg-gray-50">
       {/* Header */}
       <header className="bg-white shadow px-4 sm:px-6 py-4 flex flex-col sm:flex-row justify-between items-center sticky top-0 z-10 gap-3 sm:gap-0">
-        <h1 className="text-xl sm:text-2xl font-bold text-blue-600">
-          SkillVerify
-        </h1>
+        <h1 className="text-xl sm:text-2xl font-bold text-blue-600">SkillVerify</h1>
         <div className="text-gray-600 flex flex-col sm:flex-row items-center gap-2 sm:gap-4">
           <span>
-            Welcome,{" "}
-            <span className="font-semibold">{student?.name || "Student"}</span>
+            Welcome, <span className="font-semibold">{student?.name || "Student"}</span>
           </span>
           <button
             onClick={handleLogout}
@@ -176,60 +173,30 @@ export default function Student() {
           ))}
         </div>
       </div>
+
       {/* Tab Content */}
       <div className="max-w-5xl mx-auto mt-6 px-4 sm:px-0 space-y-6">
         {/* Profile */}
-        {activeTab === "profile" && (
+        {activeTab === "profile" && student && (
           <div className="bg-white p-6 rounded-xl shadow space-y-4">
+            {/* Profile Form */}
             <div className="flex flex-col sm:flex-row gap-6">
               <img
-                src={student?.profilePicture || "https://via.placeholder.com/120"}
+                src={student.profilePicture || "https://via.placeholder.com/120"}
                 alt="Profile"
                 className="w-28 h-28 rounded-full object-cover border"
               />
               <div className="flex-1 space-y-3">
-                <input
-                  type="text"
-                  value={student?.name || ""}
-                  onChange={(e) => setStudent({ ...student, name: e.target.value })}
-                  className="border p-2 rounded w-full"
-                  placeholder="Full Name"
-                />
-                <input
-                  type="text"
-                  value={student?.rollNo || ""}
-                  onChange={(e) => setStudent({ ...student, rollNo: e.target.value })}
-                  className="border p-2 rounded w-full"
-                  placeholder="Roll No"
-                />
-                <input
-                  type="text"
-                  value={student?.college || ""}
-                  onChange={(e) => setStudent({ ...student, college: e.target.value })}
-                  className="border p-2 rounded w-full"
-                  placeholder="College"
-                />
-                <input
-                  type="text"
-                  value={student?.course || ""}
-                  onChange={(e) => setStudent({ ...student, course: e.target.value })}
-                  className="border p-2 rounded w-full"
-                  placeholder="Course"
-                />
-                <input
-                  type="number"
-                  value={student?.year || ""}
-                  onChange={(e) => setStudent({ ...student, year: e.target.value })}
-                  className="border p-2 rounded w-full"
-                  placeholder="Year"
-                />
-                <input
-                  type="text"
-                  value={student?.contactNumber || ""}
-                  onChange={(e) => setStudent({ ...student, contactNumber: e.target.value })}
-                  className="border p-2 rounded w-full"
-                  placeholder="Contact Number"
-                />
+                {["name", "rollNo", "college", "course", "year", "contactNumber"].map((field) => (
+                  <input
+                    key={field}
+                    type={field === "year" ? "number" : "text"}
+                    value={student[field] || ""}
+                    onChange={(e) => setStudent({ ...student, [field]: e.target.value })}
+                    className="border p-2 rounded w-full"
+                    placeholder={field.charAt(0).toUpperCase() + field.slice(1)}
+                  />
+                ))}
               </div>
             </div>
 
@@ -293,11 +260,7 @@ export default function Student() {
                     className="bg-white border rounded-lg shadow p-4 flex justify-between items-center"
                   >
                     <span className="font-semibold">{skill.name}</span>
-                    <span
-                      className={
-                        skill.verified ? "text-green-600" : "text-red-500"
-                      }
-                    >
+                    <span className={skill.verified ? "text-green-600" : "text-red-500"}>
                       {skill.verified ? "✔ Verified" : "❌ Not Verified"}
                     </span>
                   </div>
@@ -316,7 +279,7 @@ export default function Student() {
               student.registeredCourses.map((course) => (
                 <div
                   key={course._id}
-                  className="bg-white p-4 rounded-lg shadow flex justify-between"
+                  className="bg-white p-4 rounded-lg shadow flex justify-between mb-2"
                 >
                   <div>
                     <h3 className="font-semibold">{course.courseName}</h3>
@@ -371,6 +334,7 @@ export default function Student() {
           </div>
         )}
 
+        {/* Applications */}
         {activeTab === "applications" && (
           <div>
             {applications.length > 0 ? (
