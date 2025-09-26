@@ -21,29 +21,23 @@ export default function Student() {
   const user = JSON.parse(localStorage.getItem("user"));
   const token = localStorage.getItem("userToken");
 
-  // Redirect if not logged in
   useEffect(() => {
     if (!user?.email) navigate("/login");
   }, [user, navigate]);
 
-  // Fetch student profile, courses, applications
   useEffect(() => {
     const fetchData = async () => {
       try {
         setLoading(true);
-
-        // Student profile
         const studentRes = await axios.get(
           `${API_URL}?email=${encodeURIComponent(user.email)}`,
           { headers: { Authorization: `Bearer ${token}` } }
         );
         setStudent(studentRes.data);
 
-        // All courses
         const coursesRes = await axios.get(COURSES_URL);
         setAllCourses(coursesRes.data);
 
-        // Applications by studentId
         if (studentRes.data._id) {
           const appsRes = await axios.get(`${APP_URL}?studentId=${studentRes.data._id}`, {
             headers: { Authorization: `Bearer ${token}` },
@@ -61,7 +55,6 @@ export default function Student() {
     if (user?.email) fetchData();
   }, [user, token]);
 
-  // Fetch notifications when tab active
   useEffect(() => {
     const fetchNotifications = async () => {
       try {
@@ -90,7 +83,6 @@ export default function Student() {
         { courseId, email: user.email },
         { headers: { Authorization: `Bearer ${token}` } }
       );
-
       alert(res.data.message || "Enrolled successfully!");
       const enrolledCourse = allCourses.find((c) => c._id === courseId);
       if (enrolledCourse) {
@@ -176,12 +168,15 @@ export default function Student() {
         {/* Profile */}
         {activeTab === "profile" && student && (
           <div className="bg-white p-6 rounded-xl shadow space-y-4">
-            {/* Profile Form */}
             <div className="flex flex-col sm:flex-row gap-6">
               <img
-                src={student.profilePicture || "https://via.placeholder.com/120"}
+                src={student.profilePicture || "/default-avatar.png"}
                 alt="Profile"
                 className="w-28 h-28 rounded-full object-cover border"
+                onError={(e) => {
+                  e.currentTarget.onerror = null;
+                  e.currentTarget.src = "/default-avatar.png";
+                }}
               />
               <div className="flex-1 space-y-3">
                 {["name", "rollNo", "college", "course", "year", "contactNumber"].map((field) => (
@@ -364,3 +359,4 @@ export default function Student() {
     </div>
   );
 }
+    
