@@ -1,3 +1,4 @@
+// src/components/Student.jsx
 import React, { useState, useEffect } from "react";
 import axios from "axios";
 import { useNavigate } from "react-router-dom";
@@ -101,18 +102,18 @@ export default function Student() {
     }
   };
 
+  // ✅ FIXED: Use POST /profile instead of PUT /update/:id
   const handleUpdateProfile = async () => {
     try {
-      const res = await axios.put(
-        `${API_URL}/update/${student._id}`,
-        student,
+      const res = await axios.post(
+        `${API_URL}/profile`,
+        { email: student.email, ...student },
         { headers: { Authorization: `Bearer ${token}` } }
       );
-      alert("Profile updated!");
-      setStudent(res.data);
+      alert(res.data.message || "Profile updated!");
     } catch (err) {
       console.error(err);
-      alert("Update failed. Try again.");
+      alert(err.response?.data?.message || "Update failed. Try again.");
     }
   };
 
@@ -144,10 +145,11 @@ export default function Student() {
             <button
               key={tab}
               onClick={() => setActiveTab(tab)}
-              className={`flex-shrink-0 px-3 sm:px-4 py-2 text-sm sm:text-base font-medium border-b-2 transition ${activeTab === tab
+              className={`flex-shrink-0 px-3 sm:px-4 py-2 text-sm sm:text-base font-medium border-b-2 transition ${
+                activeTab === tab
                   ? "border-blue-600 text-blue-600"
                   : "border-transparent text-gray-600 hover:text-gray-800"
-                }`}
+              }`}
             >
               {tab === "profile" && "Profile"}
               {tab === "skills" && "Skill Progress"}
@@ -162,7 +164,6 @@ export default function Student() {
 
       {/* Tab Content */}
       <div className="max-w-5xl mx-auto mt-6 px-4 sm:px-0 space-y-6">
-
         {/* Profile */}
         {activeTab === "profile" && (
           <div className="bg-white p-6 rounded-xl shadow space-y-4">

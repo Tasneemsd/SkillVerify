@@ -71,6 +71,7 @@ router.get("/", async (req, res) => {
     const applications = await Application.find({ student: student._id });
 
     res.json({
+      _id: student._id,   // ✅ add this
       name: student.name,
       email: student.email,
       rollNo: student.rollNo || "",
@@ -97,5 +98,6 @@ router.get("/", async (req, res) => {
     res.status(500).json({ message: "Failed to fetch student" });
   }
 });
+
 
 module.exports = router;
