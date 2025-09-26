@@ -21,10 +21,12 @@ export default function Student() {
   const user = JSON.parse(localStorage.getItem("user"));
   const token = localStorage.getItem("userToken");
 
+  // Redirect if not logged in
   useEffect(() => {
     if (!user?.email) navigate("/login");
   }, [user, navigate]);
 
+  // Fetch student profile, courses, applications
   useEffect(() => {
     const fetchData = async () => {
       try {
@@ -55,6 +57,7 @@ export default function Student() {
     if (user?.email) fetchData();
   }, [user, token]);
 
+  // Fetch notifications
   useEffect(() => {
     const fetchNotifications = async () => {
       try {
@@ -114,6 +117,9 @@ export default function Student() {
   if (loading) return <p className="text-center mt-10">Loading...</p>;
   if (error) return <p className="text-center mt-10 text-red-500">{error}</p>;
 
+  const DEFAULT_AVATAR = "/default-avatar.png"; // safe default
+  const DEFAULT_COURSE_IMG = "/default-course.png"; // placeholder if you add course images
+
   return (
     <div className="min-h-screen bg-gray-50">
       {/* Header */}
@@ -170,12 +176,12 @@ export default function Student() {
           <div className="bg-white p-6 rounded-xl shadow space-y-4">
             <div className="flex flex-col sm:flex-row gap-6">
               <img
-                src={student.profilePicture || "https://encrypted-tbn0.gstatic.com/images?q=tbn:ANd9GcTnth5-wQ3awrdVlDxI3cZO1tewLa37xD-MjQ&s"}
+                src={DEFAULT_AVATAR}
                 alt="Profile"
                 className="w-28 h-28 rounded-full object-cover border"
                 onError={(e) => {
                   e.currentTarget.onerror = null;
-                  e.currentTarget.src = "/default-avatar.png";
+                  e.currentTarget.src = DEFAULT_AVATAR;
                 }}
               />
               <div className="flex-1 space-y-3">
@@ -293,9 +299,17 @@ export default function Student() {
                 key={course._id}
                 className="bg-white p-4 rounded-lg shadow flex justify-between mb-3"
               >
-                <div>
-                  <h3 className="font-semibold">{course.courseName}</h3>
-                  <p className="text-gray-600">{course.courseId}</p>
+                <div className="flex items-center gap-2">
+                  <img
+                    src={DEFAULT_COURSE_IMG}
+                    alt={course.courseName}
+                    className="w-12 h-12 object-cover rounded"
+                    onError={(e) => (e.currentTarget.src = DEFAULT_COURSE_IMG)}
+                  />
+                  <div>
+                    <h3 className="font-semibold">{course.courseName}</h3>
+                    <p className="text-gray-600">{course.courseId}</p>
+                  </div>
                 </div>
                 <button
                   onClick={() => handleEnroll(course._id)}
@@ -359,4 +373,3 @@ export default function Student() {
     </div>
   );
 }
-    
