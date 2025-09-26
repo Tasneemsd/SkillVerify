@@ -170,7 +170,7 @@ export default function Student() {
           <div className="bg-white p-6 rounded-xl shadow space-y-4">
             <div className="flex flex-col sm:flex-row gap-6">
               <img
-                src={student.profilePicture || "/default-avatar.png"}
+                src={student.profilePicture || "https://encrypted-tbn0.gstatic.com/images?q=tbn:ANd9GcTnth5-wQ3awrdVlDxI3cZO1tewLa37xD-MjQ&s"}
                 alt="Profile"
                 className="w-28 h-28 rounded-full object-cover border"
                 onError={(e) => {
