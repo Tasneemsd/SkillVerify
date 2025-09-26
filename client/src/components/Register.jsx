@@ -38,7 +38,7 @@ export default function Register() {
     }
 
     try {
-      // Send dynamic data based on role
+      // Prepare payload dynamically
       const payload = {
         name: `${form.firstName} ${form.lastName}`,
         email: form.email,
@@ -79,12 +79,12 @@ export default function Register() {
   };
 
   return (
-    <div className="h-screen w-screen flex items-center justify-center bg-gradient-to-r from-indigo-100 via-white to-indigo-50 p-4 overflow-hidden">
-      <div className="bg-white rounded-2xl shadow-2xl w-full max-w-5xl flex flex-col md:flex-row overflow-hidden h-full">
+    <div className="h-screen w-screen flex items-center justify-center bg-gradient-to-r from-indigo-100 via-white to-indigo-50 p-4 overflow-auto">
+      <div className="bg-white rounded-2xl shadow-2xl w-full max-w-5xl flex flex-col md:flex-row overflow-hidden">
 
         {/* Left Side - Illustration */}
         <div
-          className="hidden md:flex flex-1 bg-cover bg-center min-h-[300px]"
+          className="hidden md:flex flex-1 bg-cover bg-center min-h-[400px]"
           style={{
             backgroundImage:
               "url('https://storage.googleapis.com/joblist-content/hero-images/Work-Abroad-for-a-Year.png')",
@@ -92,7 +92,8 @@ export default function Register() {
         ></div>
 
         {/* Right Side - Form */}
-        <div className="flex flex-col justify-center p-6 md:p-10 flex-1 overflow-y-auto min-h-[400px]">
+        <div className="flex flex-col justify-start p-6 md:p-10 flex-1 overflow-y-auto">
+          {/* Header */}
           <div className="text-center mb-6 md:mb-8">
             <h2 className="text-2xl md:text-3xl font-bold text-gray-800">
               Create Your Account
@@ -103,7 +104,9 @@ export default function Register() {
             </p>
           </div>
 
+          {/* Form */}
           <form onSubmit={handleSubmit} className="space-y-5">
+
             {/* Name Fields */}
             <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
               <div>
@@ -136,7 +139,7 @@ export default function Register() {
               </div>
             </div>
 
-            {/* Role Specific Fields */}
+            {/* Role-Specific Fields */}
             {form.role === "student" && (
               <>
                 <div>
@@ -220,7 +223,7 @@ export default function Register() {
               </div>
             )}
 
-            {/* Email & Passwords */}
+            {/* Email & Password */}
             <div>
               <label className="block text-sm font-medium text-gray-600 mb-1">
                 Email Address
@@ -296,7 +299,7 @@ export default function Register() {
               </div>
             </div>
 
-            {/* Submit */}
+            {/* Submit Button */}
             <button
               type="submit"
               className="w-full bg-indigo-600 hover:bg-indigo-700 text-white py-2 rounded-xl font-semibold transition duration-200 cursor-pointer"
