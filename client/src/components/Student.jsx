@@ -3,7 +3,7 @@ import axios from "axios";
 import { useNavigate } from "react-router-dom";
 
 export default function Student() {
-  const [activeTab, setActiveTab] = useState("skills");
+  const [activeTab, setActiveTab] = useState("profile");
   const [student, setStudent] = useState(null);
   const [allCourses, setAllCourses] = useState([]);
   const [applications, setApplications] = useState([]);
@@ -30,17 +30,17 @@ export default function Student() {
       try {
         setLoading(true);
 
-        const studentRes = await axios.get(`${API_URL}?email=${encodeURIComponent(studentEmail)}`, {
-          headers: { Authorization: `Bearer ${token}` },
-        });
-        const studentData = studentRes.data;
-        setStudent(studentData);
+        const studentRes = await axios.get(
+          `${API_URL}?email=${encodeURIComponent(studentEmail)}`,
+          { headers: { Authorization: `Bearer ${token}` } }
+        );
+        setStudent(studentRes.data);
 
         const coursesRes = await axios.get(COURSES_URL);
         setAllCourses(coursesRes.data);
 
-        if (studentData._id) {
-          const appsRes = await axios.get(`${APP_URL}/${studentData._id}`, {
+        if (studentRes.data._id) {
+          const appsRes = await axios.get(`${APP_URL}/${studentRes.data._id}`, {
             headers: { Authorization: `Bearer ${token}` },
           });
           setApplications(appsRes.data || []);
@@ -59,9 +59,10 @@ export default function Student() {
   useEffect(() => {
     const fetchNotifications = async () => {
       try {
-        const res = await axios.get(`${NOTIF_URL}?studentEmail=${studentEmail}`, {
-          headers: { Authorization: `Bearer ${token}` },
-        });
+        const res = await axios.get(
+          `${NOTIF_URL}?studentEmail=${studentEmail}`,
+          { headers: { Authorization: `Bearer ${token}` } }
+        );
         setNotifications(res.data);
       } catch (err) {
         console.error("Error fetching notifications:", err.response?.data || err.message);
@@ -100,8 +101,19 @@ export default function Student() {
     }
   };
 
-  const handleViewDetails = (course) => {
-    alert(`Course Details:\n\n${course.courseName}\nID: ${course.courseId}\nDuration: ${course.courseDuration}`);
+  const handleUpdateProfile = async () => {
+    try {
+      const res = await axios.put(
+        `${API_URL}/update/${student._id}`,
+        student,
+        { headers: { Authorization: `Bearer ${token}` } }
+      );
+      alert("Profile updated!");
+      setStudent(res.data);
+    } catch (err) {
+      console.error(err);
+      alert("Update failed. Try again.");
+    }
   };
 
   if (loading) return <p className="text-center mt-10">Loading...</p>;
@@ -113,7 +125,9 @@ export default function Student() {
       <header className="bg-white shadow px-4 sm:px-6 py-4 flex flex-col sm:flex-row justify-between items-center sticky top-0 z-10 gap-3 sm:gap-0">
         <h1 className="text-xl sm:text-2xl font-bold text-blue-600">SkillVerify</h1>
         <div className="text-gray-600 flex flex-col sm:flex-row items-center gap-2 sm:gap-4">
-          <span>Welcome, <span className="font-semibold">{student?.name || "Student"}</span></span>
+          <span>
+            Welcome, <span className="font-semibold">{student?.name || "Student"}</span>
+          </span>
           <button
             onClick={handleLogout}
             className="text-sm px-3 py-1 border border-gray-300 rounded hover:bg-gray-100 transition"
@@ -123,38 +137,19 @@ export default function Student() {
         </div>
       </header>
 
-      {/* Profile */}
-      <div className="max-w-5xl mx-auto mt-6 px-4 sm:px-0">
-        <div className="bg-white rounded-xl shadow p-4 sm:p-6 flex flex-col sm:flex-row items-center gap-4 sm:gap-6">
-          <div className="bg-blue-500 text-white rounded-full w-14 h-14 flex items-center justify-center text-xl font-bold">
-            {student?.name ? student.name.charAt(0) : "S"}
-          </div>
-          <div className="text-center sm:text-left flex-1">
-            <h2 className="text-lg sm:text-xl font-semibold text-gray-800">{student?.name || "Student Name"}</h2>
-            <p className="text-gray-600 text-sm sm:text-base">
-              {student?.rollNo || "Roll No N/A"} • {student?.contactNumber || "No Contact"} • Class of 2026
-            </p>
-            <p className="mt-1 text-sm text-gray-600 font-medium">
-              Verified Skills ({student?.skills?.filter((s) => s.verified).length || 0})
-            </p>
-            <p className="text-gray-500 text-xs sm:text-sm">
-              Complete the verification process to earn verified skill badges
-            </p>
-          </div>
-        </div>
-      </div>
-
       {/* Tabs */}
       <div className="max-w-5xl mx-auto mt-6 border-b border-gray-200 px-4 sm:px-0 overflow-x-auto">
         <div className="flex flex-nowrap gap-3 sm:gap-4">
-          {["skills", "registeredCourses", "courses", "notifications", "applications"].map((tab) => (
+          {["profile", "skills", "registeredCourses", "courses", "notifications", "applications"].map((tab) => (
             <button
               key={tab}
               onClick={() => setActiveTab(tab)}
-              className={`flex-shrink-0 px-3 sm:px-4 py-2 text-sm sm:text-base font-medium border-b-2 transition ${
-                activeTab === tab ? "border-blue-600 text-blue-600" : "border-transparent text-gray-600 hover:text-gray-800"
-              }`}
+              className={`flex-shrink-0 px-3 sm:px-4 py-2 text-sm sm:text-base font-medium border-b-2 transition ${activeTab === tab
+                  ? "border-blue-600 text-blue-600"
+                  : "border-transparent text-gray-600 hover:text-gray-800"
+                }`}
             >
+              {tab === "profile" && "Profile"}
               {tab === "skills" && "Skill Progress"}
               {tab === "registeredCourses" && "Registered Courses"}
               {tab === "courses" && "Available Courses"}
@@ -168,17 +163,134 @@ export default function Student() {
       {/* Tab Content */}
       <div className="max-w-5xl mx-auto mt-6 px-4 sm:px-0 space-y-6">
 
-        {/* Skills */}
-        {activeTab === "skills" && student?.skills?.length > 0 && (
-          <div className="flex flex-col gap-4">
-            {student.skills.map((skill, idx) => (
-              <div key={idx} className="bg-white border rounded-lg shadow p-4 flex flex-col sm:flex-row justify-between items-start sm:items-center gap-2 sm:gap-4">
-                <h3 className="text-lg font-semibold">{skill.name}</h3>
-                <p className={skill.verified ? "text-green-600 font-medium" : "text-red-500 font-medium"}>
-                  {skill.verified ? "✔ Verified" : "❌ Not Verified"}
-                </p>
+        {/* Profile */}
+        {activeTab === "profile" && (
+          <div className="bg-white p-6 rounded-xl shadow space-y-4">
+            <div className="flex flex-col sm:flex-row gap-6">
+              <img
+                src={student?.profilePicture || "https://via.placeholder.com/120"}
+                alt="Profile"
+                className="w-28 h-28 rounded-full object-cover border"
+              />
+              <div className="flex-1 space-y-3">
+                <input
+                  type="text"
+                  value={student?.name || ""}
+                  onChange={(e) => setStudent({ ...student, name: e.target.value })}
+                  className="border p-2 rounded w-full"
+                  placeholder="Full Name"
+                />
+                <input
+                  type="text"
+                  value={student?.rollNo || ""}
+                  onChange={(e) => setStudent({ ...student, rollNo: e.target.value })}
+                  className="border p-2 rounded w-full"
+                  placeholder="Roll No"
+                />
+                <input
+                  type="text"
+                  value={student?.college || ""}
+                  onChange={(e) => setStudent({ ...student, college: e.target.value })}
+                  className="border p-2 rounded w-full"
+                  placeholder="College"
+                />
+                <input
+                  type="text"
+                  value={student?.course || ""}
+                  onChange={(e) => setStudent({ ...student, course: e.target.value })}
+                  className="border p-2 rounded w-full"
+                  placeholder="Course"
+                />
+                <input
+                  type="number"
+                  value={student?.year || ""}
+                  onChange={(e) => setStudent({ ...student, year: e.target.value })}
+                  className="border p-2 rounded w-full"
+                  placeholder="Year"
+                />
+                <input
+                  type="text"
+                  value={student?.contactNumber || ""}
+                  onChange={(e) => setStudent({ ...student, contactNumber: e.target.value })}
+                  className="border p-2 rounded w-full"
+                  placeholder="Contact Number"
+                />
               </div>
-            ))}
+            </div>
+
+            {/* Social Links */}
+            <div>
+              <h3 className="font-semibold text-gray-800">Social Links</h3>
+              {["facebook", "github", "linkedin", "instagram"].map((key) => (
+                <input
+                  key={key}
+                  type="url"
+                  value={student?.socialLinks?.[key] || ""}
+                  onChange={(e) =>
+                    setStudent({
+                      ...student,
+                      socialLinks: { ...student.socialLinks, [key]: e.target.value },
+                    })
+                  }
+                  className="border p-2 rounded w-full mt-2"
+                  placeholder={`${key} link`}
+                />
+              ))}
+            </div>
+
+            {/* Coding Links */}
+            <div>
+              <h3 className="font-semibold text-gray-800">Coding Profiles</h3>
+              {["leetcode", "hackerrank", "codeforces", "codechef"].map((key) => (
+                <input
+                  key={key}
+                  type="url"
+                  value={student?.codingLinks?.[key] || ""}
+                  onChange={(e) =>
+                    setStudent({
+                      ...student,
+                      codingLinks: { ...student.codingLinks, [key]: e.target.value },
+                    })
+                  }
+                  className="border p-2 rounded w-full mt-2"
+                  placeholder={`${key} link`}
+                />
+              ))}
+            </div>
+
+            <button
+              onClick={handleUpdateProfile}
+              className="bg-blue-600 text-white px-4 py-2 rounded-lg font-medium hover:bg-blue-700 transition"
+            >
+              Save Changes
+            </button>
+          </div>
+        )}
+
+        {/* Skills */}
+        {activeTab === "skills" && (
+          <div>
+            {student?.skills?.length > 0 ? (
+              <div className="flex flex-col gap-4">
+                {student.skills.map((skill, idx) => (
+                  <div
+                    key={idx}
+                    className="bg-white border rounded-lg shadow p-4 flex justify-between items-center"
+                  >
+                    <span className="font-semibold">{skill.name}</span>
+                    <span
+                      className={
+                        skill.verified ? "text-green-600" : "text-red-500"
+                      }
+                    >
+                      {skill.verified ? "✔ Verified" : "❌ Not Verified"}
+                    </span>
+                  </div>
+                ))}
+              </div>
+            ) : (
+              <p className="text-gray-500">No skills added yet.</p>
+            )}
           </div>
         )}
 
@@ -186,55 +298,43 @@ export default function Student() {
         {activeTab === "registeredCourses" && (
           <div>
             {student?.registeredCourses?.length > 0 ? (
-              <div className="flex flex-col gap-4">
-                {student.registeredCourses.map(course => (
-                  <div key={course._id} className="bg-white rounded-xl shadow p-5 flex flex-col sm:flex-row justify-between items-start sm:items-center gap-3 sm:gap-5 hover:shadow-lg transition">
-                    <div>
-                      <h3 className="text-lg font-semibold text-gray-800">{course.courseName}</h3>
-                      <p className="text-gray-600 mt-1 text-sm sm:text-base">ID: {course.courseId}</p>
-                    </div>
-                    <button onClick={() => handleViewDetails(course)} className="bg-gray-200 text-gray-800 py-2 px-4 rounded-lg font-medium hover:bg-gray-300 transition">
-                      Details
-                    </button>
+              student.registeredCourses.map((course) => (
+                <div
+                  key={course._id}
+                  className="bg-white p-4 rounded-lg shadow flex justify-between"
+                >
+                  <div>
+                    <h3 className="font-semibold">{course.courseName}</h3>
+                    <p className="text-gray-600">{course.courseId}</p>
                   </div>
-                ))}
-              </div>
+                </div>
+              ))
             ) : (
-              <p className="text-gray-500">You have not registered for any courses yet.</p>
+              <p className="text-gray-500">Not registered in any course.</p>
             )}
           </div>
         )}
 
         {/* Available Courses */}
         {activeTab === "courses" && (
-          <div className="flex flex-col gap-6">
-            {allCourses.map(course => {
-              const isRegistered = student?.registeredCourses?.some(c => c._id === course._id);
-              return (
-                <div key={course._id} className="bg-white rounded-xl shadow p-5 flex flex-col sm:flex-row justify-between items-start sm:items-center gap-3 sm:gap-5 hover:shadow-lg transition">
-                  <div>
-                    <h3 className="text-lg font-semibold text-gray-800">{course.courseName}</h3>
-                    <p className="text-gray-600 mt-1 text-sm sm:text-base">
-                      ID: {course.courseId} • Duration: {course.courseDuration}
-                    </p>
-                  </div>
-                  <div className="flex flex-col sm:flex-row gap-2 sm:gap-3 mt-2 sm:mt-0">
-                    {!isRegistered ? (
-                      <button onClick={() => handleEnroll(course._id)} className="bg-blue-600 text-white py-2 px-4 rounded-lg font-medium hover:bg-blue-700 transition">
-                        Enroll
-                      </button>
-                    ) : (
-                      <button className="bg-green-600 text-white py-2 px-4 rounded-lg font-medium cursor-not-allowed">
-                        Enrolled
-                      </button>
-                    )}
-                    <button onClick={() => handleViewDetails(course)} className="bg-gray-200 text-gray-800 py-2 px-4 rounded-lg font-medium hover:bg-gray-300 transition">
-                      Details
-                    </button>
-                  </div>
+          <div>
+            {allCourses.map((course) => (
+              <div
+                key={course._id}
+                className="bg-white p-4 rounded-lg shadow flex justify-between mb-3"
+              >
+                <div>
+                  <h3 className="font-semibold">{course.courseName}</h3>
+                  <p className="text-gray-600">{course.courseId}</p>
                 </div>
-              )
-            })}
+                <button
+                  onClick={() => handleEnroll(course._id)}
+                  className="bg-blue-600 text-white px-4 py-1 rounded"
+                >
+                  Enroll
+                </button>
+              </div>
+            ))}
           </div>
         )}
 
@@ -242,17 +342,14 @@ export default function Student() {
         {activeTab === "notifications" && (
           <div>
             {notifications.length > 0 ? (
-              <div className="flex flex-col gap-4">
-                {notifications.map(notif => (
-                  <div key={notif._id} className="bg-white rounded-lg shadow p-4 flex flex-col sm:flex-row justify-between items-start sm:items-center gap-2 sm:gap-4">
-                    <div>
-                      <p className="text-gray-700 text-sm sm:text-base">{notif.message}</p>
-                      {notif.adminMessage && <p className="text-xs sm:text-sm text-gray-500 mt-1">Admin: {notif.adminMessage}</p>}
-                    </div>
-                    <p className="text-gray-400 text-xs sm:text-sm">{new Date(notif.createdAt).toLocaleString()}</p>
-                  </div>
-                ))}
-              </div>
+              notifications.map((n) => (
+                <div key={n._id} className="bg-white p-3 shadow rounded mb-2">
+                  <p>{n.message}</p>
+                  {n.adminMessage && (
+                    <p className="text-sm text-gray-500">{n.adminMessage}</p>
+                  )}
+                </div>
+              ))
             ) : (
               <p className="text-gray-500">No notifications</p>
             )}
@@ -262,23 +359,31 @@ export default function Student() {
         {/* Applications */}
         {activeTab === "applications" && (
           <div>
-            {applications?.length > 0 ? (
-              <div className="flex flex-col gap-4">
-                {applications.map(app => (
-                  <div key={app._id} className="bg-white rounded-lg shadow p-4 flex flex-col sm:flex-row justify-between items-start sm:items-center gap-2 sm:gap-4 hover:shadow-md transition">
-                    <div>
-                      <h3 className="text-lg font-semibold text-gray-800">{app.jobTitle}</h3>
-                      <p className="text-gray-600 text-sm sm:text-base">{app.company}</p>
-                      <p className="text-xs sm:text-sm mt-1 text-gray-500">Applied on: {new Date(app.appliedOn).toLocaleDateString()}</p>
-                    </div>
-                    <p className={`font-medium ${app.status === "hired" ? "text-green-600" : app.status === "rejected" ? "text-red-600" : "text-yellow-600"} text-sm sm:text-base`}>
-                      {app.status}
-                    </p>
+            {applications.length > 0 ? (
+              applications.map((app) => (
+                <div
+                  key={app._id}
+                  className="bg-white p-3 shadow rounded mb-2 flex justify-between"
+                >
+                  <div>
+                    <h3 className="font-semibold">{app.jobTitle}</h3>
+                    <p className="text-gray-500">{app.company}</p>
                   </div>
-                ))}
-              </div>
+                  <span
+                    className={
+                      app.status === "hired"
+                        ? "text-green-600"
+                        : app.status === "rejected"
+                          ? "text-red-600"
+                          : "text-yellow-600"
+                    }
+                  >
+                    {app.status}
+                  </span>
+                </div>
+              ))
             ) : (
-              <p className="text-gray-500">No applications found</p>
+              <p className="text-gray-500">No applications</p>
             )}
           </div>
         )}
