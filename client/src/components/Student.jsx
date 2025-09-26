@@ -31,7 +31,6 @@ export default function Student() {
     const fetchData = async () => {
       try {
         setLoading(true);
-
         const studentRes = await axios.get(
           `${API_URL}?email=${encodeURIComponent(user.email)}`,
           { headers: { Authorization: `Bearer ${token}` } }
@@ -121,14 +120,6 @@ export default function Student() {
   const DEFAULT_AVATAR = "/default-avatar.png";
   const DEFAULT_COURSE_IMG = "/default-course.png";
 
-  const safeImgSrc = (src, fallback) => {
-    const [imgSrc, setImgSrc] = useState(src);
-    return {
-      src: imgSrc,
-      onError: () => setImgSrc(fallback),
-    };
-  };
-
   return (
     <div className="min-h-screen bg-gray-50">
       {/* Header */}
@@ -185,9 +176,10 @@ export default function Student() {
           <div className="bg-white p-6 rounded-xl shadow space-y-4">
             <div className="flex flex-col sm:flex-row gap-6">
               <img
-                {...safeImgSrc(DEFAULT_AVATAR, DEFAULT_AVATAR)}
+                src={DEFAULT_AVATAR}
                 alt="Profile"
                 className="w-28 h-28 rounded-full object-cover border"
+                onError={(e) => (e.currentTarget.src = DEFAULT_AVATAR)}
               />
               <div className="flex-1 space-y-3">
                 {["name", "rollNo", "college", "course", "year", "contactNumber"].map(
@@ -196,7 +188,9 @@ export default function Student() {
                       key={field}
                       type={field === "year" ? "number" : "text"}
                       value={student[field] || ""}
-                      onChange={(e) => setStudent({ ...student, [field]: e.target.value })}
+                      onChange={(e) =>
+                        setStudent({ ...student, [field]: e.target.value })
+                      }
                       className="border p-2 rounded w-full"
                       placeholder={field.charAt(0).toUpperCase() + field.slice(1)}
                     />
@@ -308,9 +302,10 @@ export default function Student() {
               >
                 <div className="flex items-center gap-2">
                   <img
-                    {...safeImgSrc(DEFAULT_COURSE_IMG, DEFAULT_COURSE_IMG)}
+                    src={DEFAULT_COURSE_IMG}
                     alt={course.courseName}
                     className="w-12 h-12 object-cover rounded"
+                    onError={(e) => (e.currentTarget.src = DEFAULT_COURSE_IMG)}
                   />
                   <div>
                     <h3 className="font-semibold">{course.courseName}</h3>
