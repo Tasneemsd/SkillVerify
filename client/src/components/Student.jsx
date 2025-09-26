@@ -11,8 +11,8 @@ export default function Student() {
   const [notifications, setNotifications] = useState([]);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState(null);
-  const navigate = useNavigate();
 
+  const navigate = useNavigate();
   const API_URL = "https://skillverify.onrender.com/api/student";
   const COURSES_URL = "https://skillverify.onrender.com/api/courses";
   const APP_URL = "https://skillverify.onrender.com/api/applications";
@@ -26,15 +26,14 @@ export default function Student() {
     if (!user?.email) navigate("/login");
   }, [user, navigate]);
 
-  // Fetch student profile, courses, applications
+  // Fetch student profile & courses
   useEffect(() => {
     const fetchData = async () => {
       try {
         setLoading(true);
-        const studentRes = await axios.get(
-          `${API_URL}?email=${encodeURIComponent(user.email)}`,
-          { headers: { Authorization: `Bearer ${token}` } }
-        );
+        const studentRes = await axios.get(`${API_URL}?email=${encodeURIComponent(user.email)}`, {
+          headers: { Authorization: `Bearer ${token}` },
+        });
         setStudent(studentRes.data);
 
         const coursesRes = await axios.get(COURSES_URL);
@@ -55,13 +54,13 @@ export default function Student() {
     };
 
     if (user?.email) fetchData();
-  }, [user, token]);
+  }, [user?.email, token]);
 
-  // Fetch notifications
+  // Fetch notifications (only when notifications tab is active)
   useEffect(() => {
     const fetchNotifications = async () => {
+      if (!student?._id) return;
       try {
-        if (!student?._id) return;
         const res = await axios.get(`${NOTIF_URL}?studentId=${student._id}`, {
           headers: { Authorization: `Bearer ${token}` },
         });
@@ -70,8 +69,11 @@ export default function Student() {
         console.error("Error fetching notifications:", err.response?.data || err.message);
       }
     };
-    if (activeTab === "notifications") fetchNotifications();
-  }, [activeTab, student, token]);
+
+    if (activeTab === "notifications" && student?._id) {
+      fetchNotifications();
+    }
+  }, [activeTab, student?._id, token]);
 
   const handleLogout = () => {
     localStorage.removeItem("user");
@@ -171,7 +173,7 @@ export default function Student() {
 
       {/* Tab Content */}
       <div className="max-w-5xl mx-auto mt-6 px-4 sm:px-0 space-y-6">
-        {/* Profile */}
+        {/* Profile Tab */}
         {activeTab === "profile" && student && (
           <div className="bg-white p-6 rounded-xl shadow space-y-4">
             <div className="flex flex-col sm:flex-row gap-6">
@@ -182,20 +184,16 @@ export default function Student() {
                 onError={(e) => (e.currentTarget.src = DEFAULT_AVATAR)}
               />
               <div className="flex-1 space-y-3">
-                {["name", "rollNo", "college", "course", "year", "contactNumber"].map(
-                  (field) => (
-                    <input
-                      key={field}
-                      type={field === "year" ? "number" : "text"}
-                      value={student[field] || ""}
-                      onChange={(e) =>
-                        setStudent({ ...student, [field]: e.target.value })
-                      }
-                      className="border p-2 rounded w-full"
-                      placeholder={field.charAt(0).toUpperCase() + field.slice(1)}
-                    />
-                  )
-                )}
+                {["name", "rollNo", "college", "course", "year", "contactNumber"].map((field) => (
+                  <input
+                    key={field}
+                    type={field === "year" ? "number" : "text"}
+                    value={student[field] || ""}
+                    onChange={(e) => setStudent({ ...student, [field]: e.target.value })}
+                    className="border p-2 rounded w-full"
+                    placeholder={field.charAt(0).toUpperCase() + field.slice(1)}
+                  />
+                ))}
               </div>
             </div>
 
@@ -248,7 +246,7 @@ export default function Student() {
           </div>
         )}
 
-        {/* Skills */}
+        {/* Skills Tab */}
         {activeTab === "skills" && (
           <div>
             {student?.skills?.length > 0 ? (
@@ -271,7 +269,7 @@ export default function Student() {
           </div>
         )}
 
-        {/* Registered Courses */}
+        {/* Registered Courses Tab */}
         {activeTab === "registeredCourses" && (
           <div>
             {student?.registeredCourses?.length > 0 ? (
@@ -292,7 +290,7 @@ export default function Student() {
           </div>
         )}
 
-        {/* Available Courses */}
+        {/* Available Courses Tab */}
         {activeTab === "courses" && (
           <div>
             {allCourses.map((course) => (
@@ -323,7 +321,7 @@ export default function Student() {
           </div>
         )}
 
-        {/* Notifications */}
+        {/* Notifications Tab */}
         {activeTab === "notifications" && (
           <div>
             {notifications.length > 0 ? (
@@ -339,7 +337,7 @@ export default function Student() {
           </div>
         )}
 
-        {/* Applications */}
+        {/* Applications Tab */}
         {activeTab === "applications" && (
           <div>
             {applications.length > 0 ? (
