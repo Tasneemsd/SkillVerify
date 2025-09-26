@@ -1,6 +1,6 @@
 import React, { useState } from "react";
-import { useNavigate, Link } from "react-router-dom";
-import API from "../api"; // 👈 import API
+import { Link } from "react-router-dom";
+import API from "../api"; // 👈 import your API instance
 
 export default function Register() {
   const [form, setForm] = useState({
@@ -36,7 +36,6 @@ export default function Register() {
     }
 
     try {
-      // Call backend API
       await API.post("/register", {
         name: `${form.firstName} ${form.lastName}`,
         email: form.email,
@@ -48,6 +47,7 @@ export default function Register() {
       setForm({
         firstName: "",
         lastName: "",
+        college: "",
         phone: "",
         email: "",
         password: "",
@@ -63,7 +63,7 @@ export default function Register() {
 
   return (
     <div className="h-screen w-screen flex items-center justify-center bg-gradient-to-r from-indigo-100 via-white to-indigo-50 p-4 overflow-hidden">
-      <div className="bg-white rounded-2xl shadow-2xl w-full max-w-5xl flex flex-col md:flex-row overflow-hidden h-full ">
+      <div className="bg-white rounded-2xl shadow-2xl w-full max-w-5xl flex flex-col md:flex-row overflow-hidden h-full">
 
         {/* Left Side - Illustration */}
         <div
@@ -75,7 +75,7 @@ export default function Register() {
         ></div>
 
         {/* Right Side - Register Form */}
-        <div className="flex flex-col justify-center p-8 md:p-10 flex-1 overflow-y-auto">
+        <div className="flex flex-col justify-center p-6 md:p-10 flex-1 overflow-y-auto">
           {/* Header */}
           <div className="text-center mb-6 md:mb-8">
             <h2 className="text-2xl md:text-3xl font-bold text-gray-800">
@@ -89,7 +89,7 @@ export default function Register() {
 
           {/* Form */}
           <form onSubmit={handleSubmit} className="space-y-5">
-            {/* First + Last Name */}
+            {/* Name Fields */}
             <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
               <div>
                 <label className="block text-sm font-medium text-gray-600 mb-1">
@@ -102,7 +102,7 @@ export default function Register() {
                   onChange={handleChange}
                   placeholder="John"
                   required
-                  className="w-full px-4 py-2 border rounded-xl focus:ring-2 focus:ring-indigo-400 focus:outline-none"
+                  className="w-full px-4 py-2 border rounded-xl focus:ring-2 focus:ring-indigo-400 focus:outline-none transition"
                 />
               </div>
               <div>
@@ -116,25 +116,26 @@ export default function Register() {
                   onChange={handleChange}
                   placeholder="Doe"
                   required
-                  className="w-full px-4 py-2 border rounded-xl focus:ring-2 focus:ring-indigo-400 focus:outline-none"
+                  className="w-full px-4 py-2 border rounded-xl focus:ring-2 focus:ring-indigo-400 focus:outline-none transition"
                 />
               </div>
-              
             </div>
+
+            {/* College */}
             <div>
-                <label className="block text-sm font-medium text-gray-600 mb-1">
+              <label className="block text-sm font-medium text-gray-600 mb-1">
                 College Name
-                </label>
-                <input
-                  type="text"
-                  name="college"
-                  value={form.college}
-                  onChange={handleChange}
-                  placeholder="e.g., Stanford University"
-                  required
-                  className="w-full px-4 py-2 border rounded-xl focus:ring-2 focus:ring-indigo-400 focus:outline-none"
-                />
-              </div>
+              </label>
+              <input
+                type="text"
+                name="college"
+                value={form.college}
+                onChange={handleChange}
+                placeholder="e.g., Stanford University"
+                required
+                className="w-full px-4 py-2 border rounded-xl focus:ring-2 focus:ring-indigo-400 focus:outline-none transition"
+              />
+            </div>
 
             {/* Phone */}
             <div>
@@ -148,7 +149,7 @@ export default function Register() {
                 onChange={handleChange}
                 placeholder="+91 98765 43210"
                 required
-                className="w-full px-4 py-2 border rounded-xl focus:ring-2 focus:ring-indigo-400 focus:outline-none"
+                className="w-full px-4 py-2 border rounded-xl focus:ring-2 focus:ring-indigo-400 focus:outline-none transition"
               />
             </div>
 
@@ -164,11 +165,11 @@ export default function Register() {
                 onChange={handleChange}
                 placeholder="your@email.com"
                 required
-                className="w-full px-4 py-2 border rounded-xl focus:ring-2 focus:ring-indigo-400 focus:outline-none"
+                className="w-full px-4 py-2 border rounded-xl focus:ring-2 focus:ring-indigo-400 focus:outline-none transition"
               />
             </div>
 
-            {/* Password + Confirm Password */}
+            {/* Passwords */}
             <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
               <div>
                 <label className="block text-sm font-medium text-gray-600 mb-1">
@@ -181,7 +182,7 @@ export default function Register() {
                   onChange={handleChange}
                   placeholder="Enter password"
                   required
-                  className="w-full px-4 py-2 border rounded-xl focus:ring-2 focus:ring-indigo-400 focus:outline-none"
+                  className="w-full px-4 py-2 border rounded-xl focus:ring-2 focus:ring-indigo-400 focus:outline-none transition"
                 />
               </div>
               <div>
@@ -195,7 +196,7 @@ export default function Register() {
                   onChange={handleChange}
                   placeholder="Re-enter password"
                   required
-                  className="w-full px-4 py-2 border rounded-xl focus:ring-2 focus:ring-indigo-400 focus:outline-none"
+                  className="w-full px-4 py-2 border rounded-xl focus:ring-2 focus:ring-indigo-400 focus:outline-none transition"
                 />
               </div>
             </div>
@@ -209,10 +210,11 @@ export default function Register() {
                 {["student", "recruiter", "admin"].map((role) => (
                   <label
                     key={role}
-                    className={`px-4 py-2 border rounded-xl cursor-pointer flex-1 text-center capitalize min-w-[80px] ${form.role === role
+                    className={`px-4 py-2 border rounded-xl cursor-pointer flex-1 text-center capitalize min-w-[80px] transition ${
+                      form.role === role
                         ? "bg-indigo-50 border-indigo-500 text-indigo-600"
                         : "hover:bg-gray-50"
-                      }`}
+                    }`}
                   >
                     <input
                       type="radio"
@@ -250,9 +252,13 @@ export default function Register() {
             </div>
           )}
 
+          {/* Login Link */}
           <p className="text-center text-sm text-gray-500 mt-6">
             Already have an account?{" "}
-            <Link to="/login" className="text-indigo-600 font-medium hover:underline">
+            <Link
+              to="/login"
+              className="text-indigo-600 font-medium hover:underline"
+            >
               Login
             </Link>
           </p>
