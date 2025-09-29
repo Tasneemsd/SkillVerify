@@ -134,7 +134,10 @@ export default function Home() {
         <div className="flex flex-col sm:flex-row justify-center gap-4">
           <button className="flex items-center justify-center gap-2 bg-blue-600 text-white font-semibold px-5 sm:px-6 py-3 rounded-lg hover:bg-blue-700 transition text-sm sm:text-base">
             <GraduationCap size={20} className="text-black-600" />
-            <a className="start" href="/register">Start Your Journey</a>
+            <a className="start" onClick={() => {
+                  
+                  navigate("/register");
+                }}>Start Your Journey</a>
           </button>
           <button className="flex items-center justify-center gap-2 border border-blue-600 text-blue-600 font-semibold px-5 sm:px-6 py-3 rounded-lg hover:bg-blue-50 transition text-sm sm:text-base">
             <img
@@ -142,7 +145,10 @@ export default function Home() {
               alt="recruiter"
               className="w-5 h-5 sm:w-6 sm:h-6"
             />
-            <a className='rec' href="/register">I'm a Recruiter</a>
+            <a className='rec' onClick={() => {
+                  
+                  navigate("/register");
+                }}>I'm a Recruiter</a>
           </button>
         </div>
       </section>
