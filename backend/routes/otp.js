@@ -10,7 +10,7 @@ const serviceSid = process.env.TWILIO_SERVICE_SID;
 const client = twilio(accountSid, authToken);
 
 // Send OTP
-router.post("/send-otp", async (req, res) => {
+router.post("/otp/send-otp", async (req, res) => {
   const { phone } = req.body;
   if (!phone) return res.status(400).json({ error: "Phone number required" });
 
@@ -27,7 +27,7 @@ router.post("/send-otp", async (req, res) => {
 });
 
 // Verify OTP
-router.post("/verify-otp", async (req, res) => {
+router.post("/otp/verify-otp", async (req, res) => {
   const { phone, code } = req.body;
   if (!phone || !code) return res.status(400).json({ error: "Phone and code required" });
 

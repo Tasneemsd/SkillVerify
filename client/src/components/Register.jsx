@@ -1,6 +1,6 @@
 import React, { useState } from "react";
 import { Link } from "react-router-dom";
-import API from "../api"; // your Axios instance
+import API from "../api"; // your API instance
 
 export default function Register() {
   const [form, setForm] = useState({
@@ -19,72 +19,26 @@ export default function Register() {
   const [loading, setLoading] = useState(false);
   const [submitted, setSubmitted] = useState(false);
   const [error, setError] = useState("");
-  const [otpSent, setOtpSent] = useState(false);
-  const [otp, setOtp] = useState("");
-  const [otpVerified, setOtpVerified] = useState(false);
 
   const handleChange = (e) => {
     const { name, value } = e.target;
     setForm((prev) => ({ ...prev, [name]: value }));
   };
 
-  // Send OTP
-  const sendOtp = async () => {
-    if (!form.phone) {
-      setError("Phone number is required for OTP");
-      return;
-    }
-    try {
-      setError("");
-      setLoading(true);
-      await API.post("/send-otp", { phone: form.phone });
-      setOtpSent(true);
-    } catch (err) {
-      setError(err.response?.data?.error || "Failed to send OTP");
-    } finally {
-      setLoading(false);
-    }
-  };
-
-  // Verify OTP
-  const verifyOtp = async () => {
-    if (!otp) {
-      setError("Enter the OTP");
-      return;
-    }
-    try {
-      setError("");
-      setLoading(true);
-      const res = await API.post("/verify-otp", { phone: form.phone, code: otp });
-      if (res.data.success) {
-        setOtpVerified(true);
-      } else {
-        setError("Invalid OTP");
-      }
-    } catch (err) {
-      setError(err.response?.data?.error || "OTP verification failed");
-    } finally {
-      setLoading(false);
-    }
-  };
-
   const handleSubmit = async (e) => {
     e.preventDefault();
+    setLoading(true);
+    setError("");
+    setSubmitted(false);
+
     if (form.password !== form.confirmPassword) {
       setError("Passwords do not match");
-      return;
-    }
-
-    // Only allow registration after OTP verified for student/recruiter
-    if ((form.role === "student" || form.role === "recruiter") && !otpVerified) {
-      setError("Please verify your phone number first");
+      setLoading(false);
       return;
     }
 
     try {
-      setLoading(true);
-      setError("");
-
+      // Prepare payload dynamically
       const payload = {
         name: `${form.firstName} ${form.lastName}`,
         email: form.email,
@@ -117,9 +71,6 @@ export default function Register() {
         department: "",
         role: "student",
       });
-      setOtp("");
-      setOtpSent(false);
-      setOtpVerified(false);
     } catch (err) {
       setError(err.response?.data?.message || "Registration failed");
     } finally {
@@ -131,7 +82,7 @@ export default function Register() {
     <div className="h-screen w-screen flex items-center justify-center bg-gradient-to-r from-indigo-100 via-white to-indigo-50 p-4 overflow-auto">
       <div className="bg-white rounded-2xl shadow-2xl w-full max-w-5xl flex flex-col md:flex-row overflow-hidden">
 
-        {/* Left Side */}
+        {/* Left Side - Illustration */}
         <div
           className="hidden md:flex flex-1 bg-cover bg-center min-h-[400px]"
           style={{
@@ -140,8 +91,9 @@ export default function Register() {
           }}
         ></div>
 
-        {/* Right Side */}
+        {/* Right Side - Form */}
         <div className="flex flex-col justify-start p-6 md:p-10 flex-1 overflow-y-auto">
+          {/* Header */}
           <div className="text-center mb-6 md:mb-8">
             <h2 className="text-2xl md:text-3xl font-bold text-gray-800">
               Create Your Account
@@ -152,180 +104,230 @@ export default function Register() {
             </p>
           </div>
 
+          {/* Form */}
           <form onSubmit={handleSubmit} className="space-y-5">
 
             {/* Name Fields */}
             <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-              <input
-                type="text"
-                name="firstName"
-                value={form.firstName}
-                onChange={handleChange}
-                placeholder="First Name"
-                required
-                className="w-full px-4 py-2 border rounded-xl focus:ring-2 focus:ring-indigo-400 focus:outline-none"
-              />
-              <input
-                type="text"
-                name="lastName"
-                value={form.lastName}
-                onChange={handleChange}
-                placeholder="Last Name"
-                required
-                className="w-full px-4 py-2 border rounded-xl focus:ring-2 focus:ring-indigo-400 focus:outline-none"
-              />
+              <div>
+                <label className="block text-sm font-medium text-gray-600 mb-1">
+                  First Name
+                </label>
+                <input
+                  type="text"
+                  name="firstName"
+                  value={form.firstName}
+                  onChange={handleChange}
+                  placeholder="John"
+                  required
+                  className="w-full px-4 py-2 border rounded-xl focus:ring-2 focus:ring-indigo-400 focus:outline-none transition"
+                />
+              </div>
+              <div>
+                <label className="block text-sm font-medium text-gray-600 mb-1">
+                  Last Name
+                </label>
+                <input
+                  type="text"
+                  name="lastName"
+                  value={form.lastName}
+                  onChange={handleChange}
+                  placeholder="Doe"
+                  required
+                  className="w-full px-4 py-2 border rounded-xl focus:ring-2 focus:ring-indigo-400 focus:outline-none transition"
+                />
+              </div>
             </div>
 
-            {/* Role-specific */}
-            {(form.role === "student" || form.role === "recruiter") && (
+            {/* Role-Specific Fields */}
+            {form.role === "student" && (
               <>
-                {form.role === "student" && (
+                <div>
+                  <label className="block text-sm font-medium text-gray-600 mb-1">
+                    College Name
+                  </label>
                   <input
                     type="text"
                     name="college"
                     value={form.college}
                     onChange={handleChange}
-                    placeholder="College Name"
+                    placeholder="e.g., Stanford University"
                     required
-                    className="w-full px-4 py-2 border rounded-xl focus:ring-2 focus:ring-indigo-400 focus:outline-none"
+                    className="w-full px-4 py-2 border rounded-xl focus:ring-2 focus:ring-indigo-400 focus:outline-none transition"
                   />
-                )}
-                {form.role === "recruiter" && (
-                  <input
-                    type="text"
-                    name="company"
-                    value={form.company}
-                    onChange={handleChange}
-                    placeholder="Company Name"
-                    required
-                    className="w-full px-4 py-2 border rounded-xl focus:ring-2 focus:ring-indigo-400 focus:outline-none"
-                  />
-                )}
-
-                <div className="flex gap-2">
+                </div>
+                <div>
+                  <label className="block text-sm font-medium text-gray-600 mb-1">
+                    Phone Number
+                  </label>
                   <input
                     type="tel"
                     name="phone"
                     value={form.phone}
                     onChange={handleChange}
-                    placeholder="Phone Number"
+                    placeholder="+91 98765 43210"
                     required
-                    className="flex-1 px-4 py-2 border rounded-xl focus:ring-2 focus:ring-indigo-400 focus:outline-none"
+                    className="w-full px-4 py-2 border rounded-xl focus:ring-2 focus:ring-indigo-400 focus:outline-none transition"
                   />
-                  {!otpSent ? (
-                    <button
-                      type="button"
-                      onClick={sendOtp}
-                      className="bg-indigo-600 text-white px-4 rounded-xl"
-                    >
-                      Send OTP
-                    </button>
-                  ) : !otpVerified ? (
-                    <>
-                      <input
-                        type="text"
-                        placeholder="Enter OTP"
-                        value={otp}
-                        onChange={(e) => setOtp(e.target.value)}
-                        className="px-4 py-2 border rounded-xl focus:ring-2 focus:ring-indigo-400 focus:outline-none"
-                      />
-                      <button
-                        type="button"
-                        onClick={verifyOtp}
-                        className="bg-green-600 text-white px-4 rounded-xl"
-                      >
-                        Verify OTP
-                      </button>
-                    </>
-                  ) : (
-                    <span className="text-green-600 font-medium">✅ Verified</span>
-                  )}
+                </div>
+              </>
+            )}
+
+            {form.role === "recruiter" && (
+              <>
+                <div>
+                  <label className="block text-sm font-medium text-gray-600 mb-1">
+                    Company Name
+                  </label>
+                  <input
+                    type="text"
+                    name="company"
+                    value={form.company}
+                    onChange={handleChange}
+                    placeholder="e.g., TechCorp"
+                    required
+                    className="w-full px-4 py-2 border rounded-xl focus:ring-2 focus:ring-indigo-400 focus:outline-none transition"
+                  />
+                </div>
+                <div>
+                  <label className="block text-sm font-medium text-gray-600 mb-1">
+                    Phone Number
+                  </label>
+                  <input
+                    type="tel"
+                    name="phone"
+                    value={form.phone}
+                    onChange={handleChange}
+                    placeholder="+91 98765 43210"
+                    required
+                    className="w-full px-4 py-2 border rounded-xl focus:ring-2 focus:ring-indigo-400 focus:outline-none transition"
+                  />
                 </div>
               </>
             )}
 
             {form.role === "admin" && (
-              <input
-                type="text"
-                name="department"
-                value={form.department}
-                onChange={handleChange}
-                placeholder="Department"
-                required
-                className="w-full px-4 py-2 border rounded-xl focus:ring-2 focus:ring-indigo-400 focus:outline-none"
-              />
+              <div>
+                <label className="block text-sm font-medium text-gray-600 mb-1">
+                  Department
+                </label>
+                <input
+                  type="text"
+                  name="department"
+                  value={form.department}
+                  onChange={handleChange}
+                  placeholder="e.g., HR"
+                  required
+                  className="w-full px-4 py-2 border rounded-xl focus:ring-2 focus:ring-indigo-400 focus:outline-none transition"
+                />
+              </div>
             )}
 
             {/* Email & Password */}
-            <input
-              type="email"
-              name="email"
-              value={form.email}
-              onChange={handleChange}
-              placeholder="Email"
-              required
-              className="w-full px-4 py-2 border rounded-xl focus:ring-2 focus:ring-indigo-400 focus:outline-none"
-            />
+            <div>
+              <label className="block text-sm font-medium text-gray-600 mb-1">
+                Email Address
+              </label>
+              <input
+                type="email"
+                name="email"
+                value={form.email}
+                onChange={handleChange}
+                placeholder="your@email.com"
+                required
+                className="w-full px-4 py-2 border rounded-xl focus:ring-2 focus:ring-indigo-400 focus:outline-none transition"
+              />
+            </div>
+
             <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-              <input
-                type="password"
-                name="password"
-                value={form.password}
-                onChange={handleChange}
-                placeholder="Password"
-                required
-                className="w-full px-4 py-2 border rounded-xl focus:ring-2 focus:ring-indigo-400 focus:outline-none"
-              />
-              <input
-                type="password"
-                name="confirmPassword"
-                value={form.confirmPassword}
-                onChange={handleChange}
-                placeholder="Confirm Password"
-                required
-                className="w-full px-4 py-2 border rounded-xl focus:ring-2 focus:ring-indigo-400 focus:outline-none"
-              />
+              <div>
+                <label className="block text-sm font-medium text-gray-600 mb-1">
+                  Password
+                </label>
+                <input
+                  type="password"
+                  name="password"
+                  value={form.password}
+                  onChange={handleChange}
+                  placeholder="Enter password"
+                  required
+                  className="w-full px-4 py-2 border rounded-xl focus:ring-2 focus:ring-indigo-400 focus:outline-none transition"
+                />
+              </div>
+              <div>
+                <label className="block text-sm font-medium text-gray-600 mb-1">
+                  Confirm Password
+                </label>
+                <input
+                  type="password"
+                  name="confirmPassword"
+                  value={form.confirmPassword}
+                  onChange={handleChange}
+                  placeholder="Re-enter password"
+                  required
+                  className="w-full px-4 py-2 border rounded-xl focus:ring-2 focus:ring-indigo-400 focus:outline-none transition"
+                />
+              </div>
             </div>
 
             {/* Role Selection */}
-            <div className="flex gap-3 flex-wrap">
-              {["student", "recruiter", "admin"].map((role) => (
-                <label
-                  key={role}
-                  className={`px-4 py-2 border rounded-xl cursor-pointer flex-1 text-center capitalize min-w-[80px] transition ${
-                    form.role === role
-                      ? "bg-indigo-50 border-indigo-500 text-indigo-600"
-                      : "hover:bg-gray-50"
-                  }`}
-                >
-                  <input
-                    type="radio"
-                    name="role"
-                    value={role}
-                    checked={form.role === role}
-                    onChange={handleChange}
-                    className="hidden"
-                  />
-                  {role}
-                </label>
-              ))}
+            <div>
+              <label className="block text-sm font-medium text-gray-600 mb-1">
+                I am a...
+              </label>
+              <div className="flex gap-3 flex-wrap">
+                {["student", "recruiter", "admin"].map((role) => (
+                  <label
+                    key={role}
+                    className={`px-4 py-2 border rounded-xl cursor-pointer flex-1 text-center capitalize min-w-[80px] transition ${
+                      form.role === role
+                        ? "bg-indigo-50 border-indigo-500 text-indigo-600"
+                        : "hover:bg-gray-50"
+                    }`}
+                  >
+                    <input
+                      type="radio"
+                      name="role"
+                      value={role}
+                      checked={form.role === role}
+                      onChange={handleChange}
+                      className="hidden"
+                    />
+                    {role}
+                  </label>
+                ))}
+              </div>
             </div>
 
+            {/* Submit Button */}
             <button
               type="submit"
+              className="w-full bg-indigo-600 hover:bg-indigo-700 text-white py-2 rounded-xl font-semibold transition duration-200 cursor-pointer"
               disabled={loading}
-              className="w-full bg-indigo-600 hover:bg-indigo-700 text-white py-2 rounded-xl font-semibold transition"
             >
               {loading ? "Registering..." : "Register"}
             </button>
           </form>
 
-          {submitted && <div className="mt-4 text-green-600 text-center">✅ Registration successful!</div>}
-          {error && <div className="mt-4 text-red-600 text-center">❌ {error}</div>}
+          {/* Messages */}
+          {submitted && (
+            <div className="mt-4 text-green-600 font-medium text-center">
+              ✅ Registration successful!
+            </div>
+          )}
+          {error && (
+            <div className="mt-4 text-red-600 font-medium text-center">
+              ❌ {error}
+            </div>
+          )}
 
+          {/* Login Link */}
           <p className="text-center text-sm text-gray-500 mt-6">
             Already have an account?{" "}
-            <Link to="/login" className="text-indigo-600 hover:underline">
+            <Link
+              to="/login"
+              className="text-indigo-600 font-medium hover:underline"
+            >
               Login
             </Link>
           </p>
