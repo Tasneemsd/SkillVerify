@@ -1,10 +1,9 @@
 import axios from "axios";
 
 const API = axios.create({
-  baseURL: "https://skillverify.onrender.com/api"
+  baseURL: "https://skillverify.onrender.com/api", // ✅ matches backend
 });
 
-// Attach JWT token automatically
 API.interceptors.request.use(config => {
   const token = localStorage.getItem("userToken");
   if (token) config.headers.Authorization = `Bearer ${token}`;
@@ -13,23 +12,18 @@ API.interceptors.request.use(config => {
 
 export default API;
 
-// Helper functions
 export function setAuthToken(token) {
   localStorage.setItem("userToken", token);
 }
-
 export function getAuthToken() {
   return localStorage.getItem("userToken");
 }
-
 export function setUserData(user) {
   localStorage.setItem("user", JSON.stringify(user));
 }
-
 export function getUserData() {
   return JSON.parse(localStorage.getItem("user") || "{}");
 }
-
 export function clearUserData() {
   localStorage.removeItem("user");
   localStorage.removeItem("userToken");
