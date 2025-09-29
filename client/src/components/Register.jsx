@@ -11,6 +11,7 @@ export default function Register() {
     password: "",
     confirmPassword: "",
     otp: "",
+    role: "student", // default role
   });
 
   const [loading, setLoading] = useState(false);
@@ -53,7 +54,8 @@ export default function Register() {
         email: form.email,
         phone: form.phone,
         password: form.password,
-        otp: form.otp, // verify OTP on backend
+        otp: form.otp,
+        role: form.role, // send role to backend
       });
 
       setSuccess("✅ Registration successful!");
@@ -65,6 +67,7 @@ export default function Register() {
         password: "",
         confirmPassword: "",
         otp: "",
+        role: "student",
       });
       setOtpSent(false);
     } catch (err) {
@@ -77,7 +80,6 @@ export default function Register() {
   return (
     <div className="min-h-screen flex items-center justify-center bg-white px-4">
       <div className="bg-white w-full max-w-md shadow-lg rounded-lg p-6">
-        
         {/* Google Register */}
         <button className="w-full border flex items-center justify-center py-2 rounded-md mb-4 hover:bg-gray-50 transition">
           <img
@@ -89,6 +91,32 @@ export default function Register() {
         </button>
 
         <div className="text-center text-gray-500 mb-4">OR</div>
+
+        {/* Role Selection */}
+        <div className="flex justify-around mb-4">
+          <label className="flex items-center gap-2">
+            <input
+              type="radio"
+              name="role"
+              value="student"
+              checked={form.role === "student"}
+              onChange={handleChange}
+              className="accent-indigo-500"
+            />
+            Student
+          </label>
+          <label className="flex items-center gap-2">
+            <input
+              type="radio"
+              name="role"
+              value="recruiter"
+              checked={form.role === "recruiter"}
+              onChange={handleChange}
+              className="accent-indigo-500"
+            />
+            Recruiter
+          </label>
+        </div>
 
         {/* Form */}
         <form onSubmit={handleSubmit} className="space-y-4">
