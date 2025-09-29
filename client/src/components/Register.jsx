@@ -31,10 +31,13 @@ export default function Register({ isOpen, onClose }) {
     setSendingOtp(true);
     setError("");
     try {
+      // Make sure API exists
+      if (!API || !API.post) throw new Error("API not configured");
       await API.post("/otp/send-otp", { phone: form.phone });
       setOtpSent(true);
     } catch (err) {
-      setError(err.response?.data?.message || "Failed to send OTP");
+      console.error(err);
+      setError(err.response?.data?.message || err.message || "Failed to send OTP");
     } finally {
       setSendingOtp(false);
     }
@@ -48,6 +51,7 @@ export default function Register({ isOpen, onClose }) {
     setSubmitted(false);
 
     try {
+      if (!API || !API.post) throw new Error("API not configured");
       const payload = {
         name: form.name,
         email: form.email,
@@ -62,12 +66,14 @@ export default function Register({ isOpen, onClose }) {
       setForm({ name: "", email: "", phone: "", password: "", otp: "" });
       setOtpSent(false);
     } catch (err) {
-      setError(err.response?.data?.message || "Registration failed");
+      console.error(err);
+      setError(err.response?.data?.message || err.message || "Registration failed");
     } finally {
       setLoading(false);
     }
   };
 
+  // Prevent rendering if modal is closed
   if (!isOpen) return null;
 
   return (
@@ -89,7 +95,6 @@ export default function Register({ isOpen, onClose }) {
 
         {/* Form */}
         <form onSubmit={handleSubmit} className="mt-6 space-y-4">
-          {/* Name */}
           <input
             type="text"
             name="name"
@@ -99,8 +104,6 @@ export default function Register({ isOpen, onClose }) {
             required
             className="w-full px-4 py-2 border rounded-xl"
           />
-
-          {/* Email */}
           <input
             type="email"
             name="email"
@@ -111,7 +114,6 @@ export default function Register({ isOpen, onClose }) {
             className="w-full px-4 py-2 border rounded-xl"
           />
 
-          {/* Phone */}
           <div className="flex gap-2">
             <input
               type="tel"
@@ -132,7 +134,6 @@ export default function Register({ isOpen, onClose }) {
             </button>
           </div>
 
-          {/* Password */}
           <input
             type="password"
             name="password"
@@ -143,7 +144,6 @@ export default function Register({ isOpen, onClose }) {
             className="w-full px-4 py-2 border rounded-xl"
           />
 
-          {/* OTP */}
           <input
             type="text"
             name="otp"
@@ -155,7 +155,6 @@ export default function Register({ isOpen, onClose }) {
             className="w-full px-4 py-2 border rounded-xl"
           />
 
-          {/* Submit */}
           <button
             type="submit"
             className="w-full bg-indigo-600 hover:bg-indigo-700 text-white py-2 rounded-xl font-semibold"
@@ -165,7 +164,6 @@ export default function Register({ isOpen, onClose }) {
           </button>
         </form>
 
-        {/* Messages */}
         {submitted && (
           <div className="mt-4 text-green-600 font-medium text-center">
             ✅ Registration successful!
