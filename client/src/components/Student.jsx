@@ -1,349 +1,333 @@
 // src/components/Student.jsx
 import React, { useState, useEffect } from "react";
 import axios from "axios";
+import {
+  User,
+  BookOpen,
+  Bell,
+  FileText,
+  Award,
+  Settings,
+  Menu,
+  X,
+} from "lucide-react";
 import { useNavigate } from "react-router-dom";
 
-export default function Student() {
-  const [activeTab, setActiveTab] = useState("profile");
+const BASE_URL = "https://skillverify.onrender.com/api";
+
+const Student = () => {
   const [student, setStudent] = useState(null);
   const [allCourses, setAllCourses] = useState([]);
   const [applications, setApplications] = useState([]);
   const [notifications, setNotifications] = useState([]);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState(null);
+  const [activeTab, setActiveTab] = useState("profile");
+  const [mobileMenuOpen, setMobileMenuOpen] = useState(false);
   const [editMode, setEditMode] = useState(false);
 
   const navigate = useNavigate();
-  const API_URL = "https://skillverify.onrender.com/api/student";
-  const COURSES_URL = "https://skillverify.onrender.com/api/courses";
-  const APP_URL = "https://skillverify.onrender.com/api/applications";
-  const NOTIF_URL = "https://skillverify.onrender.com/api/notification";
-
-  const user = JSON.parse(localStorage.getItem("user"));
+  const user = JSON.parse(localStorage.getItem("user") || "{}");
   const token = localStorage.getItem("userToken");
 
-  // Redirect if not logged in
-  useEffect(() => {
-    if (!user?.email) navigate("/login");
-  }, [user, navigate]);
+  const getAuthHeaders = () =>
+    token ? { Authorization: `Bearer ${token}` } : {};
 
-  // Fetch student profile & courses
-  useEffect(() => {
-    const fetchData = async () => {
-      try {
-        setLoading(true);
-        const studentRes = await axios.get(`${API_URL}?email=${encodeURIComponent(user.email)}`, {
-          headers: { Authorization: `Bearer ${token}` },
-        });
-        setStudent(studentRes.data);
+  // Fetch student data
+  const fetchStudent = async () => {
+    try {
+      if (!user?.email) return;
+      const res = await axios.get(
+        `${BASE_URL}/student?email=${encodeURIComponent(user.email)}`,
+        { headers: getAuthHeaders() }
+      );
+      setStudent(res.data);
 
-        const coursesRes = await axios.get(COURSES_URL);
-        setAllCourses(coursesRes.data);
+      const coursesRes = await axios.get(`${BASE_URL}/courses`);
+      setAllCourses(coursesRes.data);
 
-        if (studentRes.data._id) {
-          const appsRes = await axios.get(`${APP_URL}?studentId=${studentRes.data._id}`, {
-            headers: { Authorization: `Bearer ${token}` },
-          });
-          setApplications(appsRes.data || []);
-        }
-      } catch (err) {
-        console.error(err);
-        setError(err.response?.data?.message || "Failed to fetch data");
-      } finally {
-        setLoading(false);
+      if (res.data._id) {
+        const appsRes = await axios.get(
+          `${BASE_URL}/applications?studentId=${res.data._id}`,
+          { headers: getAuthHeaders() }
+        );
+        setApplications(appsRes.data || []);
       }
-    };
-
-    if (user?.email) fetchData();
-  }, [user?.email, token]);
-
-  // Fetch notifications (only when notifications tab is active)
-  useEffect(() => {
-    const fetchNotifications = async () => {
-      if (!student?._id) return;
-      try {
-        const res = await axios.get(`${NOTIF_URL}?studentId=${student._id}`, {
-          headers: { Authorization: `Bearer ${token}` },
-        });
-        setNotifications(res.data || []);
-      } catch (err) {
-        console.error("Error fetching notifications:", err.response?.data || err.message);
-      }
-    };
-
-    if (activeTab === "notifications" && student?._id) {
-      fetchNotifications();
+    } catch (err) {
+      setError("Failed to load student data");
     }
-  }, [activeTab, student?._id, token]);
+  };
+
+  const fetchNotifications = async () => {
+    try {
+      if (!student?._id) return;
+      const res = await axios.get(
+        `${BASE_URL}/notification?studentId=${student._id}`,
+        { headers: getAuthHeaders() }
+      );
+      setNotifications(res.data || []);
+    } catch (err) {
+      console.error("Notifications error:", err);
+    }
+  };
+
+  useEffect(() => {
+    const load = async () => {
+      setLoading(true);
+      await fetchStudent();
+      setLoading(false);
+    };
+    load();
+  }, []);
+
+  useEffect(() => {
+    if (activeTab === "notifications") fetchNotifications();
+  }, [activeTab]);
 
   const handleLogout = () => {
-    localStorage.removeItem("user");
-    localStorage.removeItem("userToken");
+    localStorage.clear();
     navigate("/login");
   };
 
   const handleEnroll = async (courseId) => {
     try {
       const res = await axios.post(
-        `${API_URL}/enroll`,
+        `${BASE_URL}/student/enroll`,
         { courseId, email: user.email },
-        { headers: { Authorization: `Bearer ${token}` } }
+        { headers: getAuthHeaders() }
       );
       alert(res.data.message || "Enrolled successfully!");
-      const enrolledCourse = allCourses.find((c) => c._id === courseId);
-      if (enrolledCourse) {
+      const course = allCourses.find((c) => c._id === courseId);
+      if (course) {
         setStudent((prev) => ({
           ...prev,
-          registeredCourses: [...(prev.registeredCourses || []), enrolledCourse],
+          registeredCourses: [...(prev.registeredCourses || []), course],
         }));
       }
-    } catch (err) {
-      console.error(err);
-      alert(err.response?.data?.message || "Failed to enroll. Try again.");
+    } catch {
+      alert("Failed to enroll");
     }
   };
 
   const handleUpdateProfile = async () => {
     try {
       const res = await axios.post(
-        `${API_URL}/profile`,
+        `${BASE_URL}/student/profile`,
         { email: student.email, ...student },
-        { headers: { Authorization: `Bearer ${token}` } }
+        { headers: getAuthHeaders() }
       );
       alert(res.data.message || "Profile updated!");
-      setEditMode(false); // Switch back to read-only mode
-    } catch (err) {
-      console.error(err);
-      alert(err.response?.data?.message || "Update failed. Try again.");
+      setEditMode(false);
+    } catch {
+      alert("Profile update failed");
     }
   };
 
-  if (loading) return <p className="text-center mt-10">Loading...</p>;
-  if (error) return <p className="text-center mt-10 text-red-500">{error}</p>;
-
-  const DEFAULT_AVATAR = "/default-avatar.png";
-  const DEFAULT_COURSE_IMG = "/default-course.png";
+  if (loading)
+    return (
+      <div className="min-h-screen flex items-center justify-center">
+        <p className="text-gray-600 text-lg">Loading student dashboard...</p>
+      </div>
+    );
+  if (error)
+    return (
+      <div className="min-h-screen flex items-center justify-center">
+        <p className="text-red-500">{error}</p>
+      </div>
+    );
 
   return (
     <div className="min-h-screen bg-gray-50">
       {/* Header */}
-      <header className="bg-white shadow px-4 sm:px-6 py-4 flex flex-col sm:flex-row justify-between items-center sticky top-0 z-10 gap-3 sm:gap-0">
-        <h1 className="text-xl sm:text-2xl font-bold text-blue-600">SkillVerify</h1>
-        <div className="text-gray-600 flex flex-col sm:flex-row items-center gap-2 sm:gap-4">
-          <span>
-            Welcome, <span className="font-semibold">{student?.name || "Student"}</span>
-          </span>
-          <button
-            onClick={handleLogout}
-            className="text-sm px-3 py-1 border border-gray-300 rounded hover:bg-gray-100 transition"
-          >
-            Logout
-          </button>
-        </div>
-      </header>
-
-      {/* Tabs */}
-      <div className="max-w-5xl mx-auto mt-6 border-b border-gray-200 px-4 sm:px-0 overflow-x-auto">
-        <div className="flex flex-nowrap gap-3 sm:gap-4">
-          {["profile","skills","registeredCourses","courses","notifications","applications"].map((tab) => (
-            <button
-              key={tab}
-              onClick={() => setActiveTab(tab)}
-              className={`flex-shrink-0 px-3 sm:px-4 py-2 text-sm sm:text-base font-medium border-b-2 transition ${
-                activeTab === tab
-                  ? "border-blue-600 text-blue-600"
-                  : "border-transparent text-gray-600 hover:text-gray-800"
-              }`}
-            >
-              {tab === "profile" && "Profile"}
-              {tab === "skills" && "Skill Progress"}
-              {tab === "registeredCourses" && "Registered Courses"}
-              {tab === "courses" && "Available Courses"}
-              {tab === "notifications" && "Notifications"}
-              {tab === "applications" && "Applications"}
-            </button>
-          ))}
+      <div className="bg-white shadow-sm border-b sticky top-0 z-50">
+        <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 flex justify-between items-center py-6">
+          <div className="flex items-center">
+            <User className="h-8 w-8 text-blue-600 mr-3" />
+            <h1 className="text-xl sm:text-2xl font-bold text-gray-900">
+              Student Dashboard
+            </h1>
+          </div>
+          {student && (
+            <div className="flex items-center space-x-4">
+              <span className="hidden sm:block text-sm text-gray-600">
+                Welcome, {student.name}
+              </span>
+              <div className="h-8 w-8 bg-blue-600 rounded-full flex items-center justify-center">
+                <span className="text-white text-sm font-medium">
+                  {student.name?.charAt(0)?.toUpperCase() || "S"}
+                </span>
+              </div>
+              <button
+                className="sm:hidden p-2 rounded-md border text-gray-600"
+                onClick={() => setMobileMenuOpen(!mobileMenuOpen)}
+              >
+                {mobileMenuOpen ? <X className="h-5 w-5" /> : <Menu className="h-5 w-5" />}
+              </button>
+            </div>
+          )}
         </div>
       </div>
 
-      {/* Tab Content */}
-      <div className="max-w-5xl mx-auto mt-6 px-4 sm:px-0 space-y-6">
-        {/* Profile Tab */}
-        {activeTab === "profile" && student && (
-          <div className="bg-white p-6 rounded-xl shadow space-y-4">
-            <div className="flex flex-col sm:flex-row gap-6">
-              <img
-                src={DEFAULT_AVATAR}
-                alt="Profile"
-                className="w-28 h-28 rounded-full object-cover border"
-                onError={(e) => (e.currentTarget.src = DEFAULT_AVATAR)}
-              />
+      {/* Tabs */}
+      <div className="bg-white border-b">
+        <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+          {/* Desktop */}
+          <div className="hidden sm:flex space-x-8">
+            {[
+              { id: "profile", label: "Profile", icon: User },
+              { id: "skills", label: "Skills", icon: Award },
+              { id: "registeredCourses", label: "My Courses", icon: BookOpen },
+              { id: "courses", label: "All Courses", icon: FileText },
+              { id: "applications", label: "Applications", icon: FileText },
+              { id: "notifications", label: "Notifications", icon: Bell },
+              { id: "settings", label: "Settings", icon: Settings },
+            ].map((tab) => (
+              <button
+                key={tab.id}
+                onClick={() => setActiveTab(tab.id)}
+                className={`flex items-center px-3 py-4 text-sm font-medium border-b-2 ${
+                  activeTab === tab.id
+                    ? "border-blue-600 text-blue-600"
+                    : "border-transparent text-gray-500 hover:text-gray-700 hover:border-gray-300"
+                }`}
+              >
+                <tab.icon className="h-4 w-4 mr-2" />
+                {tab.label}
+              </button>
+            ))}
+          </div>
 
-              {/* Editable Mode */}
-              {editMode ? (
-                <div className="flex-1 space-y-3">
-                  {["name", "rollNo", "college", "course", "year", "contactNumber"].map((field) => (
+          {/* Mobile */}
+          {mobileMenuOpen && (
+            <div className="sm:hidden flex flex-col space-y-2 py-2">
+              {[
+                { id: "profile", label: "Profile", icon: User },
+                { id: "skills", label: "Skills", icon: Award },
+                { id: "registeredCourses", label: "My Courses", icon: BookOpen },
+                { id: "courses", label: "All Courses", icon: FileText },
+                { id: "applications", label: "Applications", icon: FileText },
+                { id: "notifications", label: "Notifications", icon: Bell },
+                { id: "settings", label: "Settings", icon: Settings },
+              ].map((tab) => (
+                <button
+                  key={tab.id}
+                  onClick={() => {
+                    setActiveTab(tab.id);
+                    setMobileMenuOpen(false);
+                  }}
+                  className={`flex items-center px-3 py-2 text-sm font-medium rounded-md ${
+                    activeTab === tab.id
+                      ? "bg-blue-50 text-blue-600"
+                      : "text-gray-600 hover:bg-gray-50"
+                  }`}
+                >
+                  <tab.icon className="h-4 w-4 mr-2" />
+                  {tab.label}
+                </button>
+              ))}
+            </div>
+          )}
+        </div>
+      </div>
+
+      {/* Content */}
+      <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8 space-y-6">
+        {/* Profile */}
+        {activeTab === "profile" && (
+          <div className="bg-white p-6 rounded-lg shadow">
+            {editMode ? (
+              <div className="space-y-3">
+                {["name", "rollNo", "college", "course", "year", "contactNumber"].map(
+                  (field) => (
                     <input
                       key={field}
                       type={field === "year" ? "number" : "text"}
                       value={student[field] || ""}
-                      onChange={(e) => setStudent({ ...student, [field]: e.target.value })}
+                      onChange={(e) =>
+                        setStudent({ ...student, [field]: e.target.value })
+                      }
                       className="border p-2 rounded w-full"
-                      placeholder={field.charAt(0).toUpperCase() + field.slice(1)}
+                      placeholder={field}
                     />
-                  ))}
-                </div>
-              ) : (
-                /* Read-Only Mode */
-                <div className="flex-1 space-y-2">
-                  <p><strong>Name:</strong> {student.name}</p>
-                  <p><strong>Roll No:</strong> {student.rollNo}</p>
-                  <p><strong>College:</strong> {student.college}</p>
-                  <p><strong>Course:</strong> {student.course}</p>
-                  <p><strong>Year:</strong> {student.year}</p>
-                  <p><strong>Contact:</strong> {student.contactNumber}</p>
-                </div>
-              )}
-            </div>
-
-            {/* Social & Coding Links in Edit Mode */}
-            {editMode && (
-              <>
-                <div>
-                  <h3 className="font-semibold text-gray-800">Social Links</h3>
-                  {["facebook", "github", "linkedin", "instagram"].map((key) => (
-                    <input
-                      key={key}
-                      type="url"
-                      value={student?.socialLinks?.[key] || ""}
-                      onChange={(e) =>
-                        setStudent({
-                          ...student,
-                          socialLinks: { ...student.socialLinks, [key]: e.target.value },
-                        })
-                      }
-                      className="border p-2 rounded w-full mt-2"
-                      placeholder={`${key} link`}
-                    />
-                  ))}
-                </div>
-
-                <div>
-                  <h3 className="font-semibold text-gray-800">Coding Profiles</h3>
-                  {["leetcode", "hackerrank", "codeforces", "codechef"].map((key) => (
-                    <input
-                      key={key}
-                      type="url"
-                      value={student?.codingLinks?.[key] || ""}
-                      onChange={(e) =>
-                        setStudent({
-                          ...student,
-                          codingLinks: { ...student.codingLinks, [key]: e.target.value },
-                        })
-                      }
-                      className="border p-2 rounded w-full mt-2"
-                      placeholder={`${key} link`}
-                    />
-                  ))}
-                </div>
-              </>
-            )}
-
-            {/* Buttons */}
-            {editMode ? (
-              <button
-                onClick={handleUpdateProfile}
-                className="bg-blue-600 text-white px-4 py-2 rounded-lg font-medium hover:bg-blue-700 transition"
-              >
-                Save Changes
-              </button>
-            ) : (
-              <button
-                onClick={() => setEditMode(true)}
-                className="bg-gray-200 text-gray-800 px-4 py-2 rounded-lg font-medium hover:bg-gray-300 transition"
-              >
-                Edit Profile
-              </button>
-            )}
-          </div>
-        )}
-
-        {/* Skills Tab */}
-        {activeTab === "skills" && (
-          <div>
-            {student?.skills?.length > 0 ? (
-              <div className="flex flex-col gap-4">
-                {student.skills.map((skill, idx) => (
-                  <div
-                    key={idx}
-                    className="bg-white border rounded-lg shadow p-4 flex justify-between items-center"
-                  >
-                    <span className="font-semibold">{skill.name}</span>
-                    <span className={skill.verified ? "text-green-600" : "text-red-500"}>
-                      {skill.verified ? "✔ Verified" : "❌ Not Verified"}
-                    </span>
-                  </div>
-                ))}
+                  )
+                )}
+                <button
+                  onClick={handleUpdateProfile}
+                  className="bg-blue-600 text-white px-4 py-2 rounded"
+                >
+                  Save
+                </button>
               </div>
             ) : (
-              <p className="text-gray-500">No skills added yet.</p>
+              <div>
+                <p><strong>Name:</strong> {student.name}</p>
+                <p><strong>College:</strong> {student.college}</p>
+                <p><strong>Course:</strong> {student.course}</p>
+                <p><strong>Year:</strong> {student.year}</p>
+                <button
+                  onClick={() => setEditMode(true)}
+                  className="mt-3 bg-gray-200 px-4 py-2 rounded"
+                >
+                  Edit Profile
+                </button>
+              </div>
             )}
           </div>
         )}
 
-        {/* Registered Courses Tab */}
-        {activeTab === "registeredCourses" && (
-          <div>
-            {student?.registeredCourses?.length > 0 ? (
-              student.registeredCourses.map((course) => (
-                <div
-                  key={course._id}
-                  className="bg-white p-4 rounded-lg shadow flex justify-between mb-2"
-                >
-                  <div>
-                    <h3 className="font-semibold">{course.courseName}</h3>
-                    <p className="text-gray-600">{course.courseId}</p>
-                  </div>
+        {/* Skills */}
+        {activeTab === "skills" && (
+          <div className="bg-white p-6 rounded-lg shadow">
+            {student?.skills?.length ? (
+              student.skills.map((s, i) => (
+                <div key={i} className="flex justify-between border-b py-2">
+                  <span>{s.name}</span>
+                  <span className={s.verified ? "text-green-600" : "text-red-600"}>
+                    {s.verified ? "Verified" : "Not Verified"}
+                  </span>
                 </div>
               ))
             ) : (
-              <p className="text-gray-500">Not registered in any course.</p>
+              <p>No skills added yet</p>
             )}
           </div>
         )}
 
-        {/* Available Courses Tab */}
+        {/* Courses */}
+        {activeTab === "registeredCourses" && (
+          <div className="bg-white p-6 rounded-lg shadow">
+            {student?.registeredCourses?.length ? (
+              student.registeredCourses.map((c) => (
+                <div key={c._id} className="border-b py-2">
+                  {c.courseName}
+                </div>
+              ))
+            ) : (
+              <p>No courses registered</p>
+            )}
+          </div>
+        )}
+
         {activeTab === "courses" && (
-          <div>
-            {allCourses.map((course) => {
-              const alreadyEnrolled = student?.registeredCourses?.some((c) => c._id === course._id);
+          <div className="bg-white p-6 rounded-lg shadow space-y-3">
+            {allCourses.map((c) => {
+              const enrolled = student?.registeredCourses?.some((r) => r._id === c._id);
               return (
                 <div
-                  key={course._id}
-                  className="bg-white p-4 rounded-lg shadow flex justify-between mb-3"
+                  key={c._id}
+                  className="flex justify-between border-b py-2 items-center"
                 >
-                  <div className="flex items-center gap-2">
-                    <img
-                      src={DEFAULT_COURSE_IMG}
-                      alt={course.courseName}
-                      className="w-12 h-12 object-cover rounded"
-                      onError={(e) => (e.currentTarget.src = DEFAULT_COURSE_IMG)}
-                    />
-                    <div>
-                      <h3 className="font-semibold">{course.courseName}</h3>
-                      <p className="text-gray-600">{course.courseId}</p>
-                    </div>
-                  </div>
+                  <span>{c.courseName}</span>
                   <button
-                    onClick={() => handleEnroll(course._id)}
-                    disabled={alreadyEnrolled}
-                    className={`px-4 py-1 rounded ${
-                      alreadyEnrolled
-                        ? "bg-gray-400 text-white cursor-not-allowed"
-                        : "bg-blue-600 text-white hover:bg-blue-700"
+                    onClick={() => handleEnroll(c._id)}
+                    disabled={enrolled}
+                    className={`px-3 py-1 rounded ${
+                      enrolled
+                        ? "bg-gray-400 text-white"
+                        : "bg-blue-600 text-white"
                     }`}
                   >
-                    {alreadyEnrolled ? "Enrolled" : "Enroll"}
+                    {enrolled ? "Enrolled" : "Enroll"}
                   </button>
                 </div>
               );
@@ -351,54 +335,50 @@ export default function Student() {
           </div>
         )}
 
-        {/* Notifications Tab */}
-        {activeTab === "notifications" && (
-          <div>
-            {notifications.length > 0 ? (
-              notifications.map((n) => (
-                <div key={n._id} className="bg-white p-3 shadow rounded mb-2">
-                  <p>{n.message}</p>
-                  {n.adminMessage && <p className="text-sm text-gray-500">{n.adminMessage}</p>}
+        {/* Applications */}
+        {activeTab === "applications" && (
+          <div className="bg-white p-6 rounded-lg shadow">
+            {applications.length ? (
+              applications.map((app) => (
+                <div key={app._id} className="border-b py-2">
+                  {app.jobTitle} - {app.status}
                 </div>
               ))
             ) : (
-              <p className="text-gray-500">No notifications</p>
+              <p>No applications yet</p>
             )}
           </div>
         )}
 
-        {/* Applications Tab */}
-        {activeTab === "applications" && (
-          <div>
-            {applications.length > 0 ? (
-              applications.map((app) => (
-                <div
-                  key={app._id}
-                  className="bg-white p-3 shadow rounded mb-2 flex justify-between"
-                >
-                  <div>
-                    <h3 className="font-semibold">{app.jobTitle}</h3>
-                    <p className="text-gray-500">{app.company}</p>
-                  </div>
-                  <span
-                    className={
-                      app.status === "hired"
-                        ? "text-green-600"
-                        : app.status === "rejected"
-                        ? "text-red-600"
-                        : "text-yellow-600"
-                    }
-                  >
-                    {app.status}
-                  </span>
+        {/* Notifications */}
+        {activeTab === "notifications" && (
+          <div className="bg-white p-6 rounded-lg shadow">
+            {notifications.length ? (
+              notifications.map((n) => (
+                <div key={n._id} className="border-b py-2">
+                  {n.message}
                 </div>
               ))
             ) : (
-              <p className="text-gray-500">No applications</p>
+              <p>No notifications</p>
             )}
+          </div>
+        )}
+
+        {/* Settings */}
+        {activeTab === "settings" && (
+          <div className="bg-white p-6 rounded-lg shadow">
+            <button
+              onClick={handleLogout}
+              className="bg-red-600 text-white px-4 py-2 rounded"
+            >
+              Logout
+            </button>
           </div>
         )}
       </div>
     </div>
   );
-}
+};
+
+export default Student;
