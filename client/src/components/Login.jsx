@@ -1,166 +1,155 @@
 import React, { useState } from "react";
-import { useNavigate, Link } from "react-router-dom";
-import API from "../api"; // 👈 import API
+import { Link, useNavigate } from "react-router-dom";
+import API from "../api"; // your API instance
 
 export default function Login() {
-  const [form, setForm] = useState({ email: "", password: "", role: "student" });
+  const [form, setForm] = useState({
+    email: "",
+    password: "",
+    role: "student",
+  });
+
+  const [loading, setLoading] = useState(false);
+  const [error, setError] = useState("");
+  const [success, setSuccess] = useState("");
   const navigate = useNavigate();
 
   const handleChange = (e) => {
-    setForm({ ...form, [e.target.name]: e.target.value });
+    const { name, value } = e.target;
+    setForm((prev) => ({ ...prev, [name]: value }));
   };
 
   const handleSubmit = async (e) => {
     e.preventDefault();
+    setLoading(true);
+    setError("");
+    setSuccess("");
+
     try {
       const res = await API.post("/login", {
         email: form.email,
         password: form.password,
+        role: form.role,
       });
 
       // Save JWT + user details
       localStorage.setItem("userToken", res.data.token);
       localStorage.setItem("user", JSON.stringify(res.data.user));
 
-      alert(`Logged in as ${res.data.user.email} (${res.data.user.role})`);
+      setSuccess(`✅ Logged in as ${res.data.user.email}`);
 
-      // Redirect based on backend role
+      // Redirect based on role
       if (res.data.user.role === "student") navigate("/student");
-      else if (res.data.user.role === "admin") navigate("/admin");
+
       else if (res.data.user.role === "recruiter") navigate("/recruiter");
     } catch (err) {
-      alert(err.response?.data?.message || "Invalid email or password!");
+      setError(err.response?.data?.message || "Invalid email or password!");
+    } finally {
+      setLoading(false);
     }
   };
 
   return (
-    <div className="min-h-screen flex items-center justify-center bg-gradient-to-r from-indigo-100 via-white to-indigo-50 p-4">
-      <div className="bg-white rounded-2xl shadow-xl w-full max-w-4xl flex flex-col md:flex-row overflow-hidden">
-
-        {/* Left Image */}
-        <div
-          className="hidden md:flex flex-1 bg-cover bg-center"
-          style={{
-            backgroundImage:
-              "url('https://static.vecteezy.com/system/resources/previews/034/956/340/non_2x/people-seeking-job-opportunities-job-search-recruitment-hr-hiring-employees-flat-illustrations-for-landing-page-web-banner-social-media-infographic-mobile-apps-vector.jpg')",
-          }}
-        ></div>
-
-        {/* Right Form */}
-        <div className="flex flex-col justify-center p-6 sm:p-10 flex-1">
-          <div className="text-center mb-6 sm:mb-8">
-            <h2 className="text-2xl sm:text-3xl font-bold text-gray-800">Welcome Back</h2>
-            <div className="w-16 h-1 bg-indigo-500 mx-auto mt-2 rounded-full"></div>
-            <p className="mt-2 text-gray-500 text-sm sm:text-base">
-              Access your account and explore new opportunities
-            </p>
-          </div>
-
-          <form onSubmit={handleSubmit} className="space-y-4 sm:space-y-5">
-            {/* Email */}
-            <div>
-              <label className="block text-sm font-medium text-gray-600 mb-1">
-                Email Address
-              </label>
-              <input
-                type="email"
-                name="email"
-                value={form.email}
-                onChange={handleChange}
-                placeholder="Enter your email"
-                required
-                className="w-full px-4 py-2 border rounded-xl focus:ring-2 focus:ring-indigo-400 focus:outline-none"
-              />
-            </div>
-
-            {/* Password */}
-            <div>
-              <label className="block text-sm font-medium text-gray-600 mb-1">
-                Password
-              </label>
-              <input
-                type="password"
-                name="password"
-                value={form.password}
-                onChange={handleChange}
-                placeholder="••••••••••"
-                required
-                className="w-full px-4 py-2 border rounded-xl focus:ring-2 focus:ring-indigo-400 focus:outline-none"
-              />
-            </div>
-
-            {/* Role Selection */}
-            <div>
-              <label className="block text-sm font-medium text-gray-600 mb-1">Login as</label>
-              <select
-                name="role"
-                value={form.role}
-                onChange={handleChange}
-                className="w-full px-4 py-2 border rounded-xl focus:ring-2 focus:ring-indigo-400 focus:outline-none"
-              >
-                <option value="student">Student</option>
-                <option value="admin">Admin</option>
-                <option value="recruiter">Recruiter</option>
-              </select>
-            </div>
-
-            {/* Remember + Forgot */}
-            <div className="flex flex-col sm:flex-row items-center justify-between text-sm text-gray-500 gap-2 sm:gap-0">
-              <label className="flex items-center space-x-2">
-                <input type="checkbox" className="rounded text-indigo-500" />
-                <span>Remember me</span>
-              </label>
-              <a href="#" className="hover:text-indigo-600">
-                Forgot password?
-              </a>
-            </div>
-
-            {/* Login Button */}
-            <button
-              type="submit"
-              className="w-full bg-indigo-600 hover:bg-indigo-700 text-white py-2 rounded-xl font-semibold transition duration-200"
-            >
-              Login
-            </button>
-          </form>
-
-          {/* Divider */}
-          <div className="flex items-center my-4 sm:my-6">
-            <div className="flex-grow border-t border-gray-300"></div>
-            <span className="px-2 text-gray-400 text-sm">OR</span>
-            <div className="flex-grow border-t border-gray-300"></div>
-          </div>
-
-          {/* Social Login */}
-          <div className="flex flex-col sm:flex-row gap-3">
-            <button className="flex-1 flex items-center justify-center border rounded-xl py-2 hover:bg-gray-50 transition">
-              <img
-                src="https://www.svgrepo.com/show/475656/google-color.svg"
-                alt="Google"
-                className="w-5 h-5 mr-2"
-              />
-              Google
-            </button>
-            <button className="flex-1 flex items-center justify-center border rounded-xl py-2 hover:bg-gray-50 transition">
-              <img
-                src="https://img.favpng.com/13/12/10/github-pages-logo-computer-icons-png-favpng-ew8sjnZfG8RsyhJNBTL2Dw3SR.jpg"
-                alt="GitHub"
-                className="w-6 h-6 mr-2"
-              />
-              GitHub
-            </button>
-          </div>
-
-          <p className="text-center text-sm text-gray-500 mt-4 sm:mt-6">
-            Don’t have an account?{" "}
-            <Link
-              to="/register"
-              className="text-indigo-600 font-medium hover:underline"
-            >
-              Register
-            </Link>
+    <div className="min-h-screen flex items-center justify-center bg-gradient-to-b from-indigo-100 to-white px-4">
+      <div className="bg-white w-full max-w-md shadow-2xl rounded-2xl p-8">
+        {/* Header */}
+        <div className="text-center mb-6">
+          <h2 className="text-2xl sm:text-3xl font-bold text-gray-800">Welcome Back</h2>
+          <p className="text-gray-500">
+            Login as{" "}
+            <span className="font-semibold capitalize">{form.role}</span>
           </p>
         </div>
+
+        {/* Google Login */}
+        <button className="w-full border flex items-center justify-center py-2 rounded-md mb-4 hover:bg-gray-50 transition font-medium">
+          <img
+            src="https://www.svgrepo.com/show/355037/google.svg"
+            alt="Google"
+            className="w-5 h-5 mr-2"
+          />
+          Continue with Google
+        </button>
+
+        <div className="text-center text-gray-400 mb-4">OR</div>
+
+        {/* Role Selection */}
+        <div className="flex justify-around mb-6">
+          <label className="flex items-center gap-2 cursor-pointer">
+            <input
+              type="radio"
+              name="role"
+              value="student"
+              checked={form.role === "student"}
+              onChange={handleChange}
+              className="accent-indigo-500"
+            />
+            Student
+          </label>
+          <label className="flex items-center gap-2 cursor-pointer">
+            <input
+              type="radio"
+              name="role"
+              value="recruiter"
+              checked={form.role === "recruiter"}
+              onChange={handleChange}
+              className="accent-indigo-500"
+            />
+            Recruiter
+          </label>
+          
+        </div>
+
+        {/* Form */}
+        <form onSubmit={handleSubmit} className="space-y-4">
+          <input
+            type="email"
+            name="email"
+            placeholder="Email Address"
+            value={form.email}
+            onChange={handleChange}
+            required
+            className="w-full border px-3 py-2 rounded-md focus:ring-2 focus:ring-indigo-400 focus:outline-none"
+          />
+          <input
+            type="password"
+            name="password"
+            placeholder="Password"
+            value={form.password}
+            onChange={handleChange}
+            required
+            className="w-full border px-3 py-2 rounded-md focus:ring-2 focus:ring-indigo-400 focus:outline-none"
+          />
+
+          <div className="flex items-center justify-between text-sm text-gray-500">
+            <label className="flex items-center gap-2">
+              <input type="checkbox" className="accent-indigo-500" /> Remember me
+            </label>
+            <a href="#" className="hover:text-indigo-600">
+              Forgot password?
+            </a>
+          </div>
+
+          <button
+            type="submit"
+            disabled={loading}
+            className="w-full bg-indigo-500 hover:bg-indigo-600 text-white py-2 rounded-md font-semibold transition"
+          >
+            {loading ? "Logging in..." : "Login"}
+          </button>
+        </form>
+
+        {/* Error / Success */}
+        {error && <p className="text-red-500 text-center mt-3">{error}</p>}
+        {success && <p className="text-green-600 text-center mt-3">{success}</p>}
+
+        {/* Register Link */}
+        <p className="text-center text-sm text-gray-500 mt-6">
+          Don’t have an account?{" "}
+          <Link to="/register" className="text-indigo-600 font-medium hover:underline">
+            Register
+          </Link>
+        </p>
       </div>
     </div>
   );

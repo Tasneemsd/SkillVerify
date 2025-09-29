@@ -81,9 +81,7 @@ export default function Register() {
       <div className="bg-white w-full max-w-md shadow-2xl rounded-2xl p-8">
         {/* Header */}
         <div className="text-center mb-6">
-          <h1 className="text-3xl font-bold text-indigo-700 mb-2">
-            Create Your Account
-          </h1>
+           <h2 className="text-2xl sm:text-3xl font-bold text-gray-800">Create Your Account</h2>
           <p className="text-gray-500">
             Join as a <span className="font-semibold">{form.role === "student" ? "Student" : "Recruiter"}</span>
           </p>
@@ -210,7 +208,7 @@ export default function Register() {
           <button
             type="submit"
             disabled={loading}
-            className="w-full bg-pink-500 hover:bg-pink-600 text-white py-2 rounded-md font-semibold transition"
+            className="w-full bg-indigo-500 hover:bg-indigo-600 text-white py-2 rounded-md font-semibold transition"
           >
             {loading ? "Registering..." : "Create Account"}
           </button>
