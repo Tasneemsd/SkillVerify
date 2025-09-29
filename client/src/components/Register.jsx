@@ -1,58 +1,70 @@
+
 import React, { useState } from "react";
-import API from "../api";
+import { sendOtp, verifyOtp } from "../api";
 
 function Register() {
-  const [step, setStep] = useState("form"); // form | otp | success
-  const [formData, setFormData] = useState({ email: "", phone: "", password: "" });
-  const [otp, setOtp] = useState("");
+  const [step, setStep] = useState(1);
+  const [form, setForm] = useState({
+    name: "",
+    email: "",
+    phone: "",
+    password: "",
+    otp: "",
+  });
 
-  const handleChange = e => {
-    setFormData({ ...formData, [e.target.name]: e.target.value });
-  };
+  const handleChange = (e) => setForm({ ...form, [e.target.name]: e.target.value });
 
-  const sendOtp = async e => {
-    e.preventDefault();
+  const handleSendOtp = async () => {
     try {
-      await API.post("/send-otp", formData);
-      setStep("otp");
+      await sendOtp(form.phone);
+      alert("OTP sent!");
+      setStep(2);
     } catch (err) {
-      alert(err.response?.data?.message || "Failed to send OTP");
+      alert("Failed to send OTP");
     }
   };
 
-  const verifyOtp = async e => {
-    e.preventDefault();
+  const handleVerify = async () => {
     try {
-      await API.post("/verify-otp", { phone: formData.phone, otp });
-      setStep("success");
+      const res = await verifyOtp({
+        name: form.name,
+        email: form.email,
+        phone: form.phone,
+        password: form.password,
+        code: form.otp,
+      });
+
+      if (res.data.success) {
+        alert("Registered successfully!");
+      } else {
+        alert(res.data.message);
+      }
     } catch (err) {
-      alert(err.response?.data?.message || "Failed to verify OTP");
+      alert("Verification failed");
     }
   };
 
   return (
-    <div className="register">
-      {step === "form" && (
-        <form onSubmit={sendOtp}>
-          <h2>Register</h2>
-          <input type="email" name="email" placeholder="Email" onChange={handleChange} required />
-          <input type="tel" name="phone" placeholder="+91XXXXXXXXXX" onChange={handleChange} required />
-          <input type="password" name="password" placeholder="Password" onChange={handleChange} required />
-          <button type="submit">Send OTP</button>
-        </form>
+    <div>
+      {step === 1 && (
+        <div>
+          <input name="name" placeholder="Name" onChange={handleChange} />
+          <input name="email" placeholder="Email" onChange={handleChange} />
+          <input name="phone" placeholder="Phone" onChange={handleChange} />
+          <input name="password" type="password" placeholder="Password" onChange={handleChange} />
+          <button onClick={handleSendOtp}>Send OTP</button>
+        </div>
       )}
 
-      {step === "otp" && (
-        <form onSubmit={verifyOtp}>
-          <h2>Verify OTP</h2>
-          <input type="text" value={otp} onChange={e => setOtp(e.target.value)} placeholder="Enter OTP" required />
-          <button type="submit">Verify OTP</button>
-        </form>
+      {step === 2 && (
+        <div>
+          <input name="otp" placeholder="Enter OTP" onChange={handleChange} />
+          <button onClick={handleVerify}>Verify & Register</button>
+        </div>
       )}
-
-      {step === "success" && <h2>✅ Registration Successful! Please log in.</h2>}
     </div>
   );
 }
 
 export default Register;
+
