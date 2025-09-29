@@ -1,14 +1,17 @@
 import React, { useState } from "react";
 import { X } from "lucide-react";
 
-// Mock API for testing
+// Replace this with your real backend API
 const API = {
   post: (url, payload) =>
     new Promise((resolve, reject) => {
       console.log("API called:", url, payload);
       setTimeout(() => {
         if (url === "/otp/send-otp") resolve({ success: true });
-        else if (url === "/otp/verify-otp") resolve({ success: true });
+        else if (url === "/otp/verify-otp") {
+          if (payload.code === "1234") resolve({ success: true }); // mock OTP check
+          else reject(new Error("Invalid OTP"));
+        } else if (url === "/register") resolve({ success: true });
         else reject(new Error("Unknown endpoint"));
       }, 1000);
     }),
@@ -22,9 +25,11 @@ export default function Register({ isOpen, onClose }) {
     password: "",
     otp: "",
   });
+
   const [loading, setLoading] = useState(false);
   const [sendingOtp, setSendingOtp] = useState(false);
   const [otpSent, setOtpSent] = useState(false);
+  const [otpVerified, setOtpVerified] = useState(false);
   const [submitted, setSubmitted] = useState(false);
   const [error, setError] = useState("");
 
@@ -33,6 +38,7 @@ export default function Register({ isOpen, onClose }) {
     setForm((prev) => ({ ...prev, [name]: value }));
   };
 
+  // Step 1: Send OTP
   const handleSendOtp = async () => {
     if (!form.phone) {
       setError("Please enter phone before sending OTP");
@@ -44,30 +50,49 @@ export default function Register({ isOpen, onClose }) {
       await API.post("/otp/send-otp", { phone: form.phone });
       setOtpSent(true);
     } catch (err) {
-      console.error(err);
       setError(err.message || "Failed to send OTP");
     } finally {
       setSendingOtp(false);
     }
   };
 
+  // Step 2: Verify OTP
+  const handleVerifyOtp = async () => {
+    if (!form.otp) {
+      setError("Please enter OTP");
+      return;
+    }
+    setLoading(true);
+    setError("");
+    try {
+      await API.post("/otp/verify-otp", { phone: form.phone, code: form.otp });
+      setOtpVerified(true);
+    } catch (err) {
+      setError(err.message || "Invalid OTP");
+    } finally {
+      setLoading(false);
+    }
+  };
+
+  // Step 3: Submit Registration
   const handleSubmit = async (e) => {
     e.preventDefault();
+    if (!otpVerified) {
+      setError("Please verify OTP before registering");
+      return;
+    }
+
     setLoading(true);
     setError("");
     setSubmitted(false);
 
     try {
-      const payload = {
-        ...form,
-        code: form.otp,
-      };
-      await API.post("/otp/verify-otp", payload);
+      await API.post("/register", form);
       setSubmitted(true);
       setForm({ name: "", email: "", phone: "", password: "", otp: "" });
       setOtpSent(false);
+      setOtpVerified(false);
     } catch (err) {
-      console.error(err);
       setError(err.message || "Registration failed");
     } finally {
       setLoading(false);
@@ -79,6 +104,7 @@ export default function Register({ isOpen, onClose }) {
   return (
     <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50">
       <div className="bg-white rounded-2xl shadow-xl w-full max-w-md p-6 relative">
+        {/* Close Button */}
         <button
           onClick={onClose}
           className="absolute top-3 right-3 text-gray-400 hover:text-gray-600"
@@ -86,12 +112,15 @@ export default function Register({ isOpen, onClose }) {
           <X size={20} />
         </button>
 
+        {/* Title */}
         <h2 className="text-2xl font-bold text-gray-800 text-center">
           Create Your Account
         </h2>
         <div className="w-16 h-1 bg-indigo-500 mx-auto mt-2 rounded-full"></div>
 
+        {/* Form */}
         <form onSubmit={handleSubmit} className="mt-6 space-y-4">
+          {/* Name */}
           <input
             type="text"
             name="name"
@@ -101,6 +130,8 @@ export default function Register({ isOpen, onClose }) {
             required
             className="w-full px-4 py-2 border rounded-xl"
           />
+
+          {/* Email */}
           <input
             type="email"
             name="email"
@@ -111,6 +142,7 @@ export default function Register({ isOpen, onClose }) {
             className="w-full px-4 py-2 border rounded-xl"
           />
 
+          {/* Phone + OTP */}
           <div className="flex gap-2">
             <input
               type="tel"
@@ -131,6 +163,33 @@ export default function Register({ isOpen, onClose }) {
             </button>
           </div>
 
+          {/* OTP Field + Verify Button */}
+          {otpSent && (
+            <div className="flex gap-2">
+              <input
+                type="text"
+                name="otp"
+                value={form.otp}
+                onChange={handleChange}
+                placeholder="Enter OTP"
+                className="flex-1 px-4 py-2 border rounded-xl"
+              />
+              <button
+                type="button"
+                onClick={handleVerifyOtp}
+                disabled={loading || otpVerified}
+                className={`px-4 py-2 rounded-xl text-sm font-medium transition ${
+                  otpVerified
+                    ? "bg-green-500 text-white"
+                    : "bg-indigo-500 hover:bg-indigo-600 text-white"
+                }`}
+              >
+                {otpVerified ? "Verified ✅" : "Verify OTP"}
+              </button>
+            </div>
+          )}
+
+          {/* Password */}
           <input
             type="password"
             name="password"
@@ -141,17 +200,7 @@ export default function Register({ isOpen, onClose }) {
             className="w-full px-4 py-2 border rounded-xl"
           />
 
-          <input
-            type="text"
-            name="otp"
-            value={form.otp}
-            onChange={handleChange}
-            placeholder="Enter OTP"
-            disabled={!otpSent}
-            required
-            className="w-full px-4 py-2 border rounded-xl"
-          />
-
+          {/* Submit */}
           <button
             type="submit"
             className="w-full bg-indigo-600 hover:bg-indigo-700 text-white py-2 rounded-xl font-semibold"
@@ -161,6 +210,7 @@ export default function Register({ isOpen, onClose }) {
           </button>
         </form>
 
+        {/* Messages */}
         {submitted && (
           <div className="mt-4 text-green-600 font-medium text-center">
             ✅ Registration successful!
