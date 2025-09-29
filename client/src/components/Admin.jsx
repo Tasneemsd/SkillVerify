@@ -144,7 +144,7 @@ const Admin = () => {
           <div className="flex items-center">
             <ShieldCheck className="h-8 w-8 text-purple-600 mr-3" />
             <h1 className="text-xl sm:text-2xl font-bold text-gray-900">
-              Admin Dashboard
+              SkillVerify
             </h1>
           </div>
           {admin && (

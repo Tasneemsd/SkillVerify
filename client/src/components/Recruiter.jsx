@@ -185,7 +185,7 @@ const Recruiter = () => {
           <div className="flex items-center">
             <Briefcase className="h-8 w-8 text-blue-600 mr-3" />
             <h1 className="text-xl sm:text-2xl font-bold text-gray-900">
-              Recruiter Dashboard
+              SkillVerify
             </h1>
           </div>
           {recruiter && (
