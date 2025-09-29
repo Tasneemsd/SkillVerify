@@ -11,7 +11,7 @@ export default function Register() {
     password: "",
     confirmPassword: "",
     otp: "",
-    role: "student", // default role
+    role: "student",
   });
 
   const [loading, setLoading] = useState(false);
@@ -24,7 +24,6 @@ export default function Register() {
     setForm((prev) => ({ ...prev, [name]: value }));
   };
 
-  // Send OTP to backend
   const sendOtp = async () => {
     try {
       setError("");
@@ -55,7 +54,7 @@ export default function Register() {
         phone: form.phone,
         password: form.password,
         otp: form.otp,
-        role: form.role, // send role to backend
+        role: form.role,
       });
 
       setSuccess("✅ Registration successful!");
@@ -78,10 +77,20 @@ export default function Register() {
   };
 
   return (
-    <div className="min-h-screen flex items-center justify-center bg-white px-4">
-      <div className="bg-white w-full max-w-md shadow-lg rounded-lg p-6">
+    <div className="min-h-screen flex items-center justify-center bg-gradient-to-b from-indigo-100 to-white px-4">
+      <div className="bg-white w-full max-w-md shadow-2xl rounded-2xl p-8">
+        {/* Header */}
+        <div className="text-center mb-6">
+          <h1 className="text-3xl font-bold text-indigo-700 mb-2">
+            Create Your Account
+          </h1>
+          <p className="text-gray-500">
+            Join as a <span className="font-semibold">{form.role === "student" ? "Student" : "Recruiter"}</span>
+          </p>
+        </div>
+
         {/* Google Register */}
-        <button className="w-full border flex items-center justify-center py-2 rounded-md mb-4 hover:bg-gray-50 transition">
+        <button className="w-full border flex items-center justify-center py-2 rounded-md mb-4 hover:bg-gray-50 transition font-medium">
           <img
             src="https://www.svgrepo.com/show/355037/google.svg"
             alt="Google"
@@ -90,11 +99,11 @@ export default function Register() {
           Register with Google
         </button>
 
-        <div className="text-center text-gray-500 mb-4">OR</div>
+        <div className="text-center text-gray-400 mb-4">OR</div>
 
         {/* Role Selection */}
-        <div className="flex justify-around mb-4">
-          <label className="flex items-center gap-2">
+        <div className="flex justify-around mb-6">
+          <label className="flex items-center gap-2 cursor-pointer">
             <input
               type="radio"
               name="role"
@@ -105,7 +114,7 @@ export default function Register() {
             />
             Student
           </label>
-          <label className="flex items-center gap-2">
+          <label className="flex items-center gap-2 cursor-pointer">
             <input
               type="radio"
               name="role"
@@ -120,24 +129,26 @@ export default function Register() {
 
         {/* Form */}
         <form onSubmit={handleSubmit} className="space-y-4">
-          <input
-            type="text"
-            name="firstName"
-            placeholder="First Name"
-            value={form.firstName}
-            onChange={handleChange}
-            required
-            className="w-full border px-3 py-2 rounded-md focus:ring-2 focus:ring-indigo-400 focus:outline-none"
-          />
-          <input
-            type="text"
-            name="lastName"
-            placeholder="Last Name"
-            value={form.lastName}
-            onChange={handleChange}
-            required
-            className="w-full border px-3 py-2 rounded-md focus:ring-2 focus:ring-indigo-400 focus:outline-none"
-          />
+          <div className="grid grid-cols-2 gap-4">
+            <input
+              type="text"
+              name="firstName"
+              placeholder="First Name"
+              value={form.firstName}
+              onChange={handleChange}
+              required
+              className="border px-3 py-2 rounded-md focus:ring-2 focus:ring-indigo-400 focus:outline-none w-full"
+            />
+            <input
+              type="text"
+              name="lastName"
+              placeholder="Last Name"
+              value={form.lastName}
+              onChange={handleChange}
+              required
+              className="border px-3 py-2 rounded-md focus:ring-2 focus:ring-indigo-400 focus:outline-none w-full"
+            />
+          </div>
           <input
             type="email"
             name="email"
@@ -161,7 +172,7 @@ export default function Register() {
               type="button"
               onClick={sendOtp}
               disabled={!form.phone || otpSent}
-              className="px-4 py-2 bg-indigo-500 text-white rounded-md hover:bg-indigo-600 disabled:opacity-50"
+              className="px-4 py-2 bg-indigo-500 text-white rounded-md hover:bg-indigo-600 disabled:opacity-50 font-medium"
             >
               {otpSent ? "OTP Sent" : "Send OTP"}
             </button>
@@ -201,7 +212,7 @@ export default function Register() {
             disabled={loading}
             className="w-full bg-pink-500 hover:bg-pink-600 text-white py-2 rounded-md font-semibold transition"
           >
-            {loading ? "Registering..." : "Register now"}
+            {loading ? "Registering..." : "Create Account"}
           </button>
         </form>
 
@@ -211,7 +222,7 @@ export default function Register() {
 
         {/* Login Link */}
         <p className="text-center text-sm text-gray-500 mt-6">
-          Already on Internshala?{" "}
+          Already have an account?{" "}
           <Link to="/login" className="text-indigo-600 font-medium hover:underline">
             Login
           </Link>
