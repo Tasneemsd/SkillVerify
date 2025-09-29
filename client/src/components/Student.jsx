@@ -144,7 +144,7 @@ const Student = () => {
           <div className="flex items-center">
             <User className="h-8 w-8 text-blue-600 mr-3" />
             <h1 className="text-xl sm:text-2xl font-bold text-gray-900">
-              Student Dashboard
+              SkillVerify
             </h1>
           </div>
           {student && (
