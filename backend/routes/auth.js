@@ -11,7 +11,7 @@ const client = twilio(process.env.TWILIO_SID, process.env.TWILIO_AUTH_TOKEN);
 const SERVICE_SID = process.env.TWILIO_VERIFY_SID; // Put your Verify Service SID in .env
 
 // ✅ Send OTP using Twilio Verify
-router.post("/send-otp", async (req, res) => {
+router.post("/api/send-otp", async (req, res) => {
   try {
     const { phone } = req.body;
     if (!phone) return res.status(400).json({ message: "Phone number required" });
@@ -29,7 +29,7 @@ router.post("/send-otp", async (req, res) => {
 });
 
 // ✅ Verify OTP
-router.post("/verify-otp", async (req, res) => {
+router.post("/api/verify-otp", async (req, res) => {
   try {
     const { phone, code, name, email, password } = req.body;
 
