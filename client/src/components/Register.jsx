@@ -1,6 +1,18 @@
 import React, { useState } from "react";
 import { X } from "lucide-react";
-import API from "../api";
+
+// Mock API for testing
+const API = {
+  post: (url, payload) =>
+    new Promise((resolve, reject) => {
+      console.log("API called:", url, payload);
+      setTimeout(() => {
+        if (url === "/otp/send-otp") resolve({ success: true });
+        else if (url === "/otp/verify-otp") resolve({ success: true });
+        else reject(new Error("Unknown endpoint"));
+      }, 1000);
+    }),
+};
 
 export default function Register({ isOpen, onClose }) {
   const [form, setForm] = useState({
@@ -10,7 +22,6 @@ export default function Register({ isOpen, onClose }) {
     password: "",
     otp: "",
   });
-
   const [loading, setLoading] = useState(false);
   const [sendingOtp, setSendingOtp] = useState(false);
   const [otpSent, setOtpSent] = useState(false);
@@ -22,7 +33,6 @@ export default function Register({ isOpen, onClose }) {
     setForm((prev) => ({ ...prev, [name]: value }));
   };
 
-  // Send OTP to phone
   const handleSendOtp = async () => {
     if (!form.phone) {
       setError("Please enter phone before sending OTP");
@@ -31,19 +41,16 @@ export default function Register({ isOpen, onClose }) {
     setSendingOtp(true);
     setError("");
     try {
-      // Make sure API exists
-      if (!API || !API.post) throw new Error("API not configured");
       await API.post("/otp/send-otp", { phone: form.phone });
       setOtpSent(true);
     } catch (err) {
       console.error(err);
-      setError(err.response?.data?.message || err.message || "Failed to send OTP");
+      setError(err.message || "Failed to send OTP");
     } finally {
       setSendingOtp(false);
     }
   };
 
-  // Register with OTP verification
   const handleSubmit = async (e) => {
     e.preventDefault();
     setLoading(true);
@@ -51,35 +58,27 @@ export default function Register({ isOpen, onClose }) {
     setSubmitted(false);
 
     try {
-      if (!API || !API.post) throw new Error("API not configured");
       const payload = {
-        name: form.name,
-        email: form.email,
-        phone: form.phone,
-        password: form.password,
-        code: form.otp, // OTP
+        ...form,
+        code: form.otp,
       };
-
       await API.post("/otp/verify-otp", payload);
-
       setSubmitted(true);
       setForm({ name: "", email: "", phone: "", password: "", otp: "" });
       setOtpSent(false);
     } catch (err) {
       console.error(err);
-      setError(err.response?.data?.message || err.message || "Registration failed");
+      setError(err.message || "Registration failed");
     } finally {
       setLoading(false);
     }
   };
 
-  // Prevent rendering if modal is closed
   if (!isOpen) return null;
 
   return (
     <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50">
       <div className="bg-white rounded-2xl shadow-xl w-full max-w-md p-6 relative">
-        {/* Close Button */}
         <button
           onClick={onClose}
           className="absolute top-3 right-3 text-gray-400 hover:text-gray-600"
@@ -87,13 +86,11 @@ export default function Register({ isOpen, onClose }) {
           <X size={20} />
         </button>
 
-        {/* Header */}
         <h2 className="text-2xl font-bold text-gray-800 text-center">
           Create Your Account
         </h2>
         <div className="w-16 h-1 bg-indigo-500 mx-auto mt-2 rounded-full"></div>
 
-        {/* Form */}
         <form onSubmit={handleSubmit} className="mt-6 space-y-4">
           <input
             type="text"
