@@ -1,9 +1,8 @@
-// otp.js
-const express = require('express');
+// backend/routes/otp.js
+const express = require("express");
 const router = express.Router();
-const twilio = require('twilio');
+const twilio = require("twilio");
 
-// Use environment variables (never hardcode secrets!)
 const accountSid = process.env.TWILIO_ACCOUNT_SID;
 const authToken = process.env.TWILIO_AUTH_TOKEN;
 const serviceSid = process.env.TWILIO_SERVICE_SID;
@@ -11,38 +10,40 @@ const serviceSid = process.env.TWILIO_SERVICE_SID;
 const client = twilio(accountSid, authToken);
 
 // Send OTP
-router.post('/send-otp', async (req, res) => {
+router.post("/send-otp", async (req, res) => {
+  const { phone } = req.body;
+  if (!phone) return res.status(400).json({ error: "Phone number required" });
+
   try {
-    const { phone } = req.body; // frontend must send { phone: "+91xxxxxxx" }
-    if (!phone) return res.status(400).json({ error: 'Phone number required' });
+    const verification = await client.verify.v2
+      .services(serviceSid)
+      .verifications.create({ to: phone, channel: "sms" });
 
-    const verification = await client.verify.v2.services(serviceSid)
-      .verifications.create({ to: phone, channel: 'sms' });
-
-    res.status(200).json({ success: true, status: verification.status });
+    res.json({ success: true, sid: verification.sid });
   } catch (err) {
-    console.error('OTP Error:', err.message);
-    res.status(500).json({ error: 'Internal server error' });
+    console.error(err);
+    res.status(500).json({ error: "Failed to send OTP" });
   }
 });
 
 // Verify OTP
-router.post('/verify-otp', async (req, res) => {
-  try {
-    const { phone, code } = req.body;
-    if (!phone || !code) return res.status(400).json({ error: 'Phone and code required' });
+router.post("/verify-otp", async (req, res) => {
+  const { phone, code } = req.body;
+  if (!phone || !code) return res.status(400).json({ error: "Phone and code required" });
 
-    const verificationCheck = await client.verify.v2.services(serviceSid)
+  try {
+    const verificationCheck = await client.verify.v2
+      .services(serviceSid)
       .verificationChecks.create({ to: phone, code });
 
-    if (verificationCheck.status === 'approved') {
-      res.status(200).json({ success: true });
+    if (verificationCheck.status === "approved") {
+      res.json({ success: true });
     } else {
-      res.status(400).json({ success: false, message: 'Invalid OTP' });
+      res.json({ success: false });
     }
   } catch (err) {
-    console.error('OTP Verify Error:', err.message);
-    res.status(500).json({ error: 'Internal server error' });
+    console.error(err);
+    res.status(500).json({ error: "OTP verification failed" });
   }
 });
 

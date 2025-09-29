@@ -13,12 +13,12 @@ const studentSchema = new mongoose.Schema({
   isFavorite: { type: Boolean, default: false },
   isShortlisted: { type: Boolean, default: false },
   avatar: { type: String },
-  contactNumber: { type: String },
+phone: { type: String },
   registeredCourses: [
     { type: mongoose.Schema.Types.ObjectId, ref: "Course" }
   ],
   rollNo: { type: String },
-  contactNumber: { type: String },
+  phone: { type: String },
   socialLinks: {
     facebook: { type: String },
     github: { type: String },
