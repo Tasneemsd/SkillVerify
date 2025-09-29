@@ -1,8 +1,9 @@
 
-import express from "express";
-import twilio from "twilio";
-import bcrypt from "bcryptjs";
-import User from "../models/User.js"; // Adjust path if needed
+const express = require("express");
+const twilio = require("twilio");
+const bcrypt = require("bcryptjs");
+const User = require("../models/Student");
+ // Adjust path if needed
 
 const router = express.Router();
 
