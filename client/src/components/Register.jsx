@@ -2,7 +2,7 @@ import React, { useState } from "react";
 import { X } from "lucide-react";
 import API from "../api";
 
-export default function RegisterModal({ isOpen, onClose }) {
+export default function Register({ isOpen, onClose }) {
   const [form, setForm] = useState({
     name: "",
     email: "",
