@@ -8,11 +8,12 @@ const jwt = require("jsonwebtoken");
 // ===== REGISTER =====
 exports.register = async (req, res) => {
   try {
-    const { name, email, password, role } = req.body;
+    const { name, email, phone, password, otp } = req.body;
 
-    if (!name || !email || !password || !role) {
-      return res.status(400).json({ message: "All fields are required" });
-    }
+  if (!name || !email || !phone || !password || !otp) {
+    return res.status(400).json({ message: "All fields required" });
+  }
+
 
     // Check existing email in all collections
     const existingUser = await Student.findOne({ email }) ||
