@@ -27,7 +27,7 @@ export default function Register() {
   const sendOtp = async () => {
     try {
       setError("");
-      await API.post("/send-otp", { phone: form.phone });
+      await API.post("/otp/send-otp", { phone: form.phone });
       setOtpSent(true);
       setSuccess("OTP sent successfully to your phone");
     } catch (err) {
