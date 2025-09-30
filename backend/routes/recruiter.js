@@ -2,7 +2,7 @@ const express = require("express");
 const router = express.Router();
 const Recruiter = require("../models/Recruiter");
 const Job = require("../models/Job");
-const Student = require("../models/Student"); // <- Add this
+const Student = require("../models/Student");
 const jwt = require("jsonwebtoken");
 
 // ===== GET recruiter profile by email =====
@@ -61,8 +61,9 @@ router.get("/jobs", async (req, res) => {
 router.post("/create-job", async (req, res) => {
   try {
     const { email, title, description, location, salary, skillsRequired } = req.body;
-    if (!email || !title || !description || !location)
-      return res.status(400).json({ message: "Email, title, description, location required" });
+    if (!email || !title || !description || !location) {
+      return res.status(400).json({ message: "Email, title, description, and location are required" });
+    }
 
     const recruiter = await Recruiter.findOne({ email: email.toLowerCase().trim() });
     if (!recruiter) return res.status(404).json({ message: "Recruiter not found" });
@@ -72,13 +73,13 @@ router.post("/create-job", async (req, res) => {
       description,
       location,
       salary,
-      skills: skillsRequired || [],
+      skillsRequired: skillsRequired || [], // ✅ FIXED field
       postedBy: recruiter._id,
-      postedByEmail: recruiter.email
+      postedByEmail: recruiter.email,
     });
 
     await job.save();
-    res.json({ message: "Job created successfully", job });
+    res.status(201).json({ message: "Job created successfully", job });
   } catch (err) {
     console.error("CREATE JOB ERROR:", err.message);
     res.status(500).json({ message: "Failed to create job", error: err.message });
