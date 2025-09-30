@@ -17,52 +17,47 @@ const Student = () => {
 
   const navigate = useNavigate();
 
-  // ===== Get user & token safely =====
   const user = JSON.parse(localStorage.getItem("user") || "null");
   const token = localStorage.getItem("userToken");
 
-  // Redirect to login if not logged in
+  // Redirect if not logged in
   useEffect(() => {
     if (!user || !token) navigate("/login");
   }, [user, token]);
 
-  const getAuthHeaders = () =>
-    token ? { Authorization: `Bearer ${token}` } : {};
+  const getAuthHeaders = () => ({
+    Authorization: `Bearer ${token}`,
+  });
 
-  // ===== Fetch all dashboard data =====
+  // Fetch all dashboard data
   const fetchData = async () => {
     try {
-      if (!user?.email) return;
+      if (!user?._id) return;
 
-      // Fetch student profile
-      const res = await axios.get(`${BASE_URL}/student`, {
-        headers: getAuthHeaders(),
-      });
+      // Student profile
+      const res = await axios.get(`${BASE_URL}/student`, { headers: getAuthHeaders() });
       setStudent(res.data);
 
-      // Fetch all courses
+      // All courses
       const coursesRes = await axios.get(`${BASE_URL}/courses`);
       setAllCourses(coursesRes.data);
 
-      // Fetch enrolled courses
-      if (res.data._id) {
-        const enrolledRes = await axios.get(
-          `${BASE_URL}/enroll?studentId=${res.data._id}`,
-          { headers: getAuthHeaders() }
-        );
-        setEnrolledCourses(enrolledRes.data || []);
+      // Enrolled courses
+      const enrolledRes = await axios.get(`${BASE_URL}/enroll?studentId=${user._id}`, {
+        headers: getAuthHeaders(),
+      });
+      setEnrolledCourses(enrolledRes.data || []);
 
-        // Fetch applications
-        const appsRes = await axios.get(
-          `${BASE_URL}/applications?studentId=${res.data._id}`,
-          { headers: getAuthHeaders() }
-        );
-        setApplications(appsRes.data || []);
-      }
+      // Applications
+      const appsRes = await axios.get(`${BASE_URL}/applications?studentId=${user._id}`, {
+        headers: getAuthHeaders(),
+      });
+      setApplications(appsRes.data || []);
 
-      // Fetch jobs
+      // Jobs (only active)
       const jobsRes = await axios.get(`${BASE_URL}/jobs`);
-      setJobs(jobsRes.data || []);
+      const activeJobs = jobsRes.data.filter((j) => j.isActive);
+      setJobs(activeJobs);
     } catch (err) {
       console.error(err);
       setError("Failed to load student data");
@@ -78,24 +73,42 @@ const Student = () => {
     load();
   }, []);
 
-  // ===== Enroll handler =====
+  // Enroll handler
   const handleEnroll = async (courseId) => {
     try {
-      if (!student?._id) return alert("Student not found");
       await axios.post(
         `${BASE_URL}/enroll`,
         { studentId: student._id, courseId },
         { headers: getAuthHeaders() }
       );
       alert("Enrolled successfully!");
-      fetchData(); // refresh enrolled courses
+      fetchData();
     } catch (err) {
       console.error(err);
       alert("Failed to enroll");
     }
   };
 
-  // ===== Logout =====
+  // Apply job handler (prevent multiple applications)
+  const handleApply = async (jobId) => {
+    const alreadyApplied = applications.some((a) => a.jobId === jobId);
+    if (alreadyApplied) return alert("You have already applied for this job");
+
+    try {
+      await axios.post(
+        `${BASE_URL}/applications`,
+        { studentId: student._id, jobId },
+        { headers: getAuthHeaders() }
+      );
+      alert("Application submitted!");
+      fetchData();
+    } catch (err) {
+      console.error(err);
+      alert("Failed to apply");
+    }
+  };
+
+  // Logout
   const handleLogout = () => {
     localStorage.clear();
     navigate("/login");
@@ -142,9 +155,7 @@ const Student = () => {
             {student?.name?.charAt(0) || "S"}
           </div>
           <div>
-            <h2 className="text-lg font-semibold text-gray-800">
-              {student?.name}
-            </h2>
+            <h2 className="text-lg font-semibold text-gray-800">{student?.name}</h2>
             <p className="text-gray-500 text-sm">
               {student?.course} • {student?.college} • Class of {student?.year}
             </p>
@@ -185,12 +196,8 @@ const Student = () => {
             {allCourses.map((c) => (
               <div key={c._id} className="bg-white p-5 rounded-lg shadow">
                 <h3 className="font-semibold text-gray-800">{c.courseName}</h3>
-                <p className="text-gray-500 text-sm mt-2">
-                  {c.courseDescription}
-                </p>
-                <p className="text-green-600 font-semibold mt-3">
-                  ₹{c.courseFee}
-                </p>
+                <p className="text-gray-500 text-sm mt-2">{c.courseDescription}</p>
+                <p className="text-green-600 font-semibold mt-3">₹{c.courseFee}</p>
                 <p className="text-gray-400 text-xs">
                   {c.courseDuration} | ID: {c.courseId}
                 </p>
@@ -215,15 +222,9 @@ const Student = () => {
                   className="bg-white p-5 rounded-lg shadow flex justify-between"
                 >
                   <div>
-                    <h3 className="font-semibold text-gray-800">
-                      {c.courseName}
-                    </h3>
-                    <p className="text-gray-500 text-sm">
-                      {c.courseDescription}
-                    </p>
-                    <p className="text-gray-400 text-xs">
-                      Duration: {c.courseDuration}
-                    </p>
+                    <h3 className="font-semibold text-gray-800">{c.courseName}</h3>
+                    <p className="text-gray-500 text-sm">{c.courseDescription}</p>
+                    <p className="text-gray-400 text-xs">Duration: {c.courseDuration}</p>
                   </div>
                   <span className="text-green-600 font-semibold">Enrolled</span>
                 </div>
@@ -246,9 +247,7 @@ const Student = () => {
                   <div>
                     <h3 className="font-semibold text-gray-800">{job.title}</h3>
                     <p className="text-gray-500 text-sm">{job.location}</p>
-                    <p className="text-gray-400 text-sm mt-2">
-                      {job.description}
-                    </p>
+                    <p className="text-gray-400 text-sm mt-2">{job.description}</p>
                     <div className="flex space-x-2 mt-3">
                       {job.skillsRequired?.map((s, i) => (
                         <span
@@ -263,7 +262,10 @@ const Student = () => {
                       Salary: {job.salary || "Not specified"}
                     </p>
                   </div>
-                  <button className="bg-blue-600 text-white px-4 py-2 rounded">
+                  <button
+                    onClick={() => handleApply(job._id)}
+                    className="bg-blue-600 text-white px-4 py-2 rounded"
+                  >
                     Apply
                   </button>
                 </div>
@@ -279,12 +281,9 @@ const Student = () => {
           <div className="bg-white rounded-lg p-6 shadow">
             {applications.length ? (
               applications.map((app) => (
-                <div
-                  key={app._id}
-                  className="flex justify-between border-b py-2"
-                >
-                  <span>{app.jobTitle}</span>
-                  <span className="text-sm text-gray-500">{app.status}</span>
+                <div key={app._id} className="flex justify-between border-b py-2">
+                  <span>{app.jobTitle || app.job?.title}</span>
+                  <span className="text-sm text-gray-500">{app.status || "Pending"}</span>
                 </div>
               ))
             ) : (
