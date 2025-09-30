@@ -24,7 +24,7 @@ const app = express();
 // ✅ Allow frontend
 app.use(
   cors({
-    origin: ["https://skill-verify.vercel.app","http://localhost:5173" ], // frontend domain
+    origin: ["https://skill-verify.vercel.app" ], // frontend domain
     credentials: true,
   })
 );
