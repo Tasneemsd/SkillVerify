@@ -12,14 +12,14 @@ export default function Home() {
 
   return (
     <div className="bg-gradient-to-b from-blue-50 to-white text-gray-800">
-      {/* Navbar */}
+      
       <nav className="bg-white shadow-md sticky top-0 z-50">
         <div className="max-w-7xl mx-auto px-4 sm:px-6 py-4 flex justify-between items-center">
           <h1 className="text-xl sm:text-2xl font-bold text-blue-600">
             SkillVerify
           </h1>
 
-          {/* Desktop Links */}
+    
           <div className="hidden md:flex gap-6 lg:gap-8 font-medium text-gray-700 text-sm lg:text-base">
             <a href="#verification" className="hover:text-blue-600">
               Verification Process
@@ -35,7 +35,7 @@ export default function Home() {
             </a>
           </div>
 
-          {/* Buttons (Desktop) */}
+        
           <div className="hidden sm:flex gap-2 sm:gap-4 text-sm sm:text-base">
             <button
               className="px-3 sm:px-4 py-2 border border-blue-600 text-blue-600 rounded-lg hover:bg-blue-50"
@@ -51,7 +51,6 @@ export default function Home() {
             </button>
           </div>
 
-          {/* Hamburger Button (Mobile) */}
           <button
             className="md:hidden flex items-center text-blue-600"
             onClick={() => setMenuOpen(!menuOpen)}
@@ -60,7 +59,7 @@ export default function Home() {
           </button>
         </div>
 
-        {/* Mobile Menu with animation */}
+
         <div
           className={`md:hidden bg-white shadow-lg border-t overflow-hidden transition-all duration-300 ${
             menuOpen ? "max-h-96 opacity-100" : "max-h-0 opacity-0"
@@ -119,7 +118,6 @@ export default function Home() {
         </div>
       </nav>
 
-      {/* Hero Section */}
       <section className="text-center px-4 sm:px-6 py-16 sm:py-20 max-w-5xl mx-auto">
         <h1 className="text-3xl sm:text-4xl md:text-5xl font-bold mb-6 leading-snug">
           <span className="text-blue-600">Get Skills Verified</span> <br />
@@ -153,7 +151,7 @@ export default function Home() {
         </div>
       </section>
 
-      {/* 5-Step Verification */}
+
       <section
         id="verification"
         className="py-12 sm:py-16 bg-white max-w-6xl mx-auto px-4 sm:px-6"
@@ -216,7 +214,7 @@ export default function Home() {
         </div>
       </section>
 
-      {/* Journey Timeline */}
+  
       <section className="py-12 sm:py-16 bg-gradient-to-r from-blue-50 to-green-50">
         <h2 className="text-xl sm:text-2xl font-bold text-center mb-10 sm:mb-12">
           Your Journey to Verified Skills
@@ -264,7 +262,7 @@ export default function Home() {
         </div>
       </section>
 
-      {/* Features Section */}
+ 
       <section
         id="courses"
         className="py-12 sm:py-16 max-w-6xl mx-auto px-4 sm:px-6"
@@ -310,7 +308,7 @@ export default function Home() {
         </div>
       </section>
 
-      {/* About Us */}
+
       <section
         id="about"
         className="py-16 sm:py-20 bg-gray-50 px-4 sm:px-6 text-center"
@@ -324,7 +322,7 @@ export default function Home() {
         </p>
       </section>
 
-      {/* For Recruiters */}
+
       <section
         id="recruiters"
         className="py-16 sm:py-20 bg-white px-4 sm:px-6 text-center"
@@ -340,7 +338,7 @@ export default function Home() {
         </button>
       </section>
 
-      {/* Footer */}
+
       <footer className="bg-indigo-900 text-white py-8">
         <div className="max-w-6xl mx-auto px-4 sm:px-6 flex flex-col md:flex-row justify-between items-center gap-4">
           <p className="text-xs sm:text-sm md:text-base text-center md:text-left">

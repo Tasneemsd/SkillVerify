@@ -4,10 +4,8 @@ import axios from "axios";
 import {
   User,
   BookOpen,
-  Bell,
   FileText,
   Award,
-  Settings,
   Menu,
   X,
 } from "lucide-react";
@@ -19,12 +17,12 @@ const Student = () => {
   const [student, setStudent] = useState(null);
   const [allCourses, setAllCourses] = useState([]);
   const [applications, setApplications] = useState([]);
-  const [notifications, setNotifications] = useState([]);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState(null);
   const [activeTab, setActiveTab] = useState("profile");
   const [mobileMenuOpen, setMobileMenuOpen] = useState(false);
   const [editMode, setEditMode] = useState(false);
+  const [dropdownOpen, setDropdownOpen] = useState(false);
 
   const navigate = useNavigate();
   const user = JSON.parse(localStorage.getItem("user") || "{}");
@@ -58,19 +56,6 @@ const Student = () => {
     }
   };
 
-  const fetchNotifications = async () => {
-    try {
-      if (!student?._id) return;
-      const res = await axios.get(
-        `${BASE_URL}/notification?studentId=${student._id}`,
-        { headers: getAuthHeaders() }
-      );
-      setNotifications(res.data || []);
-    } catch (err) {
-      console.error("Notifications error:", err);
-    }
-  };
-
   useEffect(() => {
     const load = async () => {
       setLoading(true);
@@ -79,10 +64,6 @@ const Student = () => {
     };
     load();
   }, []);
-
-  useEffect(() => {
-    if (activeTab === "notifications") fetchNotifications();
-  }, [activeTab]);
 
   const handleLogout = () => {
     localStorage.clear();
@@ -148,15 +129,40 @@ const Student = () => {
             </h1>
           </div>
           {student && (
-            <div className="flex items-center space-x-4">
+            <div className="flex items-center space-x-4 relative">
               <span className="hidden sm:block text-sm text-gray-600">
                 Welcome, {student.name}
               </span>
-              <div className="h-8 w-8 bg-blue-600 rounded-full flex items-center justify-center">
+              <div
+                className="h-8 w-8 bg-blue-600 rounded-full flex items-center justify-center cursor-pointer"
+                onClick={() => setDropdownOpen(!dropdownOpen)}
+              >
                 <span className="text-white text-sm font-medium">
                   {student.name?.charAt(0)?.toUpperCase() || "S"}
                 </span>
               </div>
+              {dropdownOpen && (
+                <div className="absolute right-0 mt-36 w-48 bg-white border rounded-lg shadow-md z-50">
+                  <button
+                    onClick={() => setActiveTab("profile")}
+                    className="block w-full text-left px-4 py-2 hover:bg-gray-100"
+                  >
+                    My Profile
+                  </button>
+                  <button
+                    onClick={() => alert("Settings page coming soon!")}
+                    className="block w-full text-left px-4 py-2 hover:bg-gray-100"
+                  >
+                    Settings
+                  </button>
+                  <button
+                    onClick={handleLogout}
+                    className="block w-full text-left px-4 py-2 hover:bg-gray-100 text-red-600"
+                  >
+                    Logout
+                  </button>
+                </div>
+              )}
               <button
                 className="sm:hidden p-2 rounded-md border text-gray-600"
                 onClick={() => setMobileMenuOpen(!mobileMenuOpen)}
@@ -179,8 +185,6 @@ const Student = () => {
               { id: "registeredCourses", label: "My Courses", icon: BookOpen },
               { id: "courses", label: "All Courses", icon: FileText },
               { id: "applications", label: "Applications", icon: FileText },
-              { id: "notifications", label: "Notifications", icon: Bell },
-              { id: "settings", label: "Settings", icon: Settings },
             ].map((tab) => (
               <button
                 key={tab.id}
@@ -196,37 +200,6 @@ const Student = () => {
               </button>
             ))}
           </div>
-
-          {/* Mobile */}
-          {mobileMenuOpen && (
-            <div className="sm:hidden flex flex-col space-y-2 py-2">
-              {[
-                { id: "profile", label: "Profile", icon: User },
-                { id: "skills", label: "Skills", icon: Award },
-                { id: "registeredCourses", label: "My Courses", icon: BookOpen },
-                { id: "courses", label: "All Courses", icon: FileText },
-                { id: "applications", label: "Applications", icon: FileText },
-                { id: "notifications", label: "Notifications", icon: Bell },
-                { id: "settings", label: "Settings", icon: Settings },
-              ].map((tab) => (
-                <button
-                  key={tab.id}
-                  onClick={() => {
-                    setActiveTab(tab.id);
-                    setMobileMenuOpen(false);
-                  }}
-                  className={`flex items-center px-3 py-2 text-sm font-medium rounded-md ${
-                    activeTab === tab.id
-                      ? "bg-blue-50 text-blue-600"
-                      : "text-gray-600 hover:bg-gray-50"
-                  }`}
-                >
-                  <tab.icon className="h-4 w-4 mr-2" />
-                  {tab.label}
-                </button>
-              ))}
-            </div>
-          )}
         </div>
       </div>
 
@@ -293,7 +266,7 @@ const Student = () => {
           </div>
         )}
 
-        {/* Courses */}
+        {/* Registered Courses */}
         {activeTab === "registeredCourses" && (
           <div className="bg-white p-6 rounded-lg shadow">
             {student?.registeredCourses?.length ? (
@@ -308,26 +281,29 @@ const Student = () => {
           </div>
         )}
 
+        {/* All Courses */}
         {activeTab === "courses" && (
-          <div className="bg-white p-6 rounded-lg shadow space-y-3">
+          <div className="bg-white p-6 rounded-lg shadow grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-6">
             {allCourses.map((c) => {
               const enrolled = student?.registeredCourses?.some((r) => r._id === c._id);
               return (
-                <div
-                  key={c._id}
-                  className="flex justify-between border-b py-2 items-center"
-                >
-                  <span>{c.courseName}</span>
+                <div key={c._id} className="border rounded-lg p-4 flex flex-col justify-between shadow">
+                  <div>
+                    <h3 className="text-lg font-semibold">{c.courseName}</h3>
+                    <p className="text-gray-600 mt-2">{c.description}</p>
+                    <p className="mt-2 text-sm"><strong>Cost:</strong> ₹{c.cost || "Free"}</p>
+                    <p className="text-sm"><strong>Duration:</strong> {c.duration || "N/A"}</p>
+                  </div>
                   <button
                     onClick={() => handleEnroll(c._id)}
                     disabled={enrolled}
-                    className={`px-3 py-1 rounded ${
+                    className={`mt-4 w-full px-3 py-2 rounded ${
                       enrolled
                         ? "bg-gray-400 text-white"
-                        : "bg-blue-600 text-white"
+                        : "bg-blue-600 text-white hover:bg-blue-700"
                     }`}
                   >
-                    {enrolled ? "Enrolled" : "Enroll"}
+                    {enrolled ? "Enrolled" : "Enroll Now"}
                   </button>
                 </div>
               );
@@ -350,32 +326,7 @@ const Student = () => {
           </div>
         )}
 
-        {/* Notifications */}
-        {activeTab === "notifications" && (
-          <div className="bg-white p-6 rounded-lg shadow">
-            {notifications.length ? (
-              notifications.map((n) => (
-                <div key={n._id} className="border-b py-2">
-                  {n.message}
-                </div>
-              ))
-            ) : (
-              <p>No notifications</p>
-            )}
-          </div>
-        )}
 
-        {/* Settings */}
-        {activeTab === "settings" && (
-          <div className="bg-white p-6 rounded-lg shadow">
-            <button
-              onClick={handleLogout}
-              className="bg-red-600 text-white px-4 py-2 rounded"
-            >
-              Logout
-            </button>
-          </div>
-        )}
       </div>
     </div>
   );
