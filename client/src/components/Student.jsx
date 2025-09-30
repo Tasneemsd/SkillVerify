@@ -16,28 +16,35 @@ const Student = () => {
   const [error, setError] = useState(null);
 
   const navigate = useNavigate();
-  const user = JSON.parse(localStorage.getItem("user") || "{}");
+
+  // ===== Get user & token safely =====
+  const user = JSON.parse(localStorage.getItem("user") || "null");
   const token = localStorage.getItem("userToken");
+
+  // Redirect to login if not logged in
+  useEffect(() => {
+    if (!user || !token) navigate("/login");
+  }, [user, token]);
 
   const getAuthHeaders = () =>
     token ? { Authorization: `Bearer ${token}` } : {};
 
-  // ===== Fetch Student + Courses + Enrolled + Jobs =====
+  // ===== Fetch all dashboard data =====
   const fetchData = async () => {
     try {
       if (!user?.email) return;
 
-      const res = await axios.get(
-        `${BASE_URL}/student?email=${encodeURIComponent(user.email)}`,
-        { headers: getAuthHeaders() }
-      );
+      // Fetch student profile
+      const res = await axios.get(`${BASE_URL}/student`, {
+        headers: getAuthHeaders(),
+      });
       setStudent(res.data);
 
-      // Courses
+      // Fetch all courses
       const coursesRes = await axios.get(`${BASE_URL}/courses`);
       setAllCourses(coursesRes.data);
 
-      // Enrolled Courses
+      // Fetch enrolled courses
       if (res.data._id) {
         const enrolledRes = await axios.get(
           `${BASE_URL}/enroll?studentId=${res.data._id}`,
@@ -45,6 +52,7 @@ const Student = () => {
         );
         setEnrolledCourses(enrolledRes.data || []);
 
+        // Fetch applications
         const appsRes = await axios.get(
           `${BASE_URL}/applications?studentId=${res.data._id}`,
           { headers: getAuthHeaders() }
@@ -52,7 +60,7 @@ const Student = () => {
         setApplications(appsRes.data || []);
       }
 
-      // Jobs
+      // Fetch jobs
       const jobsRes = await axios.get(`${BASE_URL}/jobs`);
       setJobs(jobsRes.data || []);
     } catch (err) {
@@ -70,7 +78,7 @@ const Student = () => {
     load();
   }, []);
 
-  // ===== Enroll Handler =====
+  // ===== Enroll handler =====
   const handleEnroll = async (courseId) => {
     try {
       if (!student?._id) return alert("Student not found");
@@ -87,6 +95,7 @@ const Student = () => {
     }
   };
 
+  // ===== Logout =====
   const handleLogout = () => {
     localStorage.clear();
     navigate("/login");
@@ -98,6 +107,7 @@ const Student = () => {
         <p className="text-gray-600 text-lg">Loading student dashboard...</p>
       </div>
     );
+
   if (error)
     return (
       <div className="min-h-screen flex items-center justify-center">
@@ -127,19 +137,17 @@ const Student = () => {
 
       {/* Profile Card */}
       <div className="max-w-6xl mx-auto px-6 py-6">
-        <div className="bg-white rounded-lg p-6 shadow-sm">
-          <div className="flex items-center space-x-4">
-            <div className="h-12 w-12 bg-blue-600 rounded-full flex items-center justify-center text-white text-lg font-bold">
-              {student?.name?.charAt(0) || "S"}
-            </div>
-            <div>
-              <h2 className="text-lg font-semibold text-gray-800">
-                {student?.name}
-              </h2>
-              <p className="text-gray-500 text-sm">
-                {student?.course} • {student?.college} • Class of {student?.year}
-              </p>
-            </div>
+        <div className="bg-white rounded-lg p-6 shadow-sm flex items-center space-x-4">
+          <div className="h-12 w-12 bg-blue-600 rounded-full flex items-center justify-center text-white text-lg font-bold">
+            {student?.name?.charAt(0) || "S"}
+          </div>
+          <div>
+            <h2 className="text-lg font-semibold text-gray-800">
+              {student?.name}
+            </h2>
+            <p className="text-gray-500 text-sm">
+              {student?.course} • {student?.college} • Class of {student?.year}
+            </p>
           </div>
         </div>
       </div>
@@ -150,7 +158,7 @@ const Student = () => {
           {[
             { id: "skillProgress", label: "Skill Progress" },
             { id: "courses", label: "Available Courses" },
-            { id: "myCourses", label: "My Courses" }, // ✅ Added
+            { id: "myCourses", label: "My Courses" },
             { id: "jobs", label: "Jobs & Internships" },
             { id: "applications", label: "My Applications" },
           ].map((tab) => (
@@ -171,7 +179,7 @@ const Student = () => {
 
       {/* Content */}
       <div className="max-w-6xl mx-auto px-6 py-8">
-        {/* Courses */}
+        {/* Available Courses */}
         {activeTab === "courses" && (
           <div className="grid md:grid-cols-3 gap-6">
             {allCourses.map((c) => (
@@ -237,9 +245,7 @@ const Student = () => {
                 >
                   <div>
                     <h3 className="font-semibold text-gray-800">{job.title}</h3>
-                    <p className="text-gray-500 text-sm">
-                      {job.location}
-                    </p>
+                    <p className="text-gray-500 text-sm">{job.location}</p>
                     <p className="text-gray-400 text-sm mt-2">
                       {job.description}
                     </p>
