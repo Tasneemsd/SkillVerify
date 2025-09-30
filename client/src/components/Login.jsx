@@ -1,54 +1,125 @@
 import React, { useState } from "react";
-import { useNavigate } from "react-router-dom";
-import API, { setAuthToken, setUserData } from "../api/API";
+import { Link, useNavigate } from "react-router-dom";
+import API from "../api"; // your API instance
 
-const Login = () => {
-  const navigate = useNavigate();
-  const [form, setForm] = useState({ email: "", password: "" });
+export default function Login() {
+  const [form, setForm] = useState({
+    email: "",
+    password: "",
+    role: "student",
+  });
+
   const [loading, setLoading] = useState(false);
+  const [error, setError] = useState("");
+  const [success, setSuccess] = useState("");
+  const navigate = useNavigate();
 
   const handleChange = (e) => {
-    setForm({ ...form, [e.target.name]: e.target.value });
+    const { name, value } = e.target;
+    setForm((prev) => ({ ...prev, [name]: value }));
   };
 
   const handleSubmit = async (e) => {
     e.preventDefault();
     setLoading(true);
+    setError("");
+    setSuccess("");
+
     try {
-      const res = await API.post("/login", form);
-      setAuthToken(res.data.token);
-      setUserData(res.data.user);
+      const res = await API.post("/login", {
+        email: form.email,
+        password: form.password,
+        role: form.role,
+      });
+
+      if (!res.data.token || !res.data.user) {
+        throw new Error("Invalid response from server");
+      }
+
+      // Save JWT + user details
+      localStorage.setItem("userToken", res.data.token);
+      localStorage.setItem("user", JSON.stringify(res.data.user));
+
+      setSuccess(`✅ Logged in as ${res.data.user.email}`);
 
       // Redirect based on role
       if (res.data.user.role === "student") navigate("/student");
-      else navigate("/recruiter");
+      else if (res.data.user.role === "recruiter") navigate("/recruiter");
+      else navigate("/");
     } catch (err) {
-      console.error(err);
-      alert(err.response?.data?.message || "Login failed");
+      setError(err.response?.data?.message || "Invalid email or password!");
+    } finally {
+      setLoading(false);
     }
-    setLoading(false);
-  };
-
-  // Google login
-  const handleGoogleLogin = () => {
-    window.location.href = `${process.env.REACT_APP_API_URL}/auth/google`;
   };
 
   return (
-    <div className="min-h-screen flex items-center justify-center bg-gray-50">
-      <div className="bg-white p-8 rounded-lg shadow-lg w-full max-w-md">
-        <h2 className="text-2xl font-bold text-gray-800 mb-6 text-center">
-          Login
-        </h2>
+    <div className="min-h-screen flex items-center justify-center bg-gradient-to-b from-indigo-100 to-white px-4">
+      <div className="bg-white w-full max-w-md shadow-2xl rounded-2xl p-8">
+        {/* Header */}
+        <div className="text-center mb-6">
+          <h2 className="text-2xl sm:text-3xl font-bold text-gray-800">
+            Welcome Back
+          </h2>
+          <p className="text-gray-500">
+            Login as{" "}
+            <span className="font-semibold capitalize">{form.role}</span>
+          </p>
+        </div>
+
+        {/* Google Login */}
+        <button
+          onClick={() =>
+            (window.location.href = `${import.meta.env.VITE_API_BASE_URL}/auth/google`)
+          }
+          className="w-full border flex items-center justify-center py-2 rounded-md mb-4 hover:bg-gray-50 transition font-medium"
+        >
+          <img
+            src="https://www.svgrepo.com/show/355037/google.svg"
+            alt="Google"
+            className="w-5 h-5 mr-2"
+          />
+          Continue with Google
+        </button>
+
+        <div className="text-center text-gray-400 mb-4">OR</div>
+
+        {/* Role Selection */}
+        <div className="flex justify-around mb-6">
+          <label className="flex items-center gap-2 cursor-pointer">
+            <input
+              type="radio"
+              name="role"
+              value="student"
+              checked={form.role === "student"}
+              onChange={handleChange}
+              className="accent-indigo-500"
+            />
+            Student
+          </label>
+          <label className="flex items-center gap-2 cursor-pointer">
+            <input
+              type="radio"
+              name="role"
+              value="recruiter"
+              checked={form.role === "recruiter"}
+              onChange={handleChange}
+              className="accent-indigo-500"
+            />
+            Recruiter
+          </label>
+        </div>
+
+        {/* Form */}
         <form onSubmit={handleSubmit} className="space-y-4">
           <input
             type="email"
             name="email"
-            placeholder="Email"
+            placeholder="Email Address"
             value={form.email}
             onChange={handleChange}
             required
-            className="w-full px-4 py-2 border rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-600"
+            className="w-full border px-3 py-2 rounded-md focus:ring-2 focus:ring-indigo-400 focus:outline-none"
           />
           <input
             type="password"
@@ -57,37 +128,43 @@ const Login = () => {
             value={form.password}
             onChange={handleChange}
             required
-            className="w-full px-4 py-2 border rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-600"
+            className="w-full border px-3 py-2 rounded-md focus:ring-2 focus:ring-indigo-400 focus:outline-none"
           />
+
+          <div className="flex items-center justify-between text-sm text-gray-500">
+            <label className="flex items-center gap-2">
+              <input type="checkbox" className="accent-indigo-500" /> Remember
+              me
+            </label>
+            <a href="#" className="hover:text-indigo-600">
+              Forgot password?
+            </a>
+          </div>
+
           <button
             type="submit"
             disabled={loading}
-            className="w-full bg-blue-600 text-white py-2 px-4 rounded-lg hover:bg-blue-700 transition"
+            className="w-full bg-indigo-500 hover:bg-indigo-600 text-white py-2 rounded-md font-semibold transition"
           >
             {loading ? "Logging in..." : "Login"}
           </button>
         </form>
-        <div className="text-center mt-4">
-          <p className="text-gray-500">Or login with</p>
-          <button
-            onClick={handleGoogleLogin}
-            className="mt-2 w-full bg-red-500 text-white py-2 px-4 rounded-lg hover:bg-red-600 transition"
-          >
-            Google
-          </button>
-        </div>
-        <p className="text-sm text-gray-500 mt-4 text-center">
+
+        {/* Error / Success */}
+        {error && <p className="text-red-500 text-center mt-3">{error}</p>}
+        {success && <p className="text-green-600 text-center mt-3">{success}</p>}
+
+        {/* Register Link */}
+        <p className="text-center text-sm text-gray-500 mt-6">
           Don’t have an account?{" "}
-          <span
-            className="text-blue-600 cursor-pointer"
-            onClick={() => navigate("/register")}
+          <Link
+            to="/register"
+            className="text-indigo-600 font-medium hover:underline"
           >
             Register
-          </span>
+          </Link>
         </p>
       </div>
     </div>
   );
-};
-
-export default Login;
+}

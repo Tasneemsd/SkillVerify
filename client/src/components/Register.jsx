@@ -1,67 +1,162 @@
 import React, { useState } from "react";
-import { useNavigate } from "react-router-dom";
-import API, { setAuthToken, setUserData } from "../api/API";
+import { Link } from "react-router-dom";
+import API from "../api"; // your API instance
 
-const Register = () => {
-  const navigate = useNavigate();
+export default function Register() {
   const [form, setForm] = useState({
-    name: "",
+    firstName: "",
+    lastName: "",
     email: "",
+    phone: "",
     password: "",
-    college: "",
-    year: "",
+    confirmPassword: "",
+    otp: "",
+    role: "student",
   });
+
   const [loading, setLoading] = useState(false);
+  const [otpSent, setOtpSent] = useState(false);
+  const [error, setError] = useState("");
+  const [success, setSuccess] = useState("");
 
   const handleChange = (e) => {
-    setForm({ ...form, [e.target.name]: e.target.value });
+    const { name, value } = e.target;
+    setForm((prev) => ({ ...prev, [name]: value }));
+  };
+
+  const sendOtp = async () => {
+    try {
+      setError("");
+      await API.post("/otp/send-otp", { phone: form.phone });
+      setOtpSent(true);
+      setSuccess("OTP sent successfully to your phone");
+    } catch (err) {
+      setError(err.response?.data?.message || "Failed to send OTP");
+    }
   };
 
   const handleSubmit = async (e) => {
     e.preventDefault();
     setLoading(true);
-    try {
-      const res = await API.post("/register", form);
-      alert(res.data.message);
+    setError("");
+    setSuccess("");
 
-      // Auto-login after registration
-      const loginRes = await API.post("/login", {
+    if (form.password !== form.confirmPassword) {
+      setError("Passwords do not match");
+      setLoading(false);
+      return;
+    }
+
+    try {
+      const res = await API.post("/register", {
+        name: `${form.firstName} ${form.lastName}`,
         email: form.email,
+        phone: form.phone,
         password: form.password,
+        otp: form.otp,
+        role: form.role,
       });
 
-      setAuthToken(loginRes.data.token);
-      setUserData(loginRes.data.user);
-
-      navigate("/student");
+      setSuccess(res.data.message || "✅ Registration successful!");
+      setForm({
+        firstName: "",
+        lastName: "",
+        email: "",
+        phone: "",
+        password: "",
+        confirmPassword: "",
+        otp: "",
+        role: "student",
+      });
+      setOtpSent(false);
     } catch (err) {
-      console.error(err);
-      alert(err.response?.data?.message || "Registration failed");
+      setError(err.response?.data?.message || "Registration failed");
+    } finally {
+      setLoading(false);
     }
-    setLoading(false);
-  };
-
-  // Google login redirect
-  const handleGoogleLogin = () => {
-    window.location.href = `${process.env.REACT_APP_API_URL}/auth/google`;
   };
 
   return (
-    <div className="min-h-screen flex items-center justify-center bg-gray-50">
-      <div className="bg-white p-8 rounded-lg shadow-lg w-full max-w-md">
-        <h2 className="text-2xl font-bold text-gray-800 mb-6 text-center">
-          Register
-        </h2>
-        <form onSubmit={handleSubmit} className="space-y-4">
-          <input
-            type="text"
-            name="name"
-            placeholder="Full Name"
-            value={form.name}
-            onChange={handleChange}
-            required
-            className="w-full px-4 py-2 border rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-600"
+    <div className="min-h-screen flex items-center justify-center bg-gradient-to-b from-indigo-100 to-white px-4">
+      <div className="bg-white w-full max-w-md shadow-2xl rounded-2xl p-8">
+        {/* Header */}
+        <div className="text-center mb-6">
+          <h2 className="text-2xl sm:text-3xl font-bold text-gray-800">
+            Create Your Account
+          </h2>
+          <p className="text-gray-500">
+            Join as a{" "}
+            <span className="font-semibold">
+              {form.role === "student" ? "Student" : "Recruiter"}
+            </span>
+          </p>
+        </div>
+
+        {/* Google Register */}
+        <button
+          onClick={() =>
+            (window.location.href = `${import.meta.env.VITE_API_BASE_URL}/auth/google`)
+          }
+          className="w-full border flex items-center justify-center py-2 rounded-md mb-4 hover:bg-gray-50 transition font-medium"
+        >
+          <img
+            src="https://www.svgrepo.com/show/355037/google.svg"
+            alt="Google"
+            className="w-5 h-5 mr-2"
           />
+          Register with Google
+        </button>
+
+        <div className="text-center text-gray-400 mb-4">OR</div>
+
+        {/* Role Selection */}
+        <div className="flex justify-around mb-6">
+          <label className="flex items-center gap-2 cursor-pointer">
+            <input
+              type="radio"
+              name="role"
+              value="student"
+              checked={form.role === "student"}
+              onChange={handleChange}
+              className="accent-indigo-500"
+            />
+            Student
+          </label>
+          <label className="flex items-center gap-2 cursor-pointer">
+            <input
+              type="radio"
+              name="role"
+              value="recruiter"
+              checked={form.role === "recruiter"}
+              onChange={handleChange}
+              className="accent-indigo-500"
+            />
+            Recruiter
+          </label>
+        </div>
+
+        {/* Form */}
+        <form onSubmit={handleSubmit} className="space-y-4">
+          <div className="grid grid-cols-2 gap-4">
+            <input
+              type="text"
+              name="firstName"
+              placeholder="First Name"
+              value={form.firstName}
+              onChange={handleChange}
+              required
+              className="border px-3 py-2 rounded-md focus:ring-2 focus:ring-indigo-400 focus:outline-none w-full"
+            />
+            <input
+              type="text"
+              name="lastName"
+              placeholder="Last Name"
+              value={form.lastName}
+              onChange={handleChange}
+              required
+              className="border px-3 py-2 rounded-md focus:ring-2 focus:ring-indigo-400 focus:outline-none w-full"
+            />
+          </div>
           <input
             type="email"
             name="email"
@@ -69,8 +164,38 @@ const Register = () => {
             value={form.email}
             onChange={handleChange}
             required
-            className="w-full px-4 py-2 border rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-600"
+            className="w-full border px-3 py-2 rounded-md focus:ring-2 focus:ring-indigo-400 focus:outline-none"
           />
+          <div className="flex gap-2">
+            <input
+              type="tel"
+              name="phone"
+              placeholder="Phone Number"
+              value={form.phone}
+              onChange={handleChange}
+              required
+              className="flex-1 border px-3 py-2 rounded-md focus:ring-2 focus:ring-indigo-400 focus:outline-none"
+            />
+            <button
+              type="button"
+              onClick={sendOtp}
+              disabled={!form.phone || otpSent}
+              className="px-4 py-2 bg-indigo-500 text-white rounded-md hover:bg-indigo-600 disabled:opacity-50 font-medium"
+            >
+              {otpSent ? "OTP Sent" : "Send OTP"}
+            </button>
+          </div>
+          {otpSent && (
+            <input
+              type="text"
+              name="otp"
+              placeholder="Enter OTP"
+              value={form.otp}
+              onChange={handleChange}
+              required
+              className="w-full border px-3 py-2 rounded-md focus:ring-2 focus:ring-indigo-400 focus:outline-none"
+            />
+          )}
           <input
             type="password"
             name="password"
@@ -78,53 +203,42 @@ const Register = () => {
             value={form.password}
             onChange={handleChange}
             required
-            className="w-full px-4 py-2 border rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-600"
+            className="w-full border px-3 py-2 rounded-md focus:ring-2 focus:ring-indigo-400 focus:outline-none"
           />
           <input
-            type="text"
-            name="college"
-            placeholder="College Name"
-            value={form.college}
+            type="password"
+            name="confirmPassword"
+            placeholder="Confirm Password"
+            value={form.confirmPassword}
             onChange={handleChange}
-            className="w-full px-4 py-2 border rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-600"
+            required
+            className="w-full border px-3 py-2 rounded-md focus:ring-2 focus:ring-indigo-400 focus:outline-none"
           />
-          <input
-            type="number"
-            name="year"
-            placeholder="Graduation Year"
-            value={form.year}
-            onChange={handleChange}
-            className="w-full px-4 py-2 border rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-600"
-          />
+
           <button
             type="submit"
             disabled={loading}
-            className="w-full bg-blue-600 text-white py-2 px-4 rounded-lg hover:bg-blue-700 transition"
+            className="w-full bg-indigo-500 hover:bg-indigo-600 text-white py-2 rounded-md font-semibold transition"
           >
-            {loading ? "Registering..." : "Register"}
+            {loading ? "Registering..." : "Create Account"}
           </button>
         </form>
-        <div className="text-center mt-4">
-          <p className="text-gray-500">Or register with</p>
-          <button
-            onClick={handleGoogleLogin}
-            className="mt-2 w-full bg-red-500 text-white py-2 px-4 rounded-lg hover:bg-red-600 transition"
-          >
-            Google
-          </button>
-        </div>
-        <p className="text-sm text-gray-500 mt-4 text-center">
+
+        {/* Error / Success */}
+        {error && <p className="text-red-500 text-center mt-3">{error}</p>}
+        {success && <p className="text-green-600 text-center mt-3">{success}</p>}
+
+        {/* Login Link */}
+        <p className="text-center text-sm text-gray-500 mt-6">
           Already have an account?{" "}
-          <span
-            className="text-blue-600 cursor-pointer"
-            onClick={() => navigate("/login")}
+          <Link
+            to="/login"
+            className="text-indigo-600 font-medium hover:underline"
           >
             Login
-          </span>
+          </Link>
         </p>
       </div>
     </div>
   );
-};
-
-export default Register;
+}

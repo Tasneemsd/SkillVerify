@@ -1,31 +1,33 @@
-const express = require('express');
+const express = require("express");
 const router = express.Router();
-const { register, login } = require('../controllers/authController');
-const jwt = require('jsonwebtoken');
+const { register, login } = require("../controllers/authController");
+const jwt = require("jsonwebtoken");
 const passport = require("./config/passport");
 
+// -------------------- Email/Password --------------------
+router.post("/register", register);
+router.post("/login", login);
 
-// Register route
-router.post('/register', register);
-
-// Login route
-router.post('/login', login);
-
-
-// Google OAuth login
+// -------------------- Google OAuth --------------------
+// Step 1: redirect user to Google login
 router.get(
   "/auth/google",
   passport.authenticate("google", { scope: ["profile", "email"] })
 );
 
+// Step 2: Google callback -> issue JWT + redirect to frontend
 router.get(
   "/auth/google/callback",
   passport.authenticate("google", { failureRedirect: "/login" }),
   (req, res) => {
-    const token = jwt.sign({ id: req.user._id }, process.env.JWT_SECRET, {
-      expiresIn: "2h",
-    });
-    res.redirect(`${process.env.CLIENT_URL}/student?token=${token}`);
+    const token = jwt.sign(
+      { id: req.user._id, role: req.user.role, email: req.user.email },
+      process.env.JWT_SECRET,
+      { expiresIn: "2h" }
+    );
+
+    // Redirect to React app -> /google-success?token=xxxx
+    res.redirect(`${process.env.CLIENT_URL}/google-success?token=${token}`);
   }
 );
 
