@@ -40,7 +40,7 @@ const Student = () => {
       // Enrolled Courses
       if (res.data._id) {
         const enrolledRes = await axios.get(
-          `${BASE_URL}/enrollments?studentId=${res.data._id}`,
+          `${BASE_URL}/enroll?studentId=${res.data._id}`,
           { headers: getAuthHeaders() }
         );
         setEnrolledCourses(enrolledRes.data || []);

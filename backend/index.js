@@ -24,7 +24,7 @@ const app = express();
 // ✅ Allow frontend
 app.use(
   cors({
-    origin: ["https://skill-verify.vercel.app"], // frontend domain
+    origin: ["https://skill-verify.vercel.app","http://localhost:5173" ], // frontend domain
     credentials: true,
   })
 );
@@ -44,7 +44,15 @@ app.use("/api/recruiter", require("./routes/recruiter"));
 app.use("/api/admin", require("./routes/admin"));
 app.use("/api/notification", require("./routes/notification"));
 app.use("/api/otp", require("./routes/otp"));
-
+/* app.use("/api/skills", require("./routes/skills"));
+app.use("/api/verify-skill", require("./routes/verifySkill"));
+app.use("/api/analytics", require("./routes/analytics"));
+app.use("/api/feedback", require("./routes/feedback"));
+app.use("/api/contact", require("./routes/contact"));
+app.use("/api/reports", require("./routes/reports"));
+app.use("/api/payments", require("./routes/payments"));
+app.use("/")
+ */
 const PORT = process.env.PORT || 5000;
 app.listen(PORT, () => {
   console.log(`🚀 Server running on port ${PORT}`);
