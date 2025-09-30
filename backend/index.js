@@ -1,6 +1,9 @@
 const express = require("express");
 const cors = require("cors");
 const dotenv = require("dotenv");
+const session = require("express-session");
+const passport = require("passport");
+
 const connectDB = require("./config/db");
 
 // Load env vars
