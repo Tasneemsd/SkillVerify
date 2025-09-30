@@ -2,7 +2,7 @@ const express = require("express");
 const router = express.Router();
 const { register, login } = require("../controllers/authController");
 const jwt = require("jsonwebtoken");
-const passport = require("./config/passport");
+const passport = require("passport");
 
 // -------------------- Email/Password --------------------
 router.post("/register", register);
