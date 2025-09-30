@@ -48,7 +48,7 @@ export default function Register() {
     }
 
     try {
-      const res = await API.post("/register", {
+      await API.post("/register", {
         name: `${form.firstName} ${form.lastName}`,
         email: form.email,
         phone: form.phone,
@@ -57,7 +57,7 @@ export default function Register() {
         role: form.role,
       });
 
-      setSuccess(res.data.message || "✅ Registration successful!");
+      setSuccess("✅ Registration successful!");
       setForm({
         firstName: "",
         lastName: "",
@@ -81,24 +81,14 @@ export default function Register() {
       <div className="bg-white w-full max-w-md shadow-2xl rounded-2xl p-8">
         {/* Header */}
         <div className="text-center mb-6">
-          <h2 className="text-2xl sm:text-3xl font-bold text-gray-800">
-            Create Your Account
-          </h2>
+           <h2 className="text-2xl sm:text-3xl font-bold text-gray-800">Create Your Account</h2>
           <p className="text-gray-500">
-            Join as a{" "}
-            <span className="font-semibold">
-              {form.role === "student" ? "Student" : "Recruiter"}
-            </span>
+            Join as a <span className="font-semibold">{form.role === "student" ? "Student" : "Recruiter"}</span>
           </p>
         </div>
 
         {/* Google Register */}
-        <button
-          onClick={() =>
-            (window.location.href = `${import.meta.env.VITE_API_BASE_URL}/auth/google`)
-          }
-          className="w-full border flex items-center justify-center py-2 rounded-md mb-4 hover:bg-gray-50 transition font-medium"
-        >
+        <button className="w-full border flex items-center justify-center py-2 rounded-md mb-4 hover:bg-gray-50 transition font-medium">
           <img
             src="https://www.svgrepo.com/show/355037/google.svg"
             alt="Google"
@@ -231,10 +221,7 @@ export default function Register() {
         {/* Login Link */}
         <p className="text-center text-sm text-gray-500 mt-6">
           Already have an account?{" "}
-          <Link
-            to="/login"
-            className="text-indigo-600 font-medium hover:underline"
-          >
+          <Link to="/login" className="text-indigo-600 font-medium hover:underline">
             Login
           </Link>
         </p>

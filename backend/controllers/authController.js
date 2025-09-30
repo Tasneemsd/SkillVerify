@@ -1,89 +1,107 @@
 const Student = require("../models/Student");
 const Recruiter = require("../models/Recruiter");
 const Admin = require("../models/Admin");
+
 const bcrypt = require("bcryptjs");
 const jwt = require("jsonwebtoken");
 
-// ====================== STUDENT AUTH ======================
-
-// REGISTER STUDENT
-exports.registerStudent = async (req, res) => {
+// ===== REGISTER =====
+exports.register = async (req, res) => {
   try {
-    const { name, email, password, college, year } = req.body;
-    if (!name || !email || !password) {
-      return res.status(400).json({ message: "All fields required" });
-    }
+    const { name, email, phone, password, otp,role } = req.body;
 
-    const existing = await Student.findOne({ email });
-    if (existing) {
-      return res.status(400).json({ message: "Email already registered" });
-    }
+  if (!name || !email || !phone || !password || !otp || !role) {
+    return res.status(400).json({ message: "All fields required" });
+  }
+
+
+    // Check existing email in all collections
+    const existingUser = await Student.findOne({ email }) ||
+                         await Recruiter.findOne({ email }) ||
+                         await Admin.findOne({ email });
+
+    if (existingUser) return res.status(409).json({ message: "Email already exists" });
 
     const hashedPassword = await bcrypt.hash(password, 10);
 
-    const student = new Student({
-      name,
-      email,
-      password: hashedPassword,
-      college,
-      year,
-    });
+    let user;
 
-    await student.save();
-    res
-      .status(201)
-      .json({ message: "Student registered successfully!", student });
+    if (role === "student") {
+      user = new Student({ name, email, password: hashedPassword, skills: [] });
+    } else if (role === "recruiter") {
+      user = new Recruiter({ name, email, password: hashedPassword });
+    } else if (role === "admin") {
+      user = new Admin({ name, email, password: hashedPassword });
+    } else {
+      return res.status(400).json({ message: "Invalid role" });
+    }
+
+    await user.save();
+    return res.status(201).json({ message: `${role} registered successfully`, user });
+
   } catch (err) {
-    console.error("Register Error:", err);
-    res.status(500).json({ message: "Server error" });
+    console.error("REGISTER ERROR:", err);
+    if (err.code === 11000) {
+      return res.status(409).json({ message: "Duplicate email detected" });
+    }
+    return res.status(500).json({ message: "Server error", error: err.message });
   }
 };
 
-// LOGIN STUDENT
-exports.loginStudent = async (req, res) => {
+// ===== LOGIN =====
+exports.login = async (req, res) => {
   try {
     const { email, password } = req.body;
-    if (!email || !password) {
-      return res
-        .status(400)
-        .json({ message: "Email & password required" });
-    }
 
-    const student = await Student.findOne({ email });
-    if (!student) {
-      return res.status(401).json({ message: "Invalid credentials" });
-    }
+    if (!email || !password) return res.status(400).json({ message: "Email & password required" });
 
-    const isMatch = await bcrypt.compare(password, student.password);
-    if (!isMatch) {
-      return res.status(401).json({ message: "Invalid credentials" });
-    }
+    let user = await Student.findOne({ email });
+    let role = "student";
 
+    if (!user) {
+      user = await Recruiter.findOne({ email });
+      role = user ? "recruiter" : null;
+    }
+    if (!user) {
+      user = await Admin.findOne({ email });
+      role = user ? "admin" : null;
+    }
+    if (!user) return res.status(401).json({ message: "Invalid credentials" });
+
+    // Make sure password exists in all collections (just in case)
+    if (!user.password) return res.status(500).json({ message: "Password not set for this user" });
+
+    const isMatch = await bcrypt.compare(password, user.password);
+    if (!isMatch) return res.status(401).json({ message: "Invalid credentials" });
+
+    // JWT token
     const token = jwt.sign(
-      { id: student._id, email: student.email, role: "student" },
+      { id: user._id, email: user.email, role },
       process.env.JWT_SECRET || "supersecret",
       { expiresIn: "2h" }
     );
 
-    res.json({
-      message: "Login successful",
-      token,
-      user: {
-        _id: student._id,
-        name: student.name,
-        email: student.email,
-        role: "student",
-      },
-    });
+    let userObj = {
+      _id: user._id,
+      name: user.name,
+      email: user.email,
+      role,
+    };
+
+    if (role === "recruiter") {
+      userObj = {
+        ...userObj,
+        companyName: user.companyName || "",
+        position: user.position || "",
+        phone: user.phone || "",
+        bio: user.bio || ""
+      };
+    }
+
+    return res.status(200).json({ message: "Login successful", token, user: userObj });
+
   } catch (err) {
-    console.error("Login Error:", err);
-    res.status(500).json({ message: "Server error" });
+    console.error("LOGIN ERROR:", err);
+    return res.status(500).json({ message: "Server error again", error: err.message });
   }
 };
-
-// ====================== PLACEHOLDER ======================
-// You can later add:
-// exports.registerRecruiter
-// exports.loginRecruiter
-// exports.registerAdmin
-// exports.loginAdmin

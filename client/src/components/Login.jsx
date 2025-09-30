@@ -32,10 +32,6 @@ export default function Login() {
         role: form.role,
       });
 
-      if (!res.data.token || !res.data.user) {
-        throw new Error("Invalid response from server");
-      }
-
       // Save JWT + user details
       localStorage.setItem("userToken", res.data.token);
       localStorage.setItem("user", JSON.stringify(res.data.user));
@@ -44,8 +40,8 @@ export default function Login() {
 
       // Redirect based on role
       if (res.data.user.role === "student") navigate("/student");
+
       else if (res.data.user.role === "recruiter") navigate("/recruiter");
-      else navigate("/");
     } catch (err) {
       setError(err.response?.data?.message || "Invalid email or password!");
     } finally {
@@ -58,9 +54,7 @@ export default function Login() {
       <div className="bg-white w-full max-w-md shadow-2xl rounded-2xl p-8">
         {/* Header */}
         <div className="text-center mb-6">
-          <h2 className="text-2xl sm:text-3xl font-bold text-gray-800">
-            Welcome Back
-          </h2>
+          <h2 className="text-2xl sm:text-3xl font-bold text-gray-800">Welcome Back</h2>
           <p className="text-gray-500">
             Login as{" "}
             <span className="font-semibold capitalize">{form.role}</span>
@@ -68,12 +62,7 @@ export default function Login() {
         </div>
 
         {/* Google Login */}
-        <button
-          onClick={() =>
-            (window.location.href = `${import.meta.env.VITE_API_BASE_URL}/auth/google`)
-          }
-          className="w-full border flex items-center justify-center py-2 rounded-md mb-4 hover:bg-gray-50 transition font-medium"
-        >
+        <button className="w-full border flex items-center justify-center py-2 rounded-md mb-4 hover:bg-gray-50 transition font-medium">
           <img
             src="https://www.svgrepo.com/show/355037/google.svg"
             alt="Google"
@@ -108,6 +97,7 @@ export default function Login() {
             />
             Recruiter
           </label>
+          
         </div>
 
         {/* Form */}
@@ -133,8 +123,7 @@ export default function Login() {
 
           <div className="flex items-center justify-between text-sm text-gray-500">
             <label className="flex items-center gap-2">
-              <input type="checkbox" className="accent-indigo-500" /> Remember
-              me
+              <input type="checkbox" className="accent-indigo-500" /> Remember me
             </label>
             <a href="#" className="hover:text-indigo-600">
               Forgot password?
@@ -157,10 +146,7 @@ export default function Login() {
         {/* Register Link */}
         <p className="text-center text-sm text-gray-500 mt-6">
           Don’t have an account?{" "}
-          <Link
-            to="/register"
-            className="text-indigo-600 font-medium hover:underline"
-          >
+          <Link to="/register" className="text-indigo-600 font-medium hover:underline">
             Register
           </Link>
         </p>

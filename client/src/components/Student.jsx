@@ -1,6 +1,16 @@
 // src/components/Student.jsx
 import React, { useState, useEffect } from "react";
 import axios from "axios";
+import {
+  User,
+  BookOpen,
+  Bell,
+  FileText,
+  Award,
+  Settings,
+  Menu,
+  X,
+} from "lucide-react";
 import { useNavigate } from "react-router-dom";
 
 const BASE_URL = "https://skillverify.onrender.com/api";
@@ -8,110 +18,109 @@ const BASE_URL = "https://skillverify.onrender.com/api";
 const Student = () => {
   const [student, setStudent] = useState(null);
   const [allCourses, setAllCourses] = useState([]);
-  const [enrolledCourses, setEnrolledCourses] = useState([]);
-  const [jobs, setJobs] = useState([]);
   const [applications, setApplications] = useState([]);
-  const [activeTab, setActiveTab] = useState("skillProgress");
+  const [notifications, setNotifications] = useState([]);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState(null);
+  const [activeTab, setActiveTab] = useState("profile");
+  const [mobileMenuOpen, setMobileMenuOpen] = useState(false);
+  const [editMode, setEditMode] = useState(false);
 
   const navigate = useNavigate();
-
-  const user = JSON.parse(localStorage.getItem("user") || "null");
+  const user = JSON.parse(localStorage.getItem("user") || "{}");
   const token = localStorage.getItem("userToken");
 
-  // Redirect if not logged in
-  useEffect(() => {
-    if (!user || !token) navigate("/login");
-  }, [user, token]);
+  const getAuthHeaders = () =>
+    token ? { Authorization: `Bearer ${token}` } : {};
 
-  const getAuthHeaders = () => ({
-    Authorization: `Bearer ${token}`,
-  });
-
-  // Fetch all dashboard data
-  const fetchData = async () => {
+  // Fetch student data
+  const fetchStudent = async () => {
     try {
-      if (!user?._id) return;
-
-      // Student profile
-      const res = await axios.get(`${BASE_URL}/student`, { headers: getAuthHeaders() });
+      if (!user?.email) return;
+      const res = await axios.get(
+        `${BASE_URL}/student?email=${encodeURIComponent(user.email)}`,
+        { headers: getAuthHeaders() }
+      );
       setStudent(res.data);
 
-      // All courses
       const coursesRes = await axios.get(`${BASE_URL}/courses`);
       setAllCourses(coursesRes.data);
 
-      // Enrolled courses
-      const enrolledRes = await axios.get(`${BASE_URL}/enroll?studentId=${user._id}`, {
-        headers: getAuthHeaders(),
-      });
-      setEnrolledCourses(enrolledRes.data || []);
-
-      // Applications
-      const appsRes = await axios.get(`${BASE_URL}/applications?studentId=${user._id}`, {
-        headers: getAuthHeaders(),
-      });
-      setApplications(appsRes.data || []);
-
-      // Jobs (only active)
-      const jobsRes = await axios.get(`${BASE_URL}/jobs`);
-      const activeJobs = jobsRes.data.filter((j) => j.isActive);
-      setJobs(activeJobs);
+      if (res.data._id) {
+        const appsRes = await axios.get(
+          `${BASE_URL}/applications?studentId=${res.data._id}`,
+          { headers: getAuthHeaders() }
+        );
+        setApplications(appsRes.data || []);
+      }
     } catch (err) {
-      console.error(err);
       setError("Failed to load student data");
+    }
+  };
+
+  const fetchNotifications = async () => {
+    try {
+      if (!student?._id) return;
+      const res = await axios.get(
+        `${BASE_URL}/notification?studentId=${student._id}`,
+        { headers: getAuthHeaders() }
+      );
+      setNotifications(res.data || []);
+    } catch (err) {
+      console.error("Notifications error:", err);
     }
   };
 
   useEffect(() => {
     const load = async () => {
       setLoading(true);
-      await fetchData();
+      await fetchStudent();
       setLoading(false);
     };
     load();
   }, []);
 
-  // Enroll handler
+  useEffect(() => {
+    if (activeTab === "notifications") fetchNotifications();
+  }, [activeTab]);
+
+  const handleLogout = () => {
+    localStorage.clear();
+    navigate("/login");
+  };
+
   const handleEnroll = async (courseId) => {
     try {
-      await axios.post(
-        `${BASE_URL}/enroll`,
-        { studentId: student._id, courseId },
+      const res = await axios.post(
+        `${BASE_URL}/student/enroll`,
+        { courseId, email: user.email },
         { headers: getAuthHeaders() }
       );
-      alert("Enrolled successfully!");
-      fetchData();
-    } catch (err) {
-      console.error(err);
+      alert(res.data.message || "Enrolled successfully!");
+      const course = allCourses.find((c) => c._id === courseId);
+      if (course) {
+        setStudent((prev) => ({
+          ...prev,
+          registeredCourses: [...(prev.registeredCourses || []), course],
+        }));
+      }
+    } catch {
       alert("Failed to enroll");
     }
   };
 
-  // Apply job handler (prevent multiple applications)
-  const handleApply = async (jobId) => {
-    const alreadyApplied = applications.some((a) => a.jobId === jobId);
-    if (alreadyApplied) return alert("You have already applied for this job");
-
+  const handleUpdateProfile = async () => {
     try {
-      await axios.post(
-        `${BASE_URL}/applications`,
-        { studentId: student._id, jobId },
+      const res = await axios.post(
+        `${BASE_URL}/student/profile`,
+        { email: student.email, ...student },
         { headers: getAuthHeaders() }
       );
-      alert("Application submitted!");
-      fetchData();
-    } catch (err) {
-      console.error(err);
-      alert("Failed to apply");
+      alert(res.data.message || "Profile updated!");
+      setEditMode(false);
+    } catch {
+      alert("Profile update failed");
     }
-  };
-
-  // Logout
-  const handleLogout = () => {
-    localStorage.clear();
-    navigate("/login");
   };
 
   if (loading)
@@ -120,7 +129,6 @@ const Student = () => {
         <p className="text-gray-600 text-lg">Loading student dashboard...</p>
       </div>
     );
-
   if (error)
     return (
       <div className="min-h-screen flex items-center justify-center">
@@ -132,163 +140,240 @@ const Student = () => {
     <div className="min-h-screen bg-gray-50">
       {/* Header */}
       <div className="bg-white shadow-sm border-b sticky top-0 z-50">
-        <div className="max-w-6xl mx-auto px-6 flex justify-between items-center py-4">
-          <h1 className="text-xl font-semibold text-gray-800">JobLens</h1>
+        <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 flex justify-between items-center py-6">
+          <div className="flex items-center">
+            <User className="h-8 w-8 text-blue-600 mr-3" />
+            <h1 className="text-xl sm:text-2xl font-bold text-gray-900">
+              SkillVerify
+            </h1>
+          </div>
           {student && (
-            <div className="flex items-center space-x-6">
-              <span className="text-gray-600">Welcome, {student.name}</span>
+            <div className="flex items-center space-x-4">
+              <span className="hidden sm:block text-sm text-gray-600">
+                Welcome, {student.name}
+              </span>
+              <div className="h-8 w-8 bg-blue-600 rounded-full flex items-center justify-center">
+                <span className="text-white text-sm font-medium">
+                  {student.name?.charAt(0)?.toUpperCase() || "S"}
+                </span>
+              </div>
               <button
-                onClick={handleLogout}
-                className="text-sm text-gray-500 hover:text-red-600"
+                className="sm:hidden p-2 rounded-md border text-gray-600"
+                onClick={() => setMobileMenuOpen(!mobileMenuOpen)}
               >
-                Logout
+                {mobileMenuOpen ? <X className="h-5 w-5" /> : <Menu className="h-5 w-5" />}
               </button>
             </div>
           )}
         </div>
       </div>
 
-      {/* Profile Card */}
-      <div className="max-w-6xl mx-auto px-6 py-6">
-        <div className="bg-white rounded-lg p-6 shadow-sm flex items-center space-x-4">
-          <div className="h-12 w-12 bg-blue-600 rounded-full flex items-center justify-center text-white text-lg font-bold">
-            {student?.name?.charAt(0) || "S"}
-          </div>
-          <div>
-            <h2 className="text-lg font-semibold text-gray-800">{student?.name}</h2>
-            <p className="text-gray-500 text-sm">
-              {student?.course} • {student?.college} • Class of {student?.year}
-            </p>
-          </div>
-        </div>
-      </div>
-
       {/* Tabs */}
-      <div className="max-w-6xl mx-auto px-6">
-        <div className="flex space-x-8 border-b">
-          {[
-            { id: "skillProgress", label: "Skill Progress" },
-            { id: "courses", label: "Available Courses" },
-            { id: "myCourses", label: "My Courses" },
-            { id: "jobs", label: "Jobs & Internships" },
-            { id: "applications", label: "My Applications" },
-          ].map((tab) => (
-            <button
-              key={tab.id}
-              onClick={() => setActiveTab(tab.id)}
-              className={`px-1 py-3 text-sm font-medium border-b-2 ${
-                activeTab === tab.id
-                  ? "border-blue-600 text-blue-600"
-                  : "border-transparent text-gray-500 hover:text-gray-700"
-              }`}
-            >
-              {tab.label}
-            </button>
-          ))}
+      <div className="bg-white border-b">
+        <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+          {/* Desktop */}
+          <div className="hidden sm:flex space-x-8">
+            {[
+              { id: "profile", label: "Profile", icon: User },
+              { id: "skills", label: "Skills", icon: Award },
+              { id: "registeredCourses", label: "My Courses", icon: BookOpen },
+              { id: "courses", label: "All Courses", icon: FileText },
+              { id: "applications", label: "Applications", icon: FileText },
+              { id: "notifications", label: "Notifications", icon: Bell },
+              { id: "settings", label: "Settings", icon: Settings },
+            ].map((tab) => (
+              <button
+                key={tab.id}
+                onClick={() => setActiveTab(tab.id)}
+                className={`flex items-center px-3 py-4 text-sm font-medium border-b-2 ${
+                  activeTab === tab.id
+                    ? "border-blue-600 text-blue-600"
+                    : "border-transparent text-gray-500 hover:text-gray-700 hover:border-gray-300"
+                }`}
+              >
+                <tab.icon className="h-4 w-4 mr-2" />
+                {tab.label}
+              </button>
+            ))}
+          </div>
+
+          {/* Mobile */}
+          {mobileMenuOpen && (
+            <div className="sm:hidden flex flex-col space-y-2 py-2">
+              {[
+                { id: "profile", label: "Profile", icon: User },
+                { id: "skills", label: "Skills", icon: Award },
+                { id: "registeredCourses", label: "My Courses", icon: BookOpen },
+                { id: "courses", label: "All Courses", icon: FileText },
+                { id: "applications", label: "Applications", icon: FileText },
+                { id: "notifications", label: "Notifications", icon: Bell },
+                { id: "settings", label: "Settings", icon: Settings },
+              ].map((tab) => (
+                <button
+                  key={tab.id}
+                  onClick={() => {
+                    setActiveTab(tab.id);
+                    setMobileMenuOpen(false);
+                  }}
+                  className={`flex items-center px-3 py-2 text-sm font-medium rounded-md ${
+                    activeTab === tab.id
+                      ? "bg-blue-50 text-blue-600"
+                      : "text-gray-600 hover:bg-gray-50"
+                  }`}
+                >
+                  <tab.icon className="h-4 w-4 mr-2" />
+                  {tab.label}
+                </button>
+              ))}
+            </div>
+          )}
         </div>
       </div>
 
       {/* Content */}
-      <div className="max-w-6xl mx-auto px-6 py-8">
-        {/* Available Courses */}
-        {activeTab === "courses" && (
-          <div className="grid md:grid-cols-3 gap-6">
-            {allCourses.map((c) => (
-              <div key={c._id} className="bg-white p-5 rounded-lg shadow">
-                <h3 className="font-semibold text-gray-800">{c.courseName}</h3>
-                <p className="text-gray-500 text-sm mt-2">{c.courseDescription}</p>
-                <p className="text-green-600 font-semibold mt-3">₹{c.courseFee}</p>
-                <p className="text-gray-400 text-xs">
-                  {c.courseDuration} | ID: {c.courseId}
-                </p>
+      <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8 space-y-6">
+        {/* Profile */}
+        {activeTab === "profile" && (
+          <div className="bg-white p-6 rounded-lg shadow">
+            {editMode ? (
+              <div className="space-y-3">
+                {["name", "rollNo", "college", "course", "year", "contactNumber"].map(
+                  (field) => (
+                    <input
+                      key={field}
+                      type={field === "year" ? "number" : "text"}
+                      value={student[field] || ""}
+                      onChange={(e) =>
+                        setStudent({ ...student, [field]: e.target.value })
+                      }
+                      className="border p-2 rounded w-full"
+                      placeholder={field}
+                    />
+                  )
+                )}
                 <button
-                  onClick={() => handleEnroll(c._id)}
-                  className="mt-4 bg-blue-600 text-white py-2 px-4 rounded"
+                  onClick={handleUpdateProfile}
+                  className="bg-blue-600 text-white px-4 py-2 rounded"
                 >
-                  Enroll Now
+                  Save
                 </button>
               </div>
-            ))}
+            ) : (
+              <div>
+                <p><strong>Name:</strong> {student.name}</p>
+                <p><strong>College:</strong> {student.college}</p>
+                <p><strong>Course:</strong> {student.course}</p>
+                <p><strong>Year:</strong> {student.year}</p>
+                <button
+                  onClick={() => setEditMode(true)}
+                  className="mt-3 bg-gray-200 px-4 py-2 rounded"
+                >
+                  Edit Profile
+                </button>
+              </div>
+            )}
           </div>
         )}
 
-        {/* My Courses */}
-        {activeTab === "myCourses" && (
-          <div className="grid md:grid-cols-2 gap-6">
-            {enrolledCourses.length ? (
-              enrolledCourses.map((c) => (
+        {/* Skills */}
+        {activeTab === "skills" && (
+          <div className="bg-white p-6 rounded-lg shadow">
+            {student?.skills?.length ? (
+              student.skills.map((s, i) => (
+                <div key={i} className="flex justify-between border-b py-2">
+                  <span>{s.name}</span>
+                  <span className={s.verified ? "text-green-600" : "text-red-600"}>
+                    {s.verified ? "Verified" : "Not Verified"}
+                  </span>
+                </div>
+              ))
+            ) : (
+              <p>No skills added yet</p>
+            )}
+          </div>
+        )}
+
+        {/* Courses */}
+        {activeTab === "registeredCourses" && (
+          <div className="bg-white p-6 rounded-lg shadow">
+            {student?.registeredCourses?.length ? (
+              student.registeredCourses.map((c) => (
+                <div key={c._id} className="border-b py-2">
+                  {c.courseName}
+                </div>
+              ))
+            ) : (
+              <p>No courses registered</p>
+            )}
+          </div>
+        )}
+
+        {activeTab === "courses" && (
+          <div className="bg-white p-6 rounded-lg shadow space-y-3">
+            {allCourses.map((c) => {
+              const enrolled = student?.registeredCourses?.some((r) => r._id === c._id);
+              return (
                 <div
                   key={c._id}
-                  className="bg-white p-5 rounded-lg shadow flex justify-between"
+                  className="flex justify-between border-b py-2 items-center"
                 >
-                  <div>
-                    <h3 className="font-semibold text-gray-800">{c.courseName}</h3>
-                    <p className="text-gray-500 text-sm">{c.courseDescription}</p>
-                    <p className="text-gray-400 text-xs">Duration: {c.courseDuration}</p>
-                  </div>
-                  <span className="text-green-600 font-semibold">Enrolled</span>
-                </div>
-              ))
-            ) : (
-              <p>No enrolled courses yet</p>
-            )}
-          </div>
-        )}
-
-        {/* Jobs */}
-        {activeTab === "jobs" && (
-          <div className="space-y-4">
-            {jobs.length ? (
-              jobs.map((job) => (
-                <div
-                  key={job._id}
-                  className="bg-white p-6 rounded-lg shadow flex justify-between items-center"
-                >
-                  <div>
-                    <h3 className="font-semibold text-gray-800">{job.title}</h3>
-                    <p className="text-gray-500 text-sm">{job.location}</p>
-                    <p className="text-gray-400 text-sm mt-2">{job.description}</p>
-                    <div className="flex space-x-2 mt-3">
-                      {job.skillsRequired?.map((s, i) => (
-                        <span
-                          key={i}
-                          className="px-2 py-1 bg-gray-100 text-gray-600 text-xs rounded"
-                        >
-                          {s}
-                        </span>
-                      ))}
-                    </div>
-                    <p className="text-gray-700 text-sm mt-2">
-                      Salary: {job.salary || "Not specified"}
-                    </p>
-                  </div>
+                  <span>{c.courseName}</span>
                   <button
-                    onClick={() => handleApply(job._id)}
-                    className="bg-blue-600 text-white px-4 py-2 rounded"
+                    onClick={() => handleEnroll(c._id)}
+                    disabled={enrolled}
+                    className={`px-3 py-1 rounded ${
+                      enrolled
+                        ? "bg-gray-400 text-white"
+                        : "bg-blue-600 text-white"
+                    }`}
                   >
-                    Apply
+                    {enrolled ? "Enrolled" : "Enroll"}
                   </button>
                 </div>
-              ))
-            ) : (
-              <p>No jobs available</p>
-            )}
+              );
+            })}
           </div>
         )}
 
         {/* Applications */}
         {activeTab === "applications" && (
-          <div className="bg-white rounded-lg p-6 shadow">
+          <div className="bg-white p-6 rounded-lg shadow">
             {applications.length ? (
               applications.map((app) => (
-                <div key={app._id} className="flex justify-between border-b py-2">
-                  <span>{app.jobTitle || app.job?.title}</span>
-                  <span className="text-sm text-gray-500">{app.status || "Pending"}</span>
+                <div key={app._id} className="border-b py-2">
+                  {app.jobTitle} - {app.status}
                 </div>
               ))
             ) : (
-              <p>No applications submitted yet</p>
+              <p>No applications yet</p>
             )}
+          </div>
+        )}
+
+        {/* Notifications */}
+        {activeTab === "notifications" && (
+          <div className="bg-white p-6 rounded-lg shadow">
+            {notifications.length ? (
+              notifications.map((n) => (
+                <div key={n._id} className="border-b py-2">
+                  {n.message}
+                </div>
+              ))
+            ) : (
+              <p>No notifications</p>
+            )}
+          </div>
+        )}
+
+        {/* Settings */}
+        {activeTab === "settings" && (
+          <div className="bg-white p-6 rounded-lg shadow">
+            <button
+              onClick={handleLogout}
+              className="bg-red-600 text-white px-4 py-2 rounded"
+            >
+              Logout
+            </button>
           </div>
         )}
       </div>

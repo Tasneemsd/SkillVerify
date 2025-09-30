@@ -1,10 +1,6 @@
 const express = require("express");
 const cors = require("cors");
 const dotenv = require("dotenv");
-const session = require("express-session");
-const passport = require("passport");
-const MongoStore = require("connect-mongo"); // ✅ safe session store for production
-
 const connectDB = require("./config/db");
 
 // Load env vars
@@ -34,26 +30,6 @@ app.use(
 );
 
 app.use(express.json({ limit: "10mb" }));
-
-// ✅ Session with MongoStore
-app.use(
-  session({
-    secret: process.env.SESSION_SECRET || "secretkey",
-    resave: false,
-    saveUninitialized: false,
-    store: MongoStore.create({
-      mongoUrl: process.env.MONGO_URI,
-      collectionName: "sessions",
-    }),
-    cookie: {
-      secure: false, // set true if using HTTPS
-      maxAge: 1000 * 60 * 60 * 24, // 1 day
-    },
-  })
-);
-
-app.use(passport.initialize());
-app.use(passport.session());
 
 // ✅ Routes
 app.use("/api", require("./routes/auth"));
