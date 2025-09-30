@@ -1,14 +1,7 @@
 // src/components/Student.jsx
 import React, { useState, useEffect } from "react";
 import axios from "axios";
-import {
-  User,
-  BookOpen,
-  FileText,
-  Award,
-  Menu,
-  X,
-} from "lucide-react";
+import { User, BookOpen, FileText, Award, Menu, X } from "lucide-react";
 import { useNavigate } from "react-router-dom";
 
 const BASE_URL = "https://skillverify.onrender.com/api";
@@ -19,9 +12,8 @@ const Student = () => {
   const [applications, setApplications] = useState([]);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState(null);
-  const [activeTab, setActiveTab] = useState("profile");
+  const [activeTab, setActiveTab] = useState("skills");
   const [mobileMenuOpen, setMobileMenuOpen] = useState(false);
-  const [editMode, setEditMode] = useState(false);
   const [dropdownOpen, setDropdownOpen] = useState(false);
 
   const navigate = useNavigate();
@@ -90,20 +82,6 @@ const Student = () => {
     }
   };
 
-  const handleUpdateProfile = async () => {
-    try {
-      const res = await axios.post(
-        `${BASE_URL}/student/profile`,
-        { email: student.email, ...student },
-        { headers: getAuthHeaders() }
-      );
-      alert(res.data.message || "Profile updated!");
-      setEditMode(false);
-    } catch {
-      alert("Profile update failed");
-    }
-  };
-
   if (loading)
     return (
       <div className="min-h-screen flex items-center justify-center">
@@ -144,18 +122,6 @@ const Student = () => {
               {dropdownOpen && (
                 <div className="absolute right-0 mt-36 w-48 bg-white border rounded-lg shadow-md z-50">
                   <button
-                    onClick={() => setActiveTab("profile")}
-                    className="block w-full text-left px-4 py-2 hover:bg-gray-100"
-                  >
-                    My Profile
-                  </button>
-                  <button
-                    onClick={() => alert("Settings page coming soon!")}
-                    className="block w-full text-left px-4 py-2 hover:bg-gray-100"
-                  >
-                    Settings
-                  </button>
-                  <button
                     onClick={handleLogout}
                     className="block w-full text-left px-4 py-2 hover:bg-gray-100 text-red-600"
                   >
@@ -174,13 +140,44 @@ const Student = () => {
         </div>
       </div>
 
+      {/* Profile Section (always visible, not a tab anymore) */}
+      <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 mt-6">
+        <div className="bg-white shadow rounded-lg p-6">
+          <h2 className="text-xl font-bold text-gray-800 mb-4">My Profile</h2>
+          <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
+            <div>
+              <p className="text-sm text-gray-500">Name</p>
+              <p className="font-medium text-gray-800">{student.name}</p>
+            </div>
+            <div>
+              <p className="text-sm text-gray-500">College</p>
+              <p className="font-medium text-gray-800">{student.college}</p>
+            </div>
+            <div>
+              <p className="text-sm text-gray-500">Course</p>
+              <p className="font-medium text-gray-800">{student.course}</p>
+            </div>
+            <div>
+              <p className="text-sm text-gray-500">Year</p>
+              <p className="font-medium text-gray-800">{student.year}</p>
+            </div>
+            <div>
+              <p className="text-sm text-gray-500">Roll No</p>
+              <p className="font-medium text-gray-800">{student.rollNo}</p>
+            </div>
+            <div>
+              <p className="text-sm text-gray-500">Contact</p>
+              <p className="font-medium text-gray-800">{student.contactNumber}</p>
+            </div>
+          </div>
+        </div>
+      </div>
+
       {/* Tabs */}
-      <div className="bg-white border-b">
+      <div className="bg-white border-b mt-6">
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
-          {/* Desktop */}
           <div className="hidden sm:flex space-x-8">
             {[
-              { id: "profile", label: "Profile", icon: User },
               { id: "skills", label: "Skills", icon: Award },
               { id: "registeredCourses", label: "My Courses", icon: BookOpen },
               { id: "courses", label: "All Courses", icon: FileText },
@@ -205,49 +202,6 @@ const Student = () => {
 
       {/* Content */}
       <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8 space-y-6">
-        {/* Profile */}
-        {activeTab === "profile" && (
-          <div className="bg-white p-6 rounded-lg shadow">
-            {editMode ? (
-              <div className="space-y-3">
-                {["name", "rollNo", "college", "course", "year", "contactNumber"].map(
-                  (field) => (
-                    <input
-                      key={field}
-                      type={field === "year" ? "number" : "text"}
-                      value={student[field] || ""}
-                      onChange={(e) =>
-                        setStudent({ ...student, [field]: e.target.value })
-                      }
-                      className="border p-2 rounded w-full"
-                      placeholder={field}
-                    />
-                  )
-                )}
-                <button
-                  onClick={handleUpdateProfile}
-                  className="bg-blue-600 text-white px-4 py-2 rounded"
-                >
-                  Save
-                </button>
-              </div>
-            ) : (
-              <div>
-                <p><strong>Name:</strong> {student.name}</p>
-                <p><strong>College:</strong> {student.college}</p>
-                <p><strong>Course:</strong> {student.course}</p>
-                <p><strong>Year:</strong> {student.year}</p>
-                <button
-                  onClick={() => setEditMode(true)}
-                  className="mt-3 bg-gray-200 px-4 py-2 rounded"
-                >
-                  Edit Profile
-                </button>
-              </div>
-            )}
-          </div>
-        )}
-
         {/* Skills */}
         {activeTab === "skills" && (
           <div className="bg-white p-6 rounded-lg shadow">
@@ -325,8 +279,6 @@ const Student = () => {
             )}
           </div>
         )}
-
-
       </div>
     </div>
   );
