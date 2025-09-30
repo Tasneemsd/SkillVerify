@@ -1,16 +1,6 @@
 // src/components/Student.jsx
 import React, { useState, useEffect } from "react";
 import axios from "axios";
-import {
-  User,
-  BookOpen,
-  Bell,
-  FileText,
-  Award,
-  Settings,
-  Menu,
-  X,
-} from "lucide-react";
 import { useNavigate } from "react-router-dom";
 
 const BASE_URL = "https://skillverify.onrender.com/api";
@@ -19,12 +9,9 @@ const Student = () => {
   const [student, setStudent] = useState(null);
   const [allCourses, setAllCourses] = useState([]);
   const [applications, setApplications] = useState([]);
-  const [notifications, setNotifications] = useState([]);
+  const [activeTab, setActiveTab] = useState("skillProgress");
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState(null);
-  const [activeTab, setActiveTab] = useState("profile");
-  const [mobileMenuOpen, setMobileMenuOpen] = useState(false);
-  const [editMode, setEditMode] = useState(false);
 
   const navigate = useNavigate();
   const user = JSON.parse(localStorage.getItem("user") || "{}");
@@ -33,7 +20,7 @@ const Student = () => {
   const getAuthHeaders = () =>
     token ? { Authorization: `Bearer ${token}` } : {};
 
-  // Fetch student data
+  // Fetch student + courses + applications
   const fetchStudent = async () => {
     try {
       if (!user?.email) return;
@@ -58,19 +45,6 @@ const Student = () => {
     }
   };
 
-  const fetchNotifications = async () => {
-    try {
-      if (!student?._id) return;
-      const res = await axios.get(
-        `${BASE_URL}/notification?studentId=${student._id}`,
-        { headers: getAuthHeaders() }
-      );
-      setNotifications(res.data || []);
-    } catch (err) {
-      console.error("Notifications error:", err);
-    }
-  };
-
   useEffect(() => {
     const load = async () => {
       setLoading(true);
@@ -80,47 +54,9 @@ const Student = () => {
     load();
   }, []);
 
-  useEffect(() => {
-    if (activeTab === "notifications") fetchNotifications();
-  }, [activeTab]);
-
   const handleLogout = () => {
     localStorage.clear();
     navigate("/login");
-  };
-
-  const handleEnroll = async (courseId) => {
-    try {
-      const res = await axios.post(
-        `${BASE_URL}/student/enroll`,
-        { courseId, email: user.email },
-        { headers: getAuthHeaders() }
-      );
-      alert(res.data.message || "Enrolled successfully!");
-      const course = allCourses.find((c) => c._id === courseId);
-      if (course) {
-        setStudent((prev) => ({
-          ...prev,
-          registeredCourses: [...(prev.registeredCourses || []), course],
-        }));
-      }
-    } catch {
-      alert("Failed to enroll");
-    }
-  };
-
-  const handleUpdateProfile = async () => {
-    try {
-      const res = await axios.post(
-        `${BASE_URL}/student/profile`,
-        { email: student.email, ...student },
-        { headers: getAuthHeaders() }
-      );
-      alert(res.data.message || "Profile updated!");
-      setEditMode(false);
-    } catch {
-      alert("Profile update failed");
-    }
   };
 
   if (loading)
@@ -140,204 +76,179 @@ const Student = () => {
     <div className="min-h-screen bg-gray-50">
       {/* Header */}
       <div className="bg-white shadow-sm border-b sticky top-0 z-50">
-        <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 flex justify-between items-center py-6">
-          <div className="flex items-center">
-            <User className="h-8 w-8 text-blue-600 mr-3" />
-            <h1 className="text-xl sm:text-2xl font-bold text-gray-900">
-              SkillVerify
-            </h1>
-          </div>
+        <div className="max-w-6xl mx-auto px-6 flex justify-between items-center py-4">
+          <h1 className="text-xl font-semibold text-gray-800">JobLens</h1>
           {student && (
-            <div className="flex items-center space-x-4">
-              <span className="hidden sm:block text-sm text-gray-600">
-                Welcome, {student.name}
-              </span>
-              <div className="h-8 w-8 bg-blue-600 rounded-full flex items-center justify-center">
-                <span className="text-white text-sm font-medium">
-                  {student.name?.charAt(0)?.toUpperCase() || "S"}
-                </span>
-              </div>
+            <div className="flex items-center space-x-6">
+              <span className="text-gray-600">Welcome, {student.name}</span>
               <button
-                className="sm:hidden p-2 rounded-md border text-gray-600"
-                onClick={() => setMobileMenuOpen(!mobileMenuOpen)}
+                onClick={handleLogout}
+                className="text-sm text-gray-500 hover:text-red-600"
               >
-                {mobileMenuOpen ? <X className="h-5 w-5" /> : <Menu className="h-5 w-5" />}
+                Logout
               </button>
             </div>
           )}
         </div>
       </div>
 
-      {/* Tabs */}
-      <div className="bg-white border-b">
-        <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
-          {/* Desktop */}
-          <div className="hidden sm:flex space-x-8">
-            {[
-              { id: "profile", label: "Profile", icon: User },
-              { id: "skills", label: "Skills", icon: Award },
-              { id: "registeredCourses", label: "My Courses", icon: BookOpen },
-              { id: "courses", label: "All Courses", icon: FileText },
-              { id: "applications", label: "Applications", icon: FileText },
-              { id: "notifications", label: "Notifications", icon: Bell },
-              { id: "settings", label: "Settings", icon: Settings },
-            ].map((tab) => (
-              <button
-                key={tab.id}
-                onClick={() => setActiveTab(tab.id)}
-                className={`flex items-center px-3 py-4 text-sm font-medium border-b-2 ${
-                  activeTab === tab.id
-                    ? "border-blue-600 text-blue-600"
-                    : "border-transparent text-gray-500 hover:text-gray-700 hover:border-gray-300"
-                }`}
-              >
-                <tab.icon className="h-4 w-4 mr-2" />
-                {tab.label}
-              </button>
-            ))}
+      {/* Profile Card */}
+      <div className="max-w-6xl mx-auto px-6 py-6">
+        <div className="bg-white rounded-lg p-6 shadow-sm">
+          <div className="flex items-center space-x-4">
+            <div className="h-12 w-12 bg-blue-600 rounded-full flex items-center justify-center text-white text-lg font-bold">
+              {student?.name?.charAt(0) || "S"}
+            </div>
+            <div>
+              <h2 className="text-lg font-semibold text-gray-800">
+                {student?.name}
+              </h2>
+              <p className="text-gray-500 text-sm">
+                {student?.course} • {student?.college} • Class of {student?.year}
+              </p>
+            </div>
+          </div>
+          <div className="mt-4">
+            <p className="text-sm font-medium text-gray-600">
+              Verified Skills (0)
+            </p>
+            <p className="text-sm text-gray-500">
+              Complete the verification process to earn verified skill badges
+            </p>
           </div>
         </div>
       </div>
 
-      {/* Content */}
-      <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8 space-y-6">
-        {/* Profile */}
-        {activeTab === "profile" && (
-          <div className="bg-white p-6 rounded-lg shadow">
-            {editMode ? (
-              <div className="space-y-4">
-                {["name", "rollNo", "college", "course", "year", "contactNumber"].map(
-                  (field) => (
-                    <input
-                      key={field}
-                      type={field === "year" ? "number" : "text"}
-                      value={student[field] || ""}
-                      onChange={(e) =>
-                        setStudent({ ...student, [field]: e.target.value })
-                      }
-                      className="border p-2 rounded w-full"
-                      placeholder={field}
-                    />
-                  )
-                )}
-                <button
-                  onClick={handleUpdateProfile}
-                  className="bg-blue-600 text-white px-4 py-2 rounded"
-                >
-                  Save
-                </button>
-              </div>
-            ) : (
-              <div className="grid grid-cols-2 gap-y-4">
-                <p><strong>Name:</strong> {student.name}</p>
-                <p><strong>College:</strong> {student.college}</p>
-                <p><strong>Course:</strong> {student.course}</p>
-                <p><strong>Year:</strong> {student.year}</p>
-                <p><strong>Contact:</strong> {student.contactNumber}</p>
-                <button
-                  onClick={() => setEditMode(true)}
-                  className="mt-3 bg-gray-200 px-4 py-2 rounded col-span-2 w-fit"
-                >
-                  Edit Profile
-                </button>
-              </div>
-            )}
-          </div>
-        )}
+      {/* Tabs */}
+      <div className="max-w-6xl mx-auto px-6">
+        <div className="flex space-x-8 border-b">
+          {[
+            { id: "skillProgress", label: "Skill Progress" },
+            { id: "courses", label: "Available Courses" },
+            { id: "jobs", label: "Jobs & Internships" },
+            { id: "applications", label: "My Applications" },
+          ].map((tab) => (
+            <button
+              key={tab.id}
+              onClick={() => setActiveTab(tab.id)}
+              className={`px-1 py-3 text-sm font-medium border-b-2 ${
+                activeTab === tab.id
+                  ? "border-blue-600 text-blue-600"
+                  : "border-transparent text-gray-500 hover:text-gray-700"
+              }`}
+            >
+              {tab.label}
+            </button>
+          ))}
+        </div>
+      </div>
 
-        {/* Skills */}
-        {activeTab === "skills" && (
-          <div className="bg-white p-6 rounded-lg shadow space-y-3">
-            {student?.skills?.length ? (
-              student.skills.map((s, i) => (
-                <div key={i} className="flex justify-between">
-                  <span>{s.name}</span>
-                  <span className={s.verified ? "text-green-600" : "text-red-600"}>
-                    {s.verified ? "Verified" : "Not Verified"}
-                  </span>
-                </div>
-              ))
-            ) : (
-              <p>No skills added yet</p>
-            )}
+      {/* Content */}
+      <div className="max-w-6xl mx-auto px-6 py-8">
+        {/* Skill Progress */}
+        {activeTab === "skillProgress" && (
+          <div className="bg-white rounded-lg shadow p-6 flex flex-col items-center justify-center">
+            <p className="font-semibold text-lg mb-3">
+              Your Skill Verification Journey
+            </p>
+            <img
+              src="https://cdn-icons-png.flaticon.com/512/1828/1828817.png"
+              alt="skills"
+              className="h-16 mb-3"
+            />
+            <p className="text-gray-500 text-sm">No Skills in Progress</p>
+            <button className="mt-4 bg-blue-600 text-white px-4 py-2 rounded">
+              Browse Courses
+            </button>
           </div>
         )}
 
         {/* Courses */}
-        {activeTab === "registeredCourses" && (
-          <div className="bg-white p-6 rounded-lg shadow space-y-2">
-            {student?.registeredCourses?.length ? (
-              student.registeredCourses.map((c) => (
-                <div key={c._id}>{c.courseName}</div>
-              ))
-            ) : (
-              <p>No courses registered</p>
-            )}
+        {activeTab === "courses" && (
+          <div className="grid md:grid-cols-3 gap-6">
+            {allCourses.map((c) => (
+              <div
+                key={c._id}
+                className="bg-white p-5 rounded-lg shadow flex flex-col justify-between"
+              >
+                <div>
+                  <h3 className="font-semibold text-gray-800">
+                    {c.courseName}
+                  </h3>
+                  <p className="text-gray-500 text-sm mt-2">{c.description}</p>
+                  <p className="text-green-600 font-semibold mt-3">
+                    ₹{c.price}
+                  </p>
+                  <p className="text-gray-400 text-xs">{c.duration}</p>
+                </div>
+                <button className="mt-4 bg-blue-600 text-white py-2 rounded">
+                  Enroll Now
+                </button>
+              </div>
+            ))}
           </div>
         )}
 
-        {activeTab === "courses" && (
-          <div className="bg-white p-6 rounded-lg shadow space-y-4">
-            {allCourses.map((c) => {
-              const enrolled = student?.registeredCourses?.some((r) => r._id === c._id);
-              return (
-                <div key={c._id} className="flex justify-between items-center">
-                  <span>{c.courseName}</span>
-                  <button
-                    onClick={() => handleEnroll(c._id)}
-                    disabled={enrolled}
-                    className={`px-3 py-1 rounded ${
-                      enrolled
-                        ? "bg-gray-400 text-white"
-                        : "bg-blue-600 text-white"
-                    }`}
-                  >
-                    {enrolled ? "Enrolled" : "Enroll"}
+        {/* Jobs */}
+        {activeTab === "jobs" && (
+          <div className="space-y-4">
+            {applications.length ? (
+              applications.map((job) => (
+                <div
+                  key={job._id}
+                  className="bg-white p-6 rounded-lg shadow flex justify-between items-center"
+                >
+                  <div>
+                    <h3 className="font-semibold text-gray-800">
+                      {job.title}
+                    </h3>
+                    <p className="text-gray-500 text-sm">
+                      {job.company} • {job.location}
+                    </p>
+                    <p className="text-gray-400 text-sm mt-2">
+                      {job.description}
+                    </p>
+                    <div className="flex space-x-2 mt-3">
+                      {job.skills?.map((s, i) => (
+                        <span
+                          key={i}
+                          className="px-2 py-1 bg-gray-100 text-gray-600 text-xs rounded"
+                        >
+                          {s}
+                        </span>
+                      ))}
+                    </div>
+                    <p className="text-gray-700 text-sm mt-2">
+                      Salary: {job.salary}
+                    </p>
+                  </div>
+                  <button className="bg-blue-600 text-white px-4 py-2 rounded">
+                    Apply
                   </button>
                 </div>
-              );
-            })}
+              ))
+            ) : (
+              <p>No jobs available</p>
+            )}
           </div>
         )}
+
         {/* Applications */}
         {activeTab === "applications" && (
-          <div className="bg-white p-6 rounded-lg shadow">
+          <div className="bg-white rounded-lg p-6 shadow">
             {applications.length ? (
               applications.map((app) => (
-                <div key={app._id} className="border-b py-2">
-                  {app.jobTitle} - {app.status}
+                <div
+                  key={app._id}
+                  className="flex justify-between border-b py-2"
+                >
+                  <span>{app.jobTitle}</span>
+                  <span className="text-sm text-gray-500">{app.status}</span>
                 </div>
               ))
             ) : (
-              <p>No applications yet</p>
+              <p>No applications submitted yet</p>
             )}
-          </div>
-        )}
-
-        {/* Notifications */}
-        {activeTab === "notifications" && (
-          <div className="bg-white p-6 rounded-lg shadow">
-            {notifications.length ? (
-              notifications.map((n) => (
-                <div key={n._id} className="border-b py-2">
-                  {n.message}
-                </div>
-              ))
-            ) : (
-              <p>No notifications</p>
-            )}
-          </div>
-        )}
-
-        {/* Settings */}
-        {activeTab === "settings" && (
-          <div className="bg-white p-6 rounded-lg shadow">
-            <button
-              onClick={handleLogout}
-              className="bg-red-600 text-white px-4 py-2 rounded"
-            >
-              Logout
-            </button>
           </div>
         )}
       </div>
