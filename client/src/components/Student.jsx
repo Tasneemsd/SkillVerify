@@ -196,37 +196,6 @@ const Student = () => {
               </button>
             ))}
           </div>
-
-          {/* Mobile */}
-          {mobileMenuOpen && (
-            <div className="sm:hidden flex flex-col space-y-2 py-2">
-              {[
-                { id: "profile", label: "Profile", icon: User },
-                { id: "skills", label: "Skills", icon: Award },
-                { id: "registeredCourses", label: "My Courses", icon: BookOpen },
-                { id: "courses", label: "All Courses", icon: FileText },
-                { id: "applications", label: "Applications", icon: FileText },
-                { id: "notifications", label: "Notifications", icon: Bell },
-                { id: "settings", label: "Settings", icon: Settings },
-              ].map((tab) => (
-                <button
-                  key={tab.id}
-                  onClick={() => {
-                    setActiveTab(tab.id);
-                    setMobileMenuOpen(false);
-                  }}
-                  className={`flex items-center px-3 py-2 text-sm font-medium rounded-md ${
-                    activeTab === tab.id
-                      ? "bg-blue-50 text-blue-600"
-                      : "text-gray-600 hover:bg-gray-50"
-                  }`}
-                >
-                  <tab.icon className="h-4 w-4 mr-2" />
-                  {tab.label}
-                </button>
-              ))}
-            </div>
-          )}
         </div>
       </div>
 
@@ -236,7 +205,7 @@ const Student = () => {
         {activeTab === "profile" && (
           <div className="bg-white p-6 rounded-lg shadow">
             {editMode ? (
-              <div className="space-y-3">
+              <div className="space-y-4">
                 {["name", "rollNo", "college", "course", "year", "contactNumber"].map(
                   (field) => (
                     <input
@@ -259,14 +228,15 @@ const Student = () => {
                 </button>
               </div>
             ) : (
-              <div>
+              <div className="grid grid-cols-2 gap-y-4">
                 <p><strong>Name:</strong> {student.name}</p>
                 <p><strong>College:</strong> {student.college}</p>
                 <p><strong>Course:</strong> {student.course}</p>
                 <p><strong>Year:</strong> {student.year}</p>
+                <p><strong>Contact:</strong> {student.contactNumber}</p>
                 <button
                   onClick={() => setEditMode(true)}
-                  className="mt-3 bg-gray-200 px-4 py-2 rounded"
+                  className="mt-3 bg-gray-200 px-4 py-2 rounded col-span-2 w-fit"
                 >
                   Edit Profile
                 </button>
@@ -277,10 +247,10 @@ const Student = () => {
 
         {/* Skills */}
         {activeTab === "skills" && (
-          <div className="bg-white p-6 rounded-lg shadow">
+          <div className="bg-white p-6 rounded-lg shadow space-y-3">
             {student?.skills?.length ? (
               student.skills.map((s, i) => (
-                <div key={i} className="flex justify-between border-b py-2">
+                <div key={i} className="flex justify-between">
                   <span>{s.name}</span>
                   <span className={s.verified ? "text-green-600" : "text-red-600"}>
                     {s.verified ? "Verified" : "Not Verified"}
@@ -295,12 +265,10 @@ const Student = () => {
 
         {/* Courses */}
         {activeTab === "registeredCourses" && (
-          <div className="bg-white p-6 rounded-lg shadow">
+          <div className="bg-white p-6 rounded-lg shadow space-y-2">
             {student?.registeredCourses?.length ? (
               student.registeredCourses.map((c) => (
-                <div key={c._id} className="border-b py-2">
-                  {c.courseName}
-                </div>
+                <div key={c._id}>{c.courseName}</div>
               ))
             ) : (
               <p>No courses registered</p>
@@ -309,14 +277,11 @@ const Student = () => {
         )}
 
         {activeTab === "courses" && (
-          <div className="bg-white p-6 rounded-lg shadow space-y-3">
+          <div className="bg-white p-6 rounded-lg shadow space-y-4">
             {allCourses.map((c) => {
               const enrolled = student?.registeredCourses?.some((r) => r._id === c._id);
               return (
-                <div
-                  key={c._id}
-                  className="flex justify-between border-b py-2 items-center"
-                >
+                <div key={c._id} className="flex justify-between items-center">
                   <span>{c.courseName}</span>
                   <button
                     onClick={() => handleEnroll(c._id)}
@@ -334,7 +299,6 @@ const Student = () => {
             })}
           </div>
         )}
-
         {/* Applications */}
         {activeTab === "applications" && (
           <div className="bg-white p-6 rounded-lg shadow">
