@@ -30,6 +30,11 @@ app.use(
 );
 
 app.use(express.json({ limit: "10mb" }));
+app.use(
+  session({ secret: "secretkey", resave: false, saveUninitialized: false })
+);
+app.use(passport.initialize());
+app.use(passport.session());
 
 // ✅ Routes
 app.use("/api", require("./routes/auth"));

@@ -5,82 +5,63 @@ const bcrypt = require("bcryptjs");
 const jwt = require("jsonwebtoken");
 
 // REGISTER
-exports.register = async (req, res) => {
+const bcrypt = require("bcryptjs");
+const Student = require("../models/Student");
+
+exports.registerStudent = async (req, res) => {
   try {
-    const { name, email, password, role } = req.body;
-    if (!name || !email || !password || !role) {
+    const { name, email, password, college, year } = req.body;
+    if (!name || !email || !password) 
       return res.status(400).json({ message: "All fields required" });
-    }
 
-    const existingUser =
-      (await Student.findOne({ email })) ||
-      (await Recruiter.findOne({ email })) ||
-      (await Admin.findOne({ email }));
-    if (existingUser)
-      return res.status(409).json({ message: "Email already exists" });
+    const existing = await Student.findOne({ email });
+    if (existing) return res.status(400).json({ message: "Email already registered" });
 
-    const hashedPassword = await bcrypt.hash(password, 10);
+    const hashedPassword = await bcrypt.hash(password, 10); // ✅ hash password
 
-    let user;
-    if (role === "student") user = new Student({ name, email, password: hashedPassword });
-    else if (role === "recruiter") user = new Recruiter({ name, email, password: hashedPassword });
-    else if (role === "admin") user = new Admin({ name, email, password: hashedPassword });
-    else return res.status(400).json({ message: "Invalid role" });
+    const student = new Student({
+      name,
+      email,
+      password: hashedPassword,
+      college,
+      year
+    });
 
-    await user.save();
-    return res.status(201).json({ message: `${role} registered successfully`, user });
+    await student.save();
+    res.status(201).json({ message: "Student registered successfully!", student });
   } catch (err) {
     console.error(err);
-    return res.status(500).json({ message: "Server error", error: err.message });
+    res.status(500).json({ message: "Server error" });
   }
 };
+
 
 // LOGIN
-exports.login = async (req, res) => {
+const jwt = require("jsonwebtoken");
+
+exports.loginStudent = async (req, res) => {
   try {
     const { email, password } = req.body;
-    if (!email || !password) return res.status(400).json({ message: "Email & password required" });
+    if (!email || !password) 
+      return res.status(400).json({ message: "Email & password required" });
 
-    let user = await Student.findOne({ email });
-    let role = "student";
+    const student = await Student.findOne({ email });
+    if (!student) return res.status(401).json({ message: "Invalid credentials" });
 
-    if (!user) {
-      user = await Recruiter.findOne({ email });
-      role = user ? "recruiter" : null;
-    }
-    if (!user) {
-      user = await Admin.findOne({ email });
-      role = user ? "admin" : null;
-    }
-    if (!user) return res.status(401).json({ message: "Invalid credentials" });
-
-    const isMatch = await bcrypt.compare(password, user.password);
+    const isMatch = await bcrypt.compare(password, student.password);
     if (!isMatch) return res.status(401).json({ message: "Invalid credentials" });
 
-    const token = jwt.sign(
-      { id: user._id, email: user.email, role },
-      process.env.JWT_SECRET || "supersecret",
-      { expiresIn: "2h" }
-    );
+    const token = jwt.sign({ id: student._id, email: student.email, role: "student" }, process.env.JWT_SECRET || "supersecret", { expiresIn: "2h" });
 
-    let userObj = {
-      _id: user._id,
-      name: user.name,
-      email: user.email,
-      role,
-    };
-
-    if (role === "recruiter") {
-      userObj = {
-        ...userObj,
-        companyName: user.companyName || "",
-        phone: user.phone || "",
-      };
-    }
-
-    return res.status(200).json({ message: "Login successful", token, user: userObj });
+    res.json({
+      message: "Login successful",
+      token,
+      user: { _id: student._id, name: student.name, email: student.email, role: "student" }
+    });
   } catch (err) {
     console.error(err);
-    return res.status(500).json({ message: "Server error", error: err.message });
+    res.status(500).json({ message: "Server error" });
   }
 };
+
+// Additional auth functions for recruiter and admin can be added similarly here    
