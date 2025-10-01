@@ -24,7 +24,7 @@ function Student() {
 
   const fetchStudentDetails = async (email) => {
     try {
-      const res = await API.get(`/student?email=${email}`);
+      const res = await  API.get(`/student?email=${encodeURIComponent(useremail)}`);
       setStudent(res.data);
     } catch (err) {
       console.error("Error fetching student:", err);
@@ -232,11 +232,9 @@ function Student() {
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
           <div className="flex justify-between items-center h-16">
             <div className="flex items-center gap-2">
-              <GraduationCap className="w-8 h-8 text-blue-600" />
-              <img src={logo2} alt="Logo" className="h-18 w-auto" />
-              <span className="hidden sm:inline-block bg-blue-600 text-white text-xs px-3 py-1 rounded-full ml-2">
-                Student Panel
-              </span>
+              
+              <img src={logo2} alt="Logo" className="h-18 w-20" />
+              
             </div>
             <div className="relative">
               <button
