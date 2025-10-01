@@ -143,11 +143,10 @@ const Student = () => {
           <button
             key={tab.key}
             onClick={() => setActiveTab(tab.key)}
-            className={`pb-2 px-2 font-medium ${
-              activeTab === tab.key
+            className={`pb-2 px-2 font-medium ${activeTab === tab.key
                 ? "border-b-2 border-blue-600 text-blue-600"
                 : "text-gray-600 hover:text-blue-600"
-            }`}
+              }`}
           >
             {tab.label}
           </button>
@@ -206,11 +205,10 @@ const Student = () => {
                   </span>
                   <div className="flex gap-2">
                     <button
-                      className={`px-4 py-2 rounded text-white text-sm ${
-                        isCourseEnrolled(course)
+                      className={`px-4 py-2 rounded text-white text-sm ${isCourseEnrolled(course)
                           ? "bg-gray-400 cursor-not-allowed"
                           : "bg-green-600 hover:bg-green-700"
-                      }`}
+                        }`}
                       disabled={isCourseEnrolled(course)}
                       onClick={async () => {
                         if (isCourseEnrolled(course)) return;
@@ -231,10 +229,11 @@ const Student = () => {
 
                     <button
                       className="px-4 py-2 bg-blue-600 text-white rounded hover:bg-blue-700 text-sm"
-                      onClick={() => navigate(`/course/${course._id}`)}
+                      onClick={() => navigate(`/courses/${course._id}`)} // ✅ changed /course to /courses
                     >
                       Know More
                     </button>
+
                   </div>
                 </div>
               </div>
@@ -349,13 +348,12 @@ const Student = () => {
                   >
                     <span>{a.jobTitle}</span>
                     <span
-                      className={`text-sm ${
-                        a.status === "Accepted"
+                      className={`text-sm ${a.status === "Accepted"
                           ? "text-green-600"
                           : a.status === "Rejected"
-                          ? "text-red-600"
-                          : "text-yellow-600"
-                      }`}
+                            ? "text-red-600"
+                            : "text-yellow-600"
+                        }`}
                     >
                       {a.status}
                     </span>

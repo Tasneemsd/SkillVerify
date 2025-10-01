@@ -1,6 +1,6 @@
 import React, { useEffect, useState } from "react";
 import { useParams, useNavigate } from "react-router-dom";
-import API from "../api";
+import API, { getAuthToken } from "../api";
 import logo2 from "../images/logo2.jpg";
 
 const CourseDetails = () => {
@@ -11,20 +11,35 @@ const CourseDetails = () => {
   const navigate = useNavigate();
 
   const user = JSON.parse(localStorage.getItem("user"));
-  const token = localStorage.getItem("token");
+  const token = getAuthToken();
 
   const getInitials = (name = "") =>
     name ? name.split(" ").map((n) => n[0].toUpperCase()).join("") : "S";
 
   useEffect(() => {
     if (!id) return;
-    API.get(`/courses/id/${id}`)
-      .then((res) => {
-        setCourse(res.data);
-      })
+    API.get(`/courses/${id}`)
+      .then((res) => setCourse(res.data))
       .catch((err) => console.error("Course fetch error:", err))
       .finally(() => setLoading(false));
   }, [id]);
+
+  const handleEnroll = async (e) => {
+    e.preventDefault();
+    if (!token) return navigate("/login");
+
+    try {
+      await API.post(
+        "/student/enroll",
+        { courseId: course._id },
+        { headers: { Authorization: `Bearer ${token}` } }
+      );
+      alert("✅ Enrollment successful!");
+    } catch (err) {
+      console.error(err);
+      alert(err.response?.data?.message || "Enrollment failed!");
+    }
+  };
 
   if (loading) {
     return (
@@ -53,11 +68,8 @@ const CourseDetails = () => {
       {/* Navbar */}
       <nav className="bg-white shadow-md px-6 py-4 flex justify-between items-center relative">
         <img src={logo2} alt="SkillVerify Logo" className="h-16 w-auto object-contain" />
-
         <div className="flex items-center gap-4">
-          <span className="text-gray-700 font-medium">
-            Welcome, {user?.name || "Student"}
-          </span>
+          <span className="text-gray-700 font-medium">Welcome, {user?.name || "Student"}</span>
           <div className="relative">
             <button
               onClick={() => setDropdownOpen((prev) => !prev)}
@@ -101,7 +113,9 @@ const CourseDetails = () => {
           </div>
 
           <h1 className="text-4xl font-bold mt-4">{course.courseName}</h1>
-          <p className="text-sm text-gray-200 mt-2">Updated on {new Date(course.updatedOn).toDateString()}</p>
+          <p className="text-sm text-gray-200 mt-2">
+            Updated on {new Date(course.updatedOn).toDateString()}
+          </p>
 
           <ul className="mt-4 space-y-1 text-sm text-gray-100">
             <li>✅ Get placed with {course.highestSalary || "₹3–10 LPA"}</li>
@@ -157,7 +171,7 @@ const CourseDetails = () => {
       <div className="max-w-6xl mx-auto px-6 -mt-10 relative z-10">
         <div className="bg-white p-6 shadow-lg rounded-lg">
           <h3 className="text-lg font-bold mb-4">Interested? Apply Now</h3>
-          <form className="grid md:grid-cols-2 gap-4">
+          <form className="grid md:grid-cols-2 gap-4" onSubmit={handleEnroll}>
             <input type="text" placeholder="First Name" className="border p-2 rounded" />
             <input type="text" placeholder="Last Name (Optional)" className="border p-2 rounded" />
             <input type="text" placeholder="Phone number" className="border p-2 rounded md:col-span-2" />
@@ -173,7 +187,10 @@ const CourseDetails = () => {
               <option>2025</option>
               <option>2026</option>
             </select>
-            <button className="bg-blue-600 hover:bg-blue-700 text-white px-4 py-2 rounded md:col-span-2">
+            <button
+              type="submit"
+              className="bg-blue-600 hover:bg-blue-700 text-white px-4 py-2 rounded md:col-span-2"
+            >
               Apply now
             </button>
           </form>
@@ -215,7 +232,10 @@ const CourseDetails = () => {
         <button className="bg-gray-200 px-4 py-2 rounded hover:bg-gray-300">
           Download Brochure
         </button>
-        <button className="bg-blue-600 hover:bg-blue-700 text-white px-4 py-2 rounded">
+        <button
+          className="bg-blue-600 hover:bg-blue-700 text-white px-4 py-2 rounded"
+          onClick={handleEnroll}
+        >
           Apply now
         </button>
       </div>

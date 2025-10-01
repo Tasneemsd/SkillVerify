@@ -4,7 +4,7 @@ const jwt = require("jsonwebtoken");
 const Student = require("../models/Student");
 const Course = require("../models/Course");
 
-router.post("/enroll", async (req, res) => {
+router.post("/", async (req, res) => {
   try {
     const { courseId } = req.body;
 
