@@ -8,37 +8,62 @@ const jwt = require("jsonwebtoken");
 // ===== REGISTER =====
 exports.register = async (req, res) => {
   try {
-    const { name, email, phone, password, otp,role } = req.body;
+    const { name, email, phone, password, otp, role } = req.body;
 
-  if (!name || !email || !phone || !password || !otp || !role) {
-    return res.status(400).json({ message: "All fields required" });
-  }
+    if (!name || !email || !phone || !password || !otp || !role) {
+      return res.status(400).json({ message: "All fields required" });
+    }
 
+    // TODO: replace this with actual OTP verification later
+    if (otp !== "1234") {
+      return res.status(400).json({ message: "Invalid OTP" });
+    }
 
-    // Check existing email in all collections
-    const existingUser = await Student.findOne({ email }) ||
-                         await Recruiter.findOne({ email }) ||
-                         await Admin.findOne({ email });
+    // Check if email already exists in any role
+    const existingUser =
+      (await Student.findOne({ email })) ||
+      (await Recruiter.findOne({ email })) ||
+      (await Admin.findOne({ email }));
 
-    if (existingUser) return res.status(409).json({ message: "Email already exists" });
+    if (existingUser) {
+      return res.status(409).json({ message: "Email already exists" });
+    }
 
     const hashedPassword = await bcrypt.hash(password, 10);
 
     let user;
 
     if (role === "student") {
-      user = new Student({ name, email, password: hashedPassword, skills: [] });
+      user = new Student({
+        name,
+        email,
+        phone,
+        password: hashedPassword,
+        skills: [],
+      });
     } else if (role === "recruiter") {
-      user = new Recruiter({ name, email, password: hashedPassword });
+      user = new Recruiter({
+        name,
+        email,
+        phone,
+        password: hashedPassword,
+      });
     } else if (role === "admin") {
-      user = new Admin({ name, email, password: hashedPassword });
+      user = new Admin({
+        name,
+        email,
+        phone,
+        password: hashedPassword,
+      });
     } else {
       return res.status(400).json({ message: "Invalid role" });
     }
 
     await user.save();
-    return res.status(201).json({ message: `${role} registered successfully`, user });
-
+    return res.status(201).json({
+      message: `${role} registered successfully`,
+      user: { _id: user._id, name, email, phone, role },
+    });
   } catch (err) {
     console.error("REGISTER ERROR:", err);
     if (err.code === 11000) {
@@ -53,26 +78,32 @@ exports.login = async (req, res) => {
   try {
     const { email, password } = req.body;
 
-    if (!email || !password) return res.status(400).json({ message: "Email & password required" });
+    if (!email || !password)
+      return res
+        .status(400)
+        .json({ message: "Email & password required" });
 
     let user = await Student.findOne({ email });
     let role = "student";
 
     if (!user) {
       user = await Recruiter.findOne({ email });
-      role = user ? "recruiter" : null;
+      if (user) role = "recruiter";
     }
     if (!user) {
       user = await Admin.findOne({ email });
-      role = user ? "admin" : null;
+      if (user) role = "admin";
     }
     if (!user) return res.status(401).json({ message: "Invalid credentials" });
 
-    // Make sure password exists in all collections (just in case)
-    if (!user.password) return res.status(500).json({ message: "Password not set for this user" });
+    if (!user.password)
+      return res
+        .status(500)
+        .json({ message: "Password not set for this user" });
 
     const isMatch = await bcrypt.compare(password, user.password);
-    if (!isMatch) return res.status(401).json({ message: "Invalid credentials" });
+    if (!isMatch)
+      return res.status(401).json({ message: "Invalid credentials" });
 
     // JWT token
     const token = jwt.sign(
@@ -81,27 +112,32 @@ exports.login = async (req, res) => {
       { expiresIn: "2h" }
     );
 
+    // Common user object
     let userObj = {
       _id: user._id,
       name: user.name,
       email: user.email,
+      phone: user.phone || "",
       role,
     };
 
+    // Recruiter extra fields
     if (role === "recruiter") {
       userObj = {
         ...userObj,
         companyName: user.companyName || "",
         position: user.position || "",
-        phone: user.phone || "",
-        bio: user.bio || ""
+        bio: user.bio || "",
       };
     }
 
-    return res.status(200).json({ message: "Login successful", token, user: userObj });
-
+    return res
+      .status(200)
+      .json({ message: "Login successful", token, user: userObj });
   } catch (err) {
     console.error("LOGIN ERROR:", err);
-    return res.status(500).json({ message: "Server error again", error: err.message });
+    return res
+      .status(500)
+      .json({ message: "Server error again", error: err.message });
   }
 };
