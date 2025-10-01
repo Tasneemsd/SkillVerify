@@ -1,7 +1,7 @@
 import React, { useEffect, useState } from "react";
 import { useNavigate } from "react-router-dom";
 import API from "../api";
-import logo2 from '../images/logo2.jpg';
+import logo2 from "../images/logo2.jpg";
 
 const Student = () => {
   const [courses, setCourses] = useState([]);
@@ -12,7 +12,10 @@ const Student = () => {
   const [dropdownOpen, setDropdownOpen] = useState(false);
   const [myCourses, setMyCourses] = useState([]);
 
-  const token = localStorage.getItem("token");
+  // ✅ Fix: clean token
+  const rawToken = localStorage.getItem("token");
+  const token = rawToken ? rawToken.replace(/"/g, "") : null;
+
   const user = JSON.parse(localStorage.getItem("user"));
   const navigate = useNavigate();
 
@@ -79,11 +82,14 @@ const Student = () => {
     <div className="min-h-screen bg-gray-50">
       {/* Navbar */}
       <nav className="bg-white shadow-md px-6 py-4 flex justify-between items-center relative">
-        <img src={logo2} alt="SkillVerify Logo" className="h-20 w-auto object-contain" />
+        <img
+          src={logo2}
+          alt="SkillVerify Logo"
+          className="h-20 w-auto object-contain"
+        />
 
         <div className="flex items-center gap-4">
           <span className="text-gray-700 font-medium">
-
             Welcome, {student?.name || user?.name || "Student"}
           </span>
           <div className="relative">
@@ -119,7 +125,9 @@ const Student = () => {
           {getInitials(student?.name || user?.name || "S")}
         </div>
         <div>
-          <h2 className="text-2xl font-bold">{student?.name || "Student Name"}</h2>
+          <h2 className="text-2xl font-bold">
+            {student?.name || "Student Name"}
+          </h2>
           <p className="text-gray-600">
             {student?.branch || "CSE"} • {student?.college || "NEC"} • Class of{" "}
             {student?.graduationYear || "2026"}
@@ -168,8 +176,7 @@ const Student = () => {
                 {/* Header */}
                 <div className="bg-gradient-to-r from-purple-300 to-indigo-200 p-4 relative">
                   <h3 className="text-xl font-bold text-black-700">
-                  
-                  {course.courseName} 
+                    {course.courseName}
                   </h3>
                   <span className="absolute top-3 right-3 bg-orange-500 text-white text-xs px-2 py-1 rounded-full shadow">
                     ⭐ {course.rating || 4.5}
@@ -179,7 +186,7 @@ const Student = () => {
                 {/* Details */}
                 <div className="p-4 space-y-2">
                   <p className="text-gray-700 font-semibold">
-                    {course.courseName} 
+                    {course.courseName}
                   </p>
                   <p className="text-sm text-gray-600">
                     ⏳ {course.courseDuration || "6 months"} with LIVE sessions
@@ -204,7 +211,9 @@ const Student = () => {
                         />
                       ))
                     ) : (
-                      <span className="text-sm text-gray-500">Top Companies</span>
+                      <span className="text-sm text-gray-500">
+                        Top Companies
+                      </span>
                     )}
                   </div>
 
@@ -250,13 +259,12 @@ const Student = () => {
                       {isCourseEnrolled(course) ? "Enrolled" : "Enroll"}
                     </button>
 
-                  <button
-  className="px-4 py-2 bg-blue-600 text-white rounded hover:bg-blue-700 text-sm"
-  onClick={() => navigate(`/course/${course.courseId}`)}   // ✅ use courseId
->
-  Know More
-</button>
-
+                    <button
+                      className="px-4 py-2 bg-blue-600 text-white rounded hover:bg-blue-700 text-sm"
+                      onClick={() => navigate(`/course/${course.courseId}`)} // ✅ fixed
+                    >
+                      Know More
+                    </button>
                   </div>
                 </div>
               </div>
@@ -281,7 +289,7 @@ const Student = () => {
                     >
                       <span>{c.courseName}</span>
                       <button
-                        onClick={() => navigate(`/course/${c._id}`)}
+                        onClick={() => navigate(`/course/${c.courseId}`)} // ✅ fixed
                         className="text-blue-600 hover:underline"
                       >
                         View
@@ -296,7 +304,9 @@ const Student = () => {
         {/* Skill Progress */}
         {activeTab === "skill" && (
           <div className="mt-10 max-w-lg mx-auto text-center bg-white shadow rounded-lg p-6">
-            <h3 className="text-lg font-bold">Your Skill Verification Journey</h3>
+            <h3 className="text-lg font-bold">
+              Your Skill Verification Journey
+            </h3>
             <p className="mt-2 text-gray-600">
               Enrolled in <span className="font-semibold">{enrolledCourses}</span>{" "}
               out of {totalCourses} available courses
@@ -343,7 +353,9 @@ const Student = () => {
         {/* Jobs */}
         {activeTab === "jobs" && (
           <div>
-            <h3 className="text-lg font-bold mb-4">Available Jobs & Internships</h3>
+            <h3 className="text-lg font-bold mb-4">
+              Available Jobs & Internships
+            </h3>
             <div className="grid md:grid-cols-2 lg:grid-cols-3 gap-6">
               {jobs.map((job) => (
                 <div
