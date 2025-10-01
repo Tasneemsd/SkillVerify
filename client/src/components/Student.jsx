@@ -1,5 +1,6 @@
 import React, { useEffect, useState } from "react";
 import API from "../api";
+import logo from "./images/image.png";
 
 const Student = () => {
   const [courses, setCourses] = useState([]);
@@ -67,7 +68,7 @@ const Student = () => {
       {/* Navbar */}
       <nav className="bg-white shadow-md px-6 py-4 flex justify-between items-center relative">
         <img
-          src="client\src\images\image.png"
+          src={logo}
           alt="We Hire Today"
           className="h-10 w-auto"
         />
