@@ -44,6 +44,8 @@ app.use("/api/recruiter", require("./routes/recruiter"));
 app.use("/api/admin", require("./routes/admin"));
 app.use("/api/notification", require("./routes/notification"));
 app.use("/api/otp", require("./routes/otp"));
+app.use("/api/student/enroll", require("./routes/studentEnroll"));
+
 
 const PORT = process.env.PORT || 5000;
 app.listen(PORT, () => {
