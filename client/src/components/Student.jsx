@@ -12,7 +12,6 @@ const Student = () => {
   const [dropdownOpen, setDropdownOpen] = useState(false);
   const [myCourses, setMyCourses] = useState([]);
 
-  // ✅ Fix: token cleanup
   const rawToken = localStorage.getItem("token");
   const token = rawToken ? rawToken.replace(/"/g, "") : null;
 
@@ -22,12 +21,10 @@ const Student = () => {
   const getInitials = (name = "") =>
     name ? name.split(" ").map((n) => n[0].toUpperCase()).join("") : "S";
 
-  // ✅ Fetch student details
+  // Fetch student details
   useEffect(() => {
     if (!user?.email) return;
-    API.get(`/student?email=${encodeURIComponent(user.email)}`, {
-      headers: { Authorization: `Bearer ${token}` },
-    })
+    API.get(`/student?email=${encodeURIComponent(user.email)}`)
       .then((res) => {
         setStudent(res.data);
         if (res.data.registeredCourses) {
@@ -41,31 +38,35 @@ const Student = () => {
           navigate("/login");
         }
       });
-  }, [user?.email, token, navigate]);
+  }, [user?.email, navigate]);
 
-  // ✅ Fetch courses
+  // Fetch courses
   useEffect(() => {
     API.get("/courses")
       .then((res) => setCourses(res.data))
       .catch((err) => console.error("Courses fetch error:", err));
   }, []);
 
-  // ✅ Fetch jobs
+  // Fetch jobs
   useEffect(() => {
     API.get("/jobs")
       .then((res) => setJobs(res.data))
       .catch((err) => console.error("Jobs fetch error:", err));
   }, []);
 
-  // ✅ Fetch applications
+  // Fetch applications
   useEffect(() => {
     if (!student?._id) return;
-    API.get(`/applications?studentId=${student._id}`, {
-      headers: { Authorization: `Bearer ${token}` },
-    })
+    API.get("/applications")
       .then((res) => setApplications(res.data))
-      .catch((err) => console.error("Applications fetch error:", err));
-  }, [student?._id, token]);
+      .catch((err) => {
+        console.error("Applications fetch error:", err);
+        if (err.response?.status === 401) {
+          localStorage.clear();
+          navigate("/login");
+        }
+      });
+  }, [student?._id, navigate]);
 
   const handleLogout = () => {
     localStorage.clear();
@@ -74,7 +75,6 @@ const Student = () => {
 
   const isCourseEnrolled = (course) => myCourses.includes(course._id?.toString());
 
-  // ✅ Skill Progress Calculation
   const totalCourses = courses.length;
   const enrolledCourses = courses.filter((c) => isCourseEnrolled(c)).length;
   const progress =
@@ -87,7 +87,7 @@ const Student = () => {
         <img
           src={logo2}
           alt="SkillVerify Logo"
-          className="h-10 w-auto object-contain rounded-full" // ✅ Fixed Tailwind class
+          className="h-10 w-auto object-contain rounded-full"
         />
 
         <div className="flex items-center gap-4">
@@ -173,9 +173,7 @@ const Student = () => {
                 </div>
 
                 <div className="bg-gradient-to-r from-purple-300 to-indigo-200 p-4 relative">
-                  <h3 className="text-xl font-bold text-black-700">
-                    {course.courseName}
-                  </h3>
+                  <h3 className="text-xl font-bold text-black-700">{course.courseName}</h3>
                   <span className="absolute top-3 right-3 bg-orange-500 text-white text-xs px-2 py-1 rounded-full shadow">
                     ⭐ {course.rating || 4.5}
                   </span>
@@ -188,21 +186,14 @@ const Student = () => {
                   </p>
                   <p className="text-sm text-gray-600">
                     📈 Highest salary:{" "}
-                    <span className="font-semibold">
-                      {course.highestSalary || "₹18 LPA"}
-                    </span>
+                    <span className="font-semibold">{course.highestSalary || "₹18 LPA"}</span>
                   </p>
 
                   <p className="text-sm text-gray-600">Placement partners:</p>
                   <div className="flex items-center gap-3 mt-1">
                     {course.placementPartners?.length ? (
                       course.placementPartners.map((partner, i) => (
-                        <img
-                          key={i}
-                          src={partner.logo}
-                          alt={partner.name}
-                          className="h-6 object-contain"
-                        />
+                        <img key={i} src={partner.logo} alt={partner.name} className="h-6 object-contain" />
                       ))
                     ) : (
                       <span className="text-sm text-gray-500">Top Companies</span>
@@ -210,8 +201,7 @@ const Student = () => {
                   </div>
 
                   <p className="text-sm mt-2">
-                    <span className="font-semibold">Fee:</span> ₹
-                    {course.courseFee || "N/A"}
+                    <span className="font-semibold">Fee:</span> ₹{course.courseFee || "N/A"}
                   </p>
                 </div>
 
@@ -230,20 +220,14 @@ const Student = () => {
                       onClick={async () => {
                         if (isCourseEnrolled(course)) return;
                         try {
-                          const res = await API.post(
-                            "/student/enroll",
-                            { courseId: course._id },
-                            { headers: { Authorization: `Bearer ${token}` } }
-                          );
+                          const res = await API.post("/student/enroll", { courseId: course._id });
                           if (res.data.success) {
                             alert("Enrolled successfully!");
                             setMyCourses((prev) => [...prev, course._id.toString()]);
                           }
                         } catch (err) {
                           console.error("Enrollment error:", err);
-                          alert(
-                            err.response?.data?.message || "Enrollment failed"
-                          );
+                          alert(err.response?.data?.message || "Enrollment failed");
                         }
                       }}
                     >
@@ -252,7 +236,7 @@ const Student = () => {
 
                     <button
                       className="px-4 py-2 bg-blue-600 text-white rounded hover:bg-blue-700 text-sm"
-                      onClick={() => navigate(`/course/${course._id}`)} // ✅ fixed (use _id)
+                      onClick={() => navigate(`/course/${course._id}`)}
                     >
                       Know More
                     </button>
@@ -280,7 +264,7 @@ const Student = () => {
                     >
                       <span>{c.courseName}</span>
                       <button
-                        onClick={() => navigate(`/course/${c._id}`)} // ✅ fixed
+                        onClick={() => navigate(`/course/${c._id}`)}
                         className="text-blue-600 hover:underline"
                       >
                         View
@@ -297,8 +281,7 @@ const Student = () => {
           <div className="mt-10 max-w-lg mx-auto text-center bg-white shadow rounded-lg p-6">
             <h3 className="text-lg font-bold">Your Skill Verification Journey</h3>
             <p className="mt-2 text-gray-600">
-              Enrolled in <span className="font-semibold">{enrolledCourses}</span>{" "}
-              out of {totalCourses} available courses
+              Enrolled in <span className="font-semibold">{enrolledCourses}</span> out of {totalCourses} available courses
             </p>
 
             <div className="mt-4 w-full bg-gray-200 rounded-full h-4 overflow-hidden">
@@ -328,9 +311,7 @@ const Student = () => {
                         style={{ width: `${c.progress || 40}%` }}
                       ></div>
                     </div>
-                    <span className="text-xs text-gray-600">
-                      {c.progress || 40}% verified
-                    </span>
+                    <span className="text-xs text-gray-600">{c.progress || 40}% verified</span>
                   </div>
                 ))}
             </div>
@@ -351,9 +332,7 @@ const Student = () => {
                   <p className="text-sm text-gray-600">{job.company}</p>
                   <p className="text-sm">📍 {job.location}</p>
                   <p className="text-sm">💰 {job.salary}</p>
-                  <button className="mt-2 px-3 py-1 bg-blue-600 text-white rounded">
-                    Apply
-                  </button>
+                  <button className="mt-2 px-3 py-1 bg-blue-600 text-white rounded">Apply</button>
                 </div>
               ))}
             </div>
