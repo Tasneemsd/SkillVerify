@@ -167,9 +167,9 @@ const Student = () => {
 
                 {/* Header */}
                 <div className="bg-gradient-to-r from-purple-300 to-indigo-200 p-4 relative">
-                  <h3 className="text-xl font-bold text-purple-500">
-                    Become a 
-                  {course.courseName} Developer
+                  <h3 className="text-xl font-bold text-black-500">
+                  
+                  {course.courseName} 
                   </h3>
                   <span className="absolute top-3 right-3 bg-orange-500 text-white text-xs px-2 py-1 rounded-full shadow">
                     ⭐ {course.rating || 4.5}
