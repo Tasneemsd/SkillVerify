@@ -1,6 +1,6 @@
 import React, { useState } from "react";
 import { Link, useNavigate } from "react-router-dom";
-import API from "../api"; // your API instance
+import API, { setAuthToken, setUserData } from "../api"; // updated import
 
 export default function Login() {
   const [form, setForm] = useState({
@@ -32,14 +32,16 @@ export default function Login() {
         role: form.role,
       });
 
-      localStorage.setItem("userToken", res.data.token);
-      localStorage.setItem("user", JSON.stringify(res.data.user));
+      // ✅ store token and user in unified way
+      setAuthToken(res.data.token);
+      setUserData(res.data.user);
 
       setSuccess(`✅ Logged in as ${res.data.user.email}`);
 
+      // redirect based on role
       if (res.data.user.role === "student") navigate("/student");
       else if (res.data.user.role === "recruiter") navigate("/recruiter");
-      else if (res.data.user.role === "admin") navigate("/admin"); // Admin redirect
+      else if (res.data.user.role === "admin") navigate("/admin");
     } catch (err) {
       setError(err.response?.data?.message || "Invalid email or password!");
     } finally {

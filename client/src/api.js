@@ -3,12 +3,11 @@ import axios from "axios";
 // Axios instance with backend base URL
 const API = axios.create({
   baseURL: "https://skillverify.onrender.com/api", // Render backend
-  withCredentials: true,
 });
 
 // Attach JWT automatically if stored
 API.interceptors.request.use((config) => {
-  const token = localStorage.getItem("token");
+  const token = localStorage.getItem("token"); // unified key
   if (token) config.headers.Authorization = `Bearer ${token}`;
   return config;
 });
@@ -18,7 +17,7 @@ export default API;
 
 // 🔹 Auth Helpers
 export function setAuthToken(token) {
-  localStorage.setItem("token", token);
+  localStorage.setItem("token", token); // unified key
 }
 
 export function getAuthToken() {

@@ -10,15 +10,15 @@ import CourseDetails from "./components/CourseDetails";
 import "./index.css";
 
 // Check if user logged in
-const isAuthenticated = () => {
-  return localStorage.getItem("user") !== null;
-};
+const isAuthenticated = () => !!localStorage.getItem("token");
 
 // Get role from localStorage
 const getUserRole = () => {
-  const user = JSON.parse(localStorage.getItem("user"));
+  const user = JSON.parse(localStorage.getItem("user") || "{}");
   return user?.role || null; // "student", "admin", "recruiter"
 };
+
+
 
 // Protected Route with role checking
 const ProtectedRoute = ({ children, allowedRoles }) => {
