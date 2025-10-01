@@ -9,19 +9,14 @@ const Student = () => {
   const [student, setStudent] = useState(null);
   const [activeTab, setActiveTab] = useState("skill");
   const [dropdownOpen, setDropdownOpen] = useState(false);
-  const [myCourses, setMyCourses] = useState([]); // enrolled courses from DB
+  const [myCourses, setMyCourses] = useState([]); // enrolled courses from backend
 
   const token = localStorage.getItem("token");
   const user = JSON.parse(localStorage.getItem("user"));
 
   // Function to get initials
-  const getInitials = (name = "") => {
-    if (!name) return "";
-    return name
-      .split(" ")
-      .map((n) => n[0].toUpperCase())
-      .join("");
-  };
+  const getInitials = (name = "") =>
+    name ? name.split(" ").map((n) => n[0].toUpperCase()).join("") : "";
 
   // Fetch student details
   useEffect(() => {
@@ -31,7 +26,6 @@ const Student = () => {
     })
       .then((res) => {
         setStudent(res.data);
-        // Load registered courses
         if (res.data.registeredCourses) setMyCourses(res.data.registeredCourses);
       })
       .catch((err) => console.error("Fetch student error:", err));
@@ -69,29 +63,18 @@ const Student = () => {
   };
 
   // Check if course is enrolled
-  const isCourseEnrolled = (course) => {
-    if (!student || !myCourses.length) return false;
-    // If myCourses contains course objects or IDs, adjust accordingly
-    return myCourses.some(
-      (c) => c._id === course._id || c.toString() === course._id
-    );
-  };
+  const isCourseEnrolled = (course) =>
+    myCourses.some((c) => c._id === course._id || c.toString() === course._id);
 
   return (
     <div className="min-h-screen bg-gray-50">
       {/* Navbar */}
       <nav className="bg-white shadow-md px-6 py-4 flex justify-between items-center relative">
-        <img
-          src={logo}
-          alt="We Hire Today"
-          className="h-16 w-auto object-contain"
-        />
+        <img src={logo} alt="We Hire Today" className="h-16 w-auto object-contain" />
         <div className="flex items-center gap-4">
           <span className="text-gray-700 font-medium">
             Welcome, {student?.name || user?.name || "Student"}
           </span>
-
-          {/* Profile Circle */}
           <div className="relative">
             <button
               onClick={() => setDropdownOpen((prev) => !prev)}
@@ -99,8 +82,6 @@ const Student = () => {
             >
               {getInitials(student?.name || user?.name || "S")[0]}
             </button>
-
-            {/* Dropdown */}
             {dropdownOpen && (
               <div className="absolute right-0 mt-2 w-40 bg-white border rounded-lg shadow-lg">
                 <button
@@ -126,7 +107,6 @@ const Student = () => {
         <div className="w-16 h-16 rounded-full bg-blue-600 flex items-center justify-center text-white font-bold text-xl shadow-md">
           {getInitials(student?.name || user?.name || "S")}
         </div>
-
         <div>
           <h2 className="text-2xl font-bold">{student?.name || "Student Name"}</h2>
           <p className="text-gray-600">
@@ -184,16 +164,13 @@ const Student = () => {
           </div>
         )}
 
-        {/* Courses */}
+        {/* Available Courses */}
         {activeTab === "courses" && (
           <div className="grid md:grid-cols-2 lg:grid-cols-3 gap-6">
             {courses.map((course) => {
               const enrolled = isCourseEnrolled(course);
               return (
-                <div
-                  key={course._id}
-                  className="bg-white rounded-lg shadow hover:shadow-lg p-4"
-                >
+                <div key={course._id} className="bg-white rounded-lg shadow hover:shadow-lg p-4">
                   <h3 className="font-bold text-lg">{course.courseName}</h3>
                   <p className="text-sm text-gray-600">{course.courseDescription}</p>
                   <p className="text-sm mt-2">₹{course.courseFee}</p>
@@ -268,16 +245,28 @@ const Student = () => {
                   <p className="text-sm">Salary: {job.salary}</p>
                   <div className="flex gap-2 mt-2">
                     {job.skills?.map((s, i) => (
-                      <span
-                        key={i}
-                        className="bg-gray-200 text-xs px-2 py-1 rounded"
-                      >
+                      <span key={i} className="bg-gray-200 text-xs px-2 py-1 rounded">
                         {s}
                       </span>
                     ))}
                   </div>
                 </div>
-                <button className="self-center bg-blue-600 text-white px-3 py-1 rounded">
+                <button
+                  className="self-center bg-blue-600 text-white px-3 py-1 rounded"
+                  onClick={async () => {
+                    try {
+                      const res = await API.post(
+                        "/applications",
+                        { jobId: job._id },
+                        { headers: { Authorization: `Bearer ${token}` } }
+                      );
+                      if (res.data.success) alert("Applied successfully!");
+                    } catch (err) {
+                      console.error(err);
+                      alert(err.response?.data?.message || "Application failed");
+                    }
+                  }}
+                >
                   Apply
                 </button>
               </div>
@@ -303,9 +292,7 @@ const Student = () => {
                 </div>
               ))
             ) : (
-              <p className="text-center text-gray-600">
-                No job applications yet.
-              </p>
+              <p className="text-center text-gray-600">No job applications yet.</p>
             )}
           </div>
         )}
