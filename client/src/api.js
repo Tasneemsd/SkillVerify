@@ -1,12 +1,13 @@
 import axios from "axios";
 
+// Choose correct baseURL
 const API = axios.create({
-  baseURL: ["https://skillverify.onrender.com/api", "http://localhost:5000/api"]
+  baseURL: "https://skillverify.onrender.com/api", // production
 });
 
 // Attach JWT token automatically
-API.interceptors.request.use(config => {
-  const token = localStorage.getItem("userToken");
+API.interceptors.request.use((config) => {
+  const token = localStorage.getItem("token"); // consistent key
   if (token) config.headers.Authorization = `Bearer ${token}`;
   return config;
 });
@@ -15,11 +16,11 @@ export default API;
 
 // Helper functions
 export function setAuthToken(token) {
-  localStorage.setItem("userToken", token);
+  localStorage.setItem("token", token);
 }
 
 export function getAuthToken() {
-  return localStorage.getItem("userToken");
+  return localStorage.getItem("token");
 }
 
 export function setUserData(user) {
@@ -32,9 +33,9 @@ export function getUserData() {
 
 export function clearUserData() {
   localStorage.removeItem("user");
-  localStorage.removeItem("userToken");
+  localStorage.removeItem("token");
 }
-// Send OTP 
+
+// OTP functions
 export const sendOtp = (phone) => API.post("/send-otp", { phone });
-  // Verify OTP + Register 
 export const verifyOtp = (userData) => API.post("/verify-otp", userData);
