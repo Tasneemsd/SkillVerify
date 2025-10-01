@@ -6,6 +6,7 @@ import Home from "./components/Home";
 import Admin from "./components/Admin";
 import Student from "./components/Student";
 import Recruiter from "./components/Recruiter";
+import CourseDetails from "./components/CourseDetails";
 import "./index.css";
 
 // Check if user logged in
@@ -43,6 +44,7 @@ const App = () => {
         {/* Public routes */}
         <Route path="/login" element={<Login />} />
         <Route path="/register" element={<Register />} />
+        <Route path="/course/:id" element={<CourseDetails />} />
 
         {/* Protected routes */}
         <Route

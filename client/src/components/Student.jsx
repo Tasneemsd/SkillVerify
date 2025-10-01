@@ -1,6 +1,7 @@
 import React, { useEffect, useState } from "react";
 import { useNavigate } from "react-router-dom";
 import API from "../api";
+import logo2 from '../images/logo2.png';
 
 const Student = () => {
   const [courses, setCourses] = useState([]);
@@ -78,14 +79,11 @@ const Student = () => {
     <div className="min-h-screen bg-gray-50">
       {/* Navbar */}
       <nav className="bg-white shadow-md px-6 py-4 flex justify-between items-center relative">
-        <h1 className="text-3xl font-bold">
-          <span className="text-blue-600">We</span>{" "}
-          <span className="text-red-600">Hire</span>{" "}
-          <span className="text-green-600">Today</span>
-        </h1>
+        <img src={logo2} alt="SkillVerify Logo" className="h-10 w-auto" />
 
         <div className="flex items-center gap-4">
           <span className="text-gray-700 font-medium">
+            
             Welcome, {student?.name || user?.name || "Student"}
           </span>
           <div className="relative">
