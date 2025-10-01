@@ -9,7 +9,7 @@ const Student = () => {
   const [student, setStudent] = useState(null);
   const [activeTab, setActiveTab] = useState("skill");
   const [dropdownOpen, setDropdownOpen] = useState(false);
-  const [myCourses, setMyCourses] = useState([]); // stores enrolled courses
+  const [myCourses, setMyCourses] = useState([]); // enrolled courses from DB
 
   const token = localStorage.getItem("token");
   const user = JSON.parse(localStorage.getItem("user"));
@@ -29,7 +29,11 @@ const Student = () => {
     API.get(`/student?email=${encodeURIComponent(user.email)}`, {
       headers: { Authorization: `Bearer ${token}` },
     })
-      .then((res) => setStudent(res.data))
+      .then((res) => {
+        setStudent(res.data);
+        // Load registered courses
+        if (res.data.registeredCourses) setMyCourses(res.data.registeredCourses);
+      })
       .catch((err) => console.error("Fetch student error:", err));
   }, [user?.email, token]);
 
@@ -62,6 +66,15 @@ const Student = () => {
     localStorage.removeItem("token");
     localStorage.removeItem("user");
     window.location.href = "/login";
+  };
+
+  // Check if course is enrolled
+  const isCourseEnrolled = (course) => {
+    if (!student || !myCourses.length) return false;
+    // If myCourses contains course objects or IDs, adjust accordingly
+    return myCourses.some(
+      (c) => c._id === course._id || c.toString() === course._id
+    );
   };
 
   return (
@@ -110,7 +123,6 @@ const Student = () => {
 
       {/* Profile Header */}
       <div className="bg-white shadow-md p-6 mt-4 mx-4 rounded-lg flex items-center gap-6">
-        {/* Big Profile Circle */}
         <div className="w-16 h-16 rounded-full bg-blue-600 flex items-center justify-center text-white font-bold text-xl shadow-md">
           {getInitials(student?.name || user?.name || "S")}
         </div>
@@ -176,7 +188,7 @@ const Student = () => {
         {activeTab === "courses" && (
           <div className="grid md:grid-cols-2 lg:grid-cols-3 gap-6">
             {courses.map((course) => {
-              const isEnrolled = myCourses.some((c) => c._id === course._id);
+              const enrolled = isCourseEnrolled(course);
               return (
                 <div
                   key={course._id}
@@ -188,17 +200,29 @@ const Student = () => {
                   <p className="text-sm">{course.courseDuration} hours</p>
                   <button
                     className={`mt-2 px-3 py-1 rounded text-white ${
-                      isEnrolled ? "bg-gray-400 cursor-not-allowed" : "bg-blue-600"
+                      enrolled ? "bg-gray-400 cursor-not-allowed" : "bg-blue-600"
                     }`}
-                    onClick={() => {
-                      if (!isEnrolled) {
-                        setMyCourses((prev) => [...prev, course]);
-                        setActiveTab("myCourses");
+                    onClick={async () => {
+                      if (enrolled) return;
+                      try {
+                        const response = await API.post(
+                          "/student/enroll",
+                          { courseId: course._id },
+                          { headers: { Authorization: `Bearer ${token}` } }
+                        );
+                        if (response.data.success) {
+                          setMyCourses((prev) => [...prev, response.data.course]);
+                          setActiveTab("myCourses");
+                          alert(response.data.message);
+                        }
+                      } catch (err) {
+                        console.error("Enrollment failed:", err.response?.data || err.message);
+                        alert(err.response?.data?.message || "Enrollment failed");
                       }
                     }}
-                    disabled={isEnrolled}
+                    disabled={enrolled}
                   >
-                    {isEnrolled ? "Enrolled" : "Enroll Now"}
+                    {enrolled ? "Enrolled" : "Enroll Now"}
                   </button>
                 </div>
               );
