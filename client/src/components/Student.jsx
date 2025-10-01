@@ -1,4 +1,5 @@
 import React, { useEffect, useState } from "react";
+import { useNavigate } from "react-router-dom";
 import API from "../api";
 
 const Student = () => {
@@ -12,6 +13,7 @@ const Student = () => {
 
   const token = localStorage.getItem("token");
   const user = JSON.parse(localStorage.getItem("user"));
+  const navigate = useNavigate();
 
   const getInitials = (name = "") =>
     name ? name.split(" ").map((n) => n[0].toUpperCase()).join("") : "";
@@ -24,7 +26,12 @@ const Student = () => {
     })
       .then((res) => {
         setStudent(res.data);
-        if (res.data.registeredCourses) setMyCourses(res.data.registeredCourses);
+        if (res.data.registeredCourses) {
+          // Ensure myCourses contains only IDs
+          setMyCourses(
+            res.data.registeredCourses.map((c) => (c._id ? c._id : c.toString()))
+          );
+        }
       })
       .catch((err) => console.error("Fetch student error:", err));
   }, [user?.email, token]);
@@ -56,11 +63,11 @@ const Student = () => {
   const handleLogout = () => {
     localStorage.removeItem("token");
     localStorage.removeItem("user");
-    window.location.href = "/login";
+    navigate("/login");
   };
 
   const isCourseEnrolled = (course) =>
-    myCourses.some((c) => c._id === course._id || c.toString() === course._id);
+    myCourses.includes(course._id?.toString());
 
   return (
     <div className="min-h-screen bg-gray-50">
@@ -81,13 +88,13 @@ const Student = () => {
               onClick={() => setDropdownOpen((prev) => !prev)}
               className="w-10 h-10 rounded-full bg-blue-600 flex items-center justify-center text-white font-bold shadow-md focus:outline-none"
             >
-              {getInitials(student?.name || user?.name || "S")[0]}
+              {getInitials(student?.name || user?.name || "S")}
             </button>
             {dropdownOpen && (
               <div className="absolute right-0 mt-2 w-40 bg-white border rounded-lg shadow-lg">
                 <button
                   className="block w-full text-left px-4 py-2 hover:bg-gray-100"
-                  onClick={() => setActiveTab("profile")}
+                  onClick={() => setActiveTab("skill")}
                 >
                   My Profile
                 </button>
@@ -226,7 +233,7 @@ const Student = () => {
 
                     <button
                       className="px-3 py-1 bg-blue-600 text-white rounded hover:bg-blue-700 transition"
-                      onClick={() => (window.location.href = `/course/${course._id}`)}
+                      onClick={() => navigate(`/course/${course._id}`)}
                     >
                       Know More
                     </button>
@@ -273,7 +280,7 @@ const Student = () => {
                     </p>
                     <button
                       className="mt-3 px-3 py-1 bg-blue-600 text-white rounded hover:bg-blue-700 transition"
-                      onClick={() => (window.location.href = `/course/${course._id}`)}
+                      onClick={() => navigate(`/course/${course._id}`)}
                     >
                       Know More
                     </button>

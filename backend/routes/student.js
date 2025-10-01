@@ -1,133 +1,56 @@
 const express = require("express");
+const router = express.Router();
+const jwt = require("jsonwebtoken");
 const Student = require("../models/Student");
 const Course = require("../models/Course");
-const Application = require("../models/Application"); // Job applications
-const router = express.Router();
 
-// --- REGISTER STUDENT ---
-router.post("/register", async (req, res) => {
-  try {
-    const { name, email, password, college, year, skills } = req.body;
-
-    if (!name || !email || !password)
-      return res.status(400).json({ message: "Name, email, and password are required" });
-
-    const existing = await Student.findOne({ email });
-    if (existing) return res.status(400).json({ message: "Email already registered" });
-
-    const skillsArray = (skills || []).map((s) => ({ name: s, verified: false }));
-
-    const newStudent = new Student({
-      name,
-      email,
-      password, // TODO: hash password in production
-      college: college || "",
-      year: year || "",
-      skills: skillsArray,
-      registeredCourses: [],
-      socialLinks: {},
-      codingLinks: {},
-    });
-
-    await newStudent.save();
-
-    res.status(201).json({ message: "Student registered successfully!", student: newStudent });
-  } catch (err) {
-    console.error(err);
-    res.status(500).json({ message: "Server error" });
-  }
-});
-
-// --- ENROLL IN COURSE ---
-router.post("/enroll", async (req, res) => {
-  try {
-    const { courseId, email } = req.body;
-    if (!email || !courseId) return res.status(400).json({ message: "Email and courseId required" });
-
-    const student = await Student.findOne({ email });
-    if (!student) return res.status(404).json({ message: "Student not found" });
-
-    const course = await Course.findById(courseId);
-    if (!course) return res.status(404).json({ message: "Course not found" });
-
-    if (!student.registeredCourses.includes(courseId)) {
-      student.registeredCourses.push(courseId);
-      await student.save();
-    }
-
-    res.json({ message: "Enrolled successfully!", registeredCourses: student.registeredCourses });
-  } catch (err) {
-    console.error(err);
-    res.status(500).json({ message: "Server error" });
-  }
-});
-
-// --- GET STUDENT BY EMAIL ---
+// GET student by email
 router.get("/", async (req, res) => {
   try {
     const { email } = req.query;
-    if (!email) return res.status(400).json({ message: "Email required" });
+    if (!email) return res.status(400).json({ message: "Email is required" });
 
     const student = await Student.findOne({ email }).populate("registeredCourses");
     if (!student) return res.status(404).json({ message: "Student not found" });
 
-    const applications = await Application.find({ student: student._id });
+    return res.status(200).json(student);
+  } catch (err) {
+    console.error(err);
+    return res.status(500).json({ message: "Server error", error: err.message });
+  }
+});
 
-    res.json({
-      _id: student._id,
-      name: student.name,
-      email: student.email,
-      rollNo: student.rollNo || "",
-      contactNumber: student.contactNumber || "",
-      college: student.college || "",
-      year: student.year || "",
-      socialLinks: student.socialLinks || {},
-      codingLinks: student.codingLinks || {},
-      skills: student.skills || [],
-      registeredCourses: student.registeredCourses.map((c) => ({
-        _id: c._id,
-        courseName: c.courseName,
-        courseId: c.courseId,
-      })),
-      applications: applications.map((app) => ({
-        _id: app._id,
-        jobTitle: app.jobTitle,
-        company: app.company,
-        status: app.status,
-        appliedOn: app.appliedOn,
-      })),
+// POST enroll course
+router.post("/enroll", async (req, res) => {
+  try {
+    const { courseId } = req.body;
+    const token = req.headers.authorization?.split(" ")[1];
+    if (!token) return res.status(401).json({ message: "No token provided" });
+
+    const decoded = jwt.verify(token, process.env.JWT_SECRET || "supersecret");
+    if (decoded.role !== "student")
+      return res.status(403).json({ message: "Only students can enroll" });
+
+    const student = await Student.findById(decoded.id);
+    const course = await Course.findById(courseId);
+    if (!student || !course) return res.status(404).json({ message: "Student or course not found" });
+
+    // Prevent duplicate enrollment
+    if (student.registeredCourses.some((c) => c.toString() === course._id.toString()))
+      return res.status(400).json({ message: "Already enrolled" });
+
+    student.registeredCourses.push(course._id);
+    await student.save();
+
+    return res.status(200).json({
+      success: true,
+      message: "Enrolled successfully",
+      registeredCourses: student.registeredCourses,
+      course,
     });
   } catch (err) {
-    console.error(err);
-    res.status(500).json({ message: "Failed to fetch student" });
-  }
-});
-
-// --- GET STUDENT BY ID ---
-router.get("/:id", async (req, res) => {
-  try {
-    const student = await Student.findById(req.params.id).populate("registeredCourses");
-    if (!student) return res.status(404).json({ message: "Student not found" });
-    res.json(student);
-  } catch (err) {
-    console.error(err);
-    res.status(500).json({ message: "Error fetching student by ID" });
-  }
-});
-
-// --- UPDATE PROFILE ---
-router.post("/profile", async (req, res) => {
-  try {
-    const { email, ...updateData } = req.body;
-    if (!email) return res.status(400).json({ message: "Email required" });
-
-    const student = await Student.findOneAndUpdate({ email }, updateData, { new: true });
-    if (!student) return res.status(404).json({ message: "Student not found" });
-
-    res.json({ message: "Profile updated successfully!", student });
-  } catch (err) {
-    console.error(err);
-    res.status(500).json({ message: "Failed to update profile" });
+    console.error("Enroll error:", err);
+    return res.status(500).json({ message: "Enrollment failed", error: err.message });
   }
 });
 
