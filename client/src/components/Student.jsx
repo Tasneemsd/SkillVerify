@@ -1,7 +1,7 @@
 import { useState, useEffect } from "react";
 import { GraduationCap, MapPin, DollarSign, Clock, Star, Briefcase, FileText, User, LogOut, Award, Plus, X } from "lucide-react";
 import API from "../api";
-
+import logo2 from "../images/logo2-removebg-preview.png";
 function Student() {
   const [student, setStudent] = useState(null);
   const [activeTab, setActiveTab] = useState("courses");
@@ -233,9 +233,9 @@ function Student() {
           <div className="flex justify-between items-center h-16">
             <div className="flex items-center gap-2">
               <GraduationCap className="w-8 h-8 text-blue-600" />
-              <span className="text-xl font-bold text-gray-800">INTERNSHALA TRAININGS</span>
+              <img src={logo2} alt="Logo" className="h-18 w-auto" />
               <span className="hidden sm:inline-block bg-blue-600 text-white text-xs px-3 py-1 rounded-full ml-2">
-                Career Ki Guarantee
+                Student Panel
               </span>
             </div>
             <div className="relative">
@@ -281,13 +281,13 @@ function Student() {
           <div className="flex flex-col md:flex-row justify-between items-center">
             <div className="z-10 text-center md:text-left">
               <h1 className="text-4xl md:text-5xl font-bold mb-2">
-                Placement Guarantee Courses
+                Welcome, {student?.name.split(" ")[0]}!
               </h1>
               <p className="text-xl md:text-2xl font-medium mb-3">
-                Online Courses with Placement
+                Ready to kickstart your career?
               </p>
               <p className="text-lg opacity-95 mb-6">
-                Get confirmed salary up to ₹5 lac
+                Explore courses, enhance your skills, and land your dream job.
               </p>
               <button className="bg-yellow-400 text-gray-900 font-bold px-8 py-3 rounded-lg hover:bg-yellow-500 transition-all duration-200 shadow-lg">
                 Know more
@@ -304,24 +304,10 @@ function Student() {
         </div>
       </div>
 
-      {/* Top Companies Section */}
-      <div className="bg-white py-12 border-b">
-        <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
-          <h2 className="text-2xl font-bold text-gray-800 mb-8">
-            Top companies hiring on Internshala
-          </h2>
-          <div className="grid grid-cols-2 md:grid-cols-4 lg:grid-cols-8 gap-6 items-center justify-items-center">
-            {["Nearbuy", "PhonePe", "Teach For India", "Tech Mahindra", "HUL", "Xiaomi"].map((company) => (
-              <div key={company} className="text-gray-600 font-semibold text-sm bg-gray-50 px-6 py-3 rounded-lg border border-gray-200">
-                {company}
-              </div>
-            ))}
-          </div>
-        </div>
-      </div>
+      
 
       {/* Tabs */}
-      <div className="bg-white border-b sticky top-16 z-40">
+      <div className="bg-white border-b-slate-50 sticky top-16 z-40">
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
           <div className="flex gap-8 overflow-x-auto">
             {[
@@ -329,6 +315,7 @@ function Student() {
               { key: "myCourses", label: "My Courses" },
               { key: "skills", label: "My Skills" },
               { key: "jobs", label: "Jobs & Internships" },
+    
               { key: "applications", label: "My Applications" },
             ].map((tab) => (
               <button
@@ -581,7 +568,7 @@ function Student() {
         {activeTab === "jobs" && (
           <div>
             <h2 className="text-2xl font-bold text-gray-800 mb-6">
-              Available Jobs & Internships
+             Don’t just learn. Get an Internship + Stipend guaranteed. If we fail, we pay you back.
             </h2>
             <div className="grid md:grid-cols-2 lg:grid-cols-3 gap-6">
               {jobs.map((job) => (
