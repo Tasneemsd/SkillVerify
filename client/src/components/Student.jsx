@@ -2,7 +2,7 @@ import { useState, useEffect } from "react";
 import { useNavigate } from "react-router-dom";
 import API from "../api";
 import { getAuthToken } from "../api";
-import logo2 from "../images/logo2.png";
+import logo2 from "../images/logo2-removebg-preview.png";
 
 export default function Student() {
   const navigate = useNavigate();
