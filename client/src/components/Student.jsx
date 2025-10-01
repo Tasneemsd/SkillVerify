@@ -12,9 +12,6 @@ const Student = () => {
   const [dropdownOpen, setDropdownOpen] = useState(false);
   const [myCourses, setMyCourses] = useState([]);
 
-  const rawToken = localStorage.getItem("token");
-  const token = rawToken ? rawToken.replace(/"/g, "") : null;
-
   const user = JSON.parse(localStorage.getItem("user"));
   const navigate = useNavigate();
 
@@ -54,7 +51,7 @@ const Student = () => {
       .catch((err) => console.error("Jobs fetch error:", err));
   }, []);
 
-  // Fetch applications
+  // Fetch student applications
   useEffect(() => {
     if (!student?._id) return;
     API.get("/applications")
@@ -89,7 +86,6 @@ const Student = () => {
           alt="SkillVerify Logo"
           className="h-10 w-auto object-contain rounded-full"
         />
-
         <div className="flex items-center gap-4">
           <span className="text-gray-700 font-medium">
             Welcome, {student?.name || user?.name || "Student"}
@@ -157,7 +153,6 @@ const Student = () => {
           </button>
         ))}
       </div>
-
       {/* Tab Content */}
       <div className="p-6">
         {/* Courses */}
