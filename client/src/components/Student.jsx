@@ -1,6 +1,6 @@
 import React, { useEffect, useState } from "react";
 import API from "../api";
-import logo from "./images/image.png";
+import logo from "../images/logo.png";
 
 const Student = () => {
   const [courses, setCourses] = useState([]);
