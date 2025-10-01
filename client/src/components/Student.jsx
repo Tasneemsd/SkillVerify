@@ -70,7 +70,7 @@ const Student = () => {
         <img
           src={logo}
           alt="We Hire Today"
-          className="h-10 w-auto"
+          className="h-10 w-10 object-contain"
         />
 
         <div className="flex items-center gap-4">
