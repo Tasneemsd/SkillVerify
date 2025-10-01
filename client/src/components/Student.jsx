@@ -1,8 +1,13 @@
-// src/components/Student.jsx
 import React, { useEffect, useState } from "react";
 import { useNavigate } from "react-router-dom";
 import API from "../api";
 import logo2 from "../images/logo2.jpg";
+
+// Temporary course + skill icons (replace with your own images if needed)
+const defaultCourseImg =
+  "https://cdn-icons-png.flaticon.com/512/906/906343.png"; // books icon
+const defaultSkillImg =
+  "https://cdn-icons-png.flaticon.com/512/3135/3135715.png"; // skill person
 
 const Student = () => {
   const [courses, setCourses] = useState([]);
@@ -12,9 +17,6 @@ const Student = () => {
   const [activeTab, setActiveTab] = useState("courses");
   const [dropdownOpen, setDropdownOpen] = useState(false);
   const [myCourses, setMyCourses] = useState([]);
-
-  // My Skills states
-  const [skills, setSkills] = useState([]);
   const [newSkill, setNewSkill] = useState("");
   const [skillLevel, setSkillLevel] = useState("Basic");
 
@@ -57,7 +59,7 @@ const Student = () => {
       .catch((err) => console.error("Jobs fetch error:", err));
   }, []);
 
-  // Fetch student applications
+  // Fetch applications
   useEffect(() => {
     if (!student?._id) return;
     API.get("/applications")
@@ -76,15 +78,43 @@ const Student = () => {
     navigate("/login");
   };
 
-  const isCourseEnrolled = (course) =>
-    myCourses.includes(course._id?.toString());
+  const isCourseEnrolled = (course) => myCourses.includes(course._id?.toString());
 
-  // My Skills - add new skill
-  const addSkill = () => {
+  // Skill colors by level
+  const levelColors = {
+    Basic: "bg-red-100 text-red-700",
+    Intermediate: "bg-yellow-100 text-yellow-700",
+    Advanced: "bg-green-100 text-green-700",
+  };
+
+  // Add skill
+  const handleAddSkill = async () => {
     if (!newSkill.trim()) return;
-    setSkills([...skills, { name: newSkill, level: skillLevel }]);
-    setNewSkill("");
-    setSkillLevel("Basic");
+    try {
+      const res = await API.post("/student/skill", {
+        studentId: student._id,
+        skill: { name: newSkill, level: skillLevel },
+      });
+      setStudent(res.data); // updated student with skills
+      setNewSkill("");
+      setSkillLevel("Basic");
+    } catch (err) {
+      console.error("Add skill error:", err);
+      alert("Failed to add skill");
+    }
+  };
+
+  // Remove skill
+  const handleRemoveSkill = async (skillName) => {
+    try {
+      const res = await API.delete(
+        `/student/skill/${student._id}/${encodeURIComponent(skillName)}`
+      );
+      setStudent(res.data);
+    } catch (err) {
+      console.error("Remove skill error:", err);
+      alert("Failed to remove skill");
+    }
   };
 
   return (
@@ -103,7 +133,7 @@ const Student = () => {
           <div className="relative">
             <button
               onClick={() => setDropdownOpen((prev) => !prev)}
-              className="w-10 h-10 rounded-full bg-blue-600 flex items-center justify-center text-white font-bold shadow-md focus:outline-none"
+              className="w-10 h-10 rounded-full bg-blue-600 flex items-center justify-center text-white font-bold shadow-md"
             >
               {getInitials(student?.name || user?.name)}
             </button>
@@ -111,9 +141,9 @@ const Student = () => {
               <div className="absolute right-0 mt-2 w-40 bg-white border rounded-lg shadow-lg z-50">
                 <button
                   className="block w-full text-left px-4 py-2 hover:bg-gray-100"
-                  onClick={() => setActiveTab("mySkills")}
+                  onClick={() => setActiveTab("skill")}
                 >
-                  My Profile
+                  My Skills
                 </button>
                 <button
                   className="block w-full text-left px-4 py-2 text-red-600 hover:bg-gray-100"
@@ -127,11 +157,12 @@ const Student = () => {
         </div>
       </nav>
 
-      {/* Hero Section */}
+      {/* 🔵 Hero Section */}
       <div className="bg-gradient-to-r from-blue-600 to-blue-800 text-white shadow-md p-8 mt-4 mx-4 rounded-lg flex flex-col md:flex-row justify-between items-center relative overflow-hidden">
+        {/* Left - Student Info */}
         <div className="z-10">
           <h2 className="text-3xl font-bold">
-            {student?.name || user?.name || "Student Name"}
+            {student?.name || "Student Name"}
           </h2>
           <p className="mt-2 text-lg font-medium">
             {student?.branch || "CSE"} • {student?.college || "Your College"}
@@ -140,13 +171,16 @@ const Student = () => {
             Class of {student?.graduationYear || "2026"}
           </p>
         </div>
+
+        {/* Right - Illustration */}
         <div className="hidden md:block">
           <img
             src="https://internshala.com/static/images/pgc/hero-image.png"
-            alt="Student Illustration"
-            className="h-44 object-contain animate-bounce"
+            alt="Student Banner"
+            className="h-40 object-contain"
           />
         </div>
+
         <div className="absolute top-0 right-0 w-1/2 h-full bg-white/10 rounded-l-full"></div>
       </div>
 
@@ -155,7 +189,7 @@ const Student = () => {
         {[
           { key: "courses", label: "Available Courses" },
           { key: "myCourses", label: "My Courses" },
-          { key: "mySkills", label: "My Skills" },
+          { key: "skill", label: "My Skills" },
           { key: "jobs", label: "Jobs & Internships" },
           { key: "applications", label: "My Applications" },
         ].map((tab) => (
@@ -173,7 +207,7 @@ const Student = () => {
         ))}
       </div>
 
-      {/* Content */}
+      {/* Tab Content */}
       <div className="p-6">
         {/* Courses */}
         {activeTab === "courses" && (
@@ -181,36 +215,29 @@ const Student = () => {
             {courses.map((course) => (
               <div
                 key={course._id}
-                className="bg-white rounded-xl shadow-md hover:shadow-lg overflow-hidden relative"
+                className="bg-white rounded-xl shadow-md hover:shadow-lg overflow-hidden"
               >
-                <div className="absolute top-3 left-0 bg-yellow-400 text-black text-xs px-3 py-1 font-semibold rounded-r-lg shadow">
-                  Placement Guarantee
-                </div>
-
-                <div className="bg-gradient-to-r from-purple-300 to-indigo-200 p-4 relative">
-                  <h3 className="text-xl font-bold text-gray-800">
-                    {course.courseName}
-                  </h3>
-                  <span className="absolute top-3 right-3 bg-orange-500 text-white text-xs px-2 py-1 rounded-full shadow">
-                    ⭐ {course.rating || 4.5}
-                  </span>
-                </div>
-
+                <img
+                  src={course.image || defaultCourseImg}
+                  alt={course.courseName}
+                  className="h-40 w-full object-cover"
+                />
                 <div className="p-4 space-y-2">
+                  <h3 className="text-xl font-bold">{course.courseName}</h3>
                   <p className="text-sm text-gray-600">
-                    ⏳ {course.courseDuration || "6"} months with LIVE sessions
+                    ⏳ {course.courseDuration || "6 months"} with LIVE sessions
                   </p>
                   <p className="text-sm text-gray-600">
-                    💰 Salary upto:{" "}
+                    📈 Highest salary:{" "}
                     <span className="font-semibold">
                       {course.highestSalary || "₹18 LPA"}
                     </span>
                   </p>
-                  <p className="text-sm mt-2 font-semibold">
-                    Fee: ₹{course.courseFee || "N/A"}
+                  <p className="text-sm">
+                    <span className="font-semibold">Fee:</span> ₹
+                    {course.courseFee || "N/A"}
                   </p>
                 </div>
-
                 <div className="border-t p-4 flex justify-between items-center bg-gray-50">
                   <button
                     className={`px-4 py-2 rounded text-white text-sm ${
@@ -242,7 +269,6 @@ const Student = () => {
                   >
                     {isCourseEnrolled(course) ? "Enrolled" : "Enroll"}
                   </button>
-
                   <button
                     className="px-4 py-2 bg-blue-600 text-white rounded hover:bg-blue-700 text-sm"
                     onClick={() => navigate(`/course/${course._id}`)}
@@ -284,10 +310,12 @@ const Student = () => {
           </div>
         )}
 
-        {/* My Skills */}
-        {activeTab === "mySkills" && (
-          <div className="max-w-lg mx-auto bg-white shadow rounded-lg p-6">
+        {/* Skills */}
+        {activeTab === "skill" && (
+          <div className="mt-6 bg-white p-6 rounded-lg shadow-md">
             <h3 className="text-lg font-bold mb-4">My Skills</h3>
+
+            {/* Add Skill */}
             <div className="flex gap-2 mb-4">
               <input
                 type="text"
@@ -299,34 +327,47 @@ const Student = () => {
               <select
                 value={skillLevel}
                 onChange={(e) => setSkillLevel(e.target.value)}
-                className="border rounded px-2 py-2"
+                className="border rounded px-3 py-2"
               >
                 <option>Basic</option>
                 <option>Intermediate</option>
                 <option>Advanced</option>
               </select>
               <button
-                onClick={addSkill}
-                className="bg-blue-600 text-white px-4 py-2 rounded"
+                onClick={handleAddSkill}
+                className="px-4 py-2 bg-blue-600 text-white rounded hover:bg-blue-700"
               >
-                +
+                Add
               </button>
             </div>
-            <div className="flex flex-wrap gap-2">
-              {skills.map((s, i) => (
-                <span
-                  key={i}
-                  className={`px-3 py-1 rounded-full text-sm text-white ${
-                    s.level === "Basic"
-                      ? "bg-green-500"
-                      : s.level === "Intermediate"
-                      ? "bg-yellow-500"
-                      : "bg-red-500"
-                  }`}
-                >
-                  {s.name} - {s.level}
-                </span>
-              ))}
+
+            {/* Skill List */}
+            <div className="flex flex-wrap gap-3">
+              {student?.skills?.length ? (
+                student.skills.map((s, idx) => (
+                  <div
+                    key={idx}
+                    className={`flex items-center gap-2 px-3 py-2 rounded-full shadow-sm ${levelColors[s.level]}`}
+                  >
+                    <img
+                      src={defaultSkillImg}
+                      alt="skill"
+                      className="h-5 w-5"
+                    />
+                    <span>
+                      {s.name} ({s.level})
+                    </span>
+                    <button
+                      onClick={() => handleRemoveSkill(s.name)}
+                      className="ml-2 text-xs text-gray-600 hover:text-black"
+                    >
+                      ✕
+                    </button>
+                  </div>
+                ))
+              ) : (
+                <p className="text-gray-500">No skills added yet.</p>
+              )}
             </div>
           </div>
         )}
@@ -334,9 +375,7 @@ const Student = () => {
         {/* Jobs */}
         {activeTab === "jobs" && (
           <div>
-            <h3 className="text-lg font-bold mb-4">
-              Available Jobs & Internships
-            </h3>
+            <h3 className="text-lg font-bold mb-4">Available Jobs & Internships</h3>
             <div className="grid md:grid-cols-2 lg:grid-cols-3 gap-6">
               {jobs.map((job) => (
                 <div
