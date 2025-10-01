@@ -7,7 +7,7 @@ const Student = () => {
   const [jobs, setJobs] = useState([]);
   const [applications, setApplications] = useState([]);
   const [student, setStudent] = useState(null);
-  const [activeTab, setActiveTab] = useState("skill");
+  const [activeTab, setActiveTab] = useState("courses");
   const [dropdownOpen, setDropdownOpen] = useState(false);
   const [myCourses, setMyCourses] = useState([]);
 
@@ -67,6 +67,12 @@ const Student = () => {
 
   const isCourseEnrolled = (course) =>
     myCourses.includes(course._id?.toString());
+
+  // -------- Skill Progress Calculation --------
+  const totalCourses = courses.length;
+  const enrolledCourses = courses.filter((c) => isCourseEnrolled(c)).length;
+  const progress =
+    totalCourses > 0 ? Math.round((enrolledCourses / totalCourses) * 100) : 0;
 
   return (
     <div className="min-h-screen bg-gray-50">
@@ -148,69 +154,82 @@ const Student = () => {
 
       {/* Tab Content */}
       <div className="p-6">
-        {/* Skill Progress */}
-        {activeTab === "skill" && (
-          <div className="text-center mt-10">
-            <h3 className="text-lg font-bold">Your Skill Verification Journey</h3>
-            <p className="mt-2 text-gray-600">No Skills in Progress</p>
-            <p className="text-gray-500">
-              Enroll in a course to start your skill verification journey
-            </p>
-            <button
-              onClick={() => setActiveTab("courses")}
-              className="mt-4 bg-blue-600 text-white px-4 py-2 rounded"
-            >
-              Browse Courses
-            </button>
-          </div>
-        )}
-
         {/* Available Courses */}
         {activeTab === "courses" && (
-          <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
-            {courses.map((course) => {
-              const enrolled = isCourseEnrolled(course);
-              return (
-                <div
-                  key={course._id}
-                  className="bg-white rounded-lg shadow hover:shadow-lg p-4 flex flex-col relative"
-                >
-                  {enrolled && (
-                    <span className="absolute top-2 right-2 bg-green-600 text-white text-xs px-2 py-1 rounded">
-                      Enrolled
+          <div className="grid md:grid-cols-2 lg:grid-cols-3 gap-6">
+            {courses.map((course) => (
+              <div
+                key={course._id}
+                className="bg-white rounded-xl shadow-md hover:shadow-lg overflow-hidden relative"
+              >
+                {/* Ribbon */}
+                <div className="absolute top-3 left-0 bg-yellow-400 text-black text-xs px-3 py-1 font-semibold rounded-r-lg shadow">
+                  Placement Course with AI ✨
+                </div>
+
+                {/* Header */}
+                <div className="bg-gradient-to-r from-purple-100 to-indigo-100 p-4 relative">
+                  <h3 className="text-xl font-bold text-purple-700">
+                    Become a {course.courseName}
+                  </h3>
+                  <span className="absolute top-3 right-3 bg-orange-500 text-white text-xs px-2 py-1 rounded-full shadow">
+                    ⭐ {course.rating || 4.5}
+                  </span>
+                </div>
+
+                {/* Details */}
+                <div className="p-4 space-y-2">
+                  <p className="text-gray-700 font-semibold">
+                    {course.courseName} Course
+                  </p>
+                  <p className="text-sm text-gray-600">
+                    ⏳ {course.courseDuration || "6 months"} with LIVE sessions
+                  </p>
+                  <p className="text-sm text-gray-600">
+                    📈 Highest salary:{" "}
+                    <span className="font-semibold">
+                      {course.highestSalary || "₹18 LPA"}
                     </span>
-                  )}
-                  <h3 className="font-bold text-lg">{course.courseName}</h3>
-                  <p className="text-sm text-gray-600 mb-2">{course.courseDescription}</p>
-                  <p className="text-sm">
-                    <span className="font-semibold">Duration:</span> {course.courseDuration}
-                  </p>
-                  <p className="text-sm">
-                    <span className="font-semibold">Rating:</span> ⭐ {course.rating}
-                  </p>
-                  <p className="text-sm">
-                    <span className="font-semibold">Highest Salary:</span> {course.highestSalary}
-                  </p>
-                  <p className="text-sm">
-                    <span className="font-semibold">Placement Partners:</span>{" "}
-                    {course.placementPartners?.length
-                      ? course.placementPartners.join(", ")
-                      : "NA"}
-                  </p>
-                  <p className="text-sm mt-2">
-                    <span className="font-semibold">Fee:</span> ₹{course.courseFee}
                   </p>
 
-                  <div className="mt-3 flex gap-2">
+                  {/* Placement Partner Logos */}
+                  <p className="text-sm text-gray-600">Placement partners:</p>
+                  <div className="flex items-center gap-3 mt-1">
+                    {course.placementPartners?.length ? (
+                      course.placementPartners.map((partner, i) => (
+                        <img
+                          key={i}
+                          src={partner.logo}
+                          alt={partner.name}
+                          className="h-6 object-contain"
+                        />
+                      ))
+                    ) : (
+                      <span className="text-sm text-gray-500">Top Companies</span>
+                    )}
+                  </div>
+
+                  <p className="text-sm mt-2">
+                    <span className="font-semibold">Fee:</span> ₹
+                    {course.courseFee || "N/A"}
+                  </p>
+                </div>
+
+                {/* Footer */}
+                <div className="border-t p-4 flex justify-between items-center bg-gray-50">
+                  <span className="text-sm text-red-500 font-semibold">
+                    Application closes today!
+                  </span>
+                  <div className="flex gap-2">
                     <button
-                      className={`px-3 py-1 rounded text-white ${
-                        enrolled
+                      className={`px-4 py-2 rounded text-white text-sm ${
+                        isCourseEnrolled(course)
                           ? "bg-gray-400 cursor-not-allowed"
                           : "bg-green-600 hover:bg-green-700"
                       }`}
-                      disabled={enrolled}
+                      disabled={isCourseEnrolled(course)}
                       onClick={async () => {
-                        if (enrolled) return;
+                        if (isCourseEnrolled(course)) return;
                         try {
                           const res = await API.post(
                             "/student/enroll",
@@ -223,195 +242,155 @@ const Student = () => {
                           }
                         } catch (err) {
                           console.error(err);
-                          alert(err.response?.data?.message || "Enrollment failed");
+                          alert(
+                            err.response?.data?.message || "Enrollment failed"
+                          );
                         }
                       }}
                     >
-                      {enrolled ? "Enrolled" : "Enroll"}
+                      {isCourseEnrolled(course) ? "Enrolled" : "Enroll"}
                     </button>
 
                     <button
-                      className="px-3 py-1 bg-blue-600 text-white rounded hover:bg-blue-700 transition"
+                      className="px-4 py-2 bg-blue-600 text-white rounded hover:bg-blue-700 text-sm"
                       onClick={() => navigate(`/course/${course._id}`)}
                     >
                       Know More
                     </button>
                   </div>
                 </div>
-              );
-            })}
-          </div>
-        )}
-
-        {/* My Courses */}
-        {activeTab === "myCourses" && (
-          <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
-            {courses.filter((c) => isCourseEnrolled(c)).length ? (
-              courses
-                .filter((c) => isCourseEnrolled(c))
-                .map((course) => (
-                  <div
-                    key={course._id}
-                    className="bg-white rounded-xl shadow-md hover:shadow-lg overflow-hidden relative flex flex-col"
-                  >
-                    {/* Header */}
-                    <div className="bg-gradient-to-r from-purple-100 to-indigo-100 p-4 relative">
-                      <h3 className="text-lg font-bold text-purple-700">
-                        Become a {course.courseName}
-                      </h3>
-                      <span className="absolute top-3 right-3 bg-orange-500 text-white text-xs font-semibold px-2 py-1 rounded-full">
-                        ⭐ {course.rating || "4.5"}
-                      </span>
-                    </div>
-
-                    {/* Ribbon */}
-                    <div className="bg-yellow-100 text-yellow-700 text-xs font-medium px-3 py-1">
-                      Placement Course with AI ✨
-                    </div>
-
-                    {/* Body */}
-                    <div className="p-4 flex-1 space-y-2">
-                      <p className="font-semibold text-gray-800">
-                        {course.courseName} Course
-                      </p>
-                      <p className="text-sm text-gray-600 flex items-center">
-                        ⏳ {course.courseDuration || "6 months"} course with LIVE sessions
-                      </p>
-                      <p className="text-sm text-gray-600">
-                        📈 Highest salary offered:{" "}
-                        <span className="font-semibold text-black">
-                          {course.highestSalary || "₹18 LPA"}
-                        </span>
-                      </p>
-                      <p className="text-sm text-gray-600">
-                        Learn from industry experts of{" "}
-                        <span className="font-semibold">
-                          {course.placementPartners?.length
-                            ? course.placementPartners.join(", ")
-                            : "Top Companies"}
-                        </span>
-                      </p>
-                      <p className="text-sm">
-                        <span className="font-semibold">Fee:</span> ₹{course.courseFee || "N/A"}
-                      </p>
-                    </div>
-
-                    {/* Footer */}
-                    <div className="border-t p-4 flex flex-col sm:flex-row sm:justify-between sm:items-center gap-3">
-                      <span className="text-sm text-gray-500">
-                        Application closes <span className="font-semibold text-black">Today</span>
-                      </span>
-
-                      <div className="flex gap-2">
-                        <button
-                          className={`px-4 py-2 rounded text-white text-sm ${
-                            isCourseEnrolled(course)
-                              ? "bg-gray-400 cursor-not-allowed"
-                              : "bg-green-600 hover:bg-green-700"
-                          }`}
-                          disabled={isCourseEnrolled(course)}
-                          onClick={async () => {
-                            if (isCourseEnrolled(course)) return;
-                            try {
-                              const res = await API.post(
-                                "/student/enroll",
-                                { courseId: course.courseId },
-                                { headers: { Authorization: `Bearer ${token}` } }
-                              );
-                              if (res.data.success) {
-                                alert("Enrolled successfully!");
-                                setMyCourses((prev) => [...prev, course._id]);
-                              }
-                            } catch (err) {
-                              console.error(err);
-                              alert(err.response?.data?.message || "Enrollment failed");
-                            }
-                          }}
-                        >
-                          {isCourseEnrolled(course) ? "Enrolled" : "Enroll"}
-                        </button>
-
-                        <button
-                          className="px-4 py-2 bg-blue-600 text-white rounded hover:bg-blue-700 text-sm"
-                          onClick={() => navigate(`/course/${course._id}`)}
-                        >
-                          Know More
-                        </button>
-                      </div>
-                    </div>
-                  </div>
-                ))
-            ) : (
-              <p className="text-center text-gray-600 col-span-full">
-                You have not enrolled in any courses yet.
-              </p>
-            )}
-          </div>
-        )}
-
-        {/* Jobs */}
-        {activeTab === "jobs" && (
-          <div className="space-y-4">
-            {jobs.map((job) => (
-              <div
-                key={job._id}
-                className="bg-white rounded-lg shadow hover:shadow-lg p-4 flex justify-between"
-              >
-                <div>
-                  <h3 className="font-bold text-lg">{job.title}</h3>
-                  <p className="text-sm text-gray-600">{job.company}</p>
-                  <p className="text-sm">Location: {job.location}</p>
-                  <p className="text-sm">Salary: {job.salary}</p>
-                  <div className="flex gap-2 mt-2">
-                    {job.skills?.map((s, i) => (
-                      <span key={i} className="bg-gray-200 text-xs px-2 py-1 rounded">
-                        {s}
-                      </span>
-                    ))}
-                  </div>
-                </div>
-                <button
-                  className="self-center bg-blue-600 text-white px-3 py-1 rounded"
-                  onClick={async () => {
-                    try {
-                      const res = await API.post(
-                        "/applications",
-                        { jobId: job._id },
-                        { headers: { Authorization: `Bearer ${token}` } }
-                      );
-                      if (res.data.success) alert("Applied successfully!");
-                    } catch (err) {
-                      console.error(err);
-                      alert(err.response?.data?.message || "Application failed");
-                    }
-                  }}
-                >
-                  Apply
-                </button>
               </div>
             ))}
           </div>
         )}
 
+        {/* My Courses */}
+        {activeTab === "myCourses" && (
+          <div>
+            <h3 className="text-lg font-bold mb-4">My Enrolled Courses</h3>
+            {myCourses.length === 0 ? (
+              <p className="text-gray-500">No courses enrolled yet.</p>
+            ) : (
+              <ul className="space-y-2">
+                {courses
+                  .filter((c) => isCourseEnrolled(c))
+                  .map((c) => (
+                    <li
+                      key={c._id}
+                      className="p-4 bg-white shadow rounded-lg flex justify-between items-center"
+                    >
+                      <span>{c.courseName}</span>
+                      <button
+                        onClick={() => navigate(`/course/${c._id}`)}
+                        className="text-blue-600 hover:underline"
+                      >
+                        View
+                      </button>
+                    </li>
+                  ))}
+              </ul>
+            )}
+          </div>
+        )}
+
+        {/* Skill Progress */}
+        {activeTab === "skill" && (
+          <div className="mt-10 max-w-lg mx-auto text-center bg-white shadow rounded-lg p-6">
+            <h3 className="text-lg font-bold">Your Skill Verification Journey</h3>
+            <p className="mt-2 text-gray-600">
+              Enrolled in <span className="font-semibold">{enrolledCourses}</span>{" "}
+              out of {totalCourses} available courses
+            </p>
+
+            {/* Progress Bar */}
+            <div className="mt-4 w-full bg-gray-200 rounded-full h-4 overflow-hidden">
+              <div
+                className="bg-blue-600 h-4 text-xs text-white text-center transition-all"
+                style={{ width: `${progress}%` }}
+              >
+                {progress}%
+              </div>
+            </div>
+
+            {enrolledCourses === 0 && (
+              <p className="text-gray-500 mt-2">
+                Enroll in a course to start your skill verification journey
+              </p>
+            )}
+
+            {/* Per-course skill progress */}
+            <div className="mt-6 space-y-4 text-left">
+              {courses
+                .filter((c) => isCourseEnrolled(c))
+                .map((c) => (
+                  <div key={c._id}>
+                    <p className="font-medium">{c.courseName}</p>
+                    <div className="w-full bg-gray-200 rounded-full h-3">
+                      <div
+                        className="bg-green-600 h-3 rounded-full"
+                        style={{ width: `${c.progress || 40}%` }}
+                      ></div>
+                    </div>
+                    <span className="text-xs text-gray-600">
+                      {c.progress || 40}% verified
+                    </span>
+                  </div>
+                ))}
+            </div>
+          </div>
+        )}
+
+        {/* Jobs */}
+        {activeTab === "jobs" && (
+          <div>
+            <h3 className="text-lg font-bold mb-4">Available Jobs & Internships</h3>
+            <div className="grid md:grid-cols-2 lg:grid-cols-3 gap-6">
+              {jobs.map((job) => (
+                <div
+                  key={job._id}
+                  className="p-4 bg-white shadow rounded-lg hover:shadow-lg"
+                >
+                  <h4 className="font-semibold">{job.title}</h4>
+                  <p className="text-sm text-gray-600">{job.company}</p>
+                  <p className="text-sm">📍 {job.location}</p>
+                  <p className="text-sm">💰 {job.salary}</p>
+                  <button className="mt-2 px-3 py-1 bg-blue-600 text-white rounded">
+                    Apply
+                  </button>
+                </div>
+              ))}
+            </div>
+          </div>
+        )}
+
         {/* Applications */}
         {activeTab === "applications" && (
-          <div className="space-y-4">
-            {applications.length ? (
-              applications.map((app) => (
-                <div
-                  key={app._id}
-                  className="bg-white rounded-lg shadow hover:shadow-lg p-4"
-                >
-                  <h3 className="font-bold text-lg">{app.jobTitle}</h3>
-                  <p className="text-sm">Company: {app.company}</p>
-                  <p className="text-sm">Status: {app.status}</p>
-                  <p className="text-sm">
-                    Applied On: {new Date(app.appliedOn).toLocaleDateString()}
-                  </p>
-                </div>
-              ))
+          <div>
+            <h3 className="text-lg font-bold mb-4">My Applications</h3>
+            {applications.length === 0 ? (
+              <p className="text-gray-500">You haven’t applied yet.</p>
             ) : (
-              <p className="text-center text-gray-600">No job applications yet.</p>
+              <ul className="space-y-2">
+                {applications.map((a) => (
+                  <li
+                    key={a._id}
+                    className="p-4 bg-white shadow rounded-lg flex justify-between items-center"
+                  >
+                    <span>{a.jobTitle}</span>
+                    <span
+                      className={`text-sm ${
+                        a.status === "Accepted"
+                          ? "text-green-600"
+                          : a.status === "Rejected"
+                          ? "text-red-600"
+                          : "text-yellow-600"
+                      }`}
+                    >
+                      {a.status}
+                    </span>
+                  </li>
+                ))}
+              </ul>
             )}
           </div>
         )}
