@@ -147,11 +147,10 @@ const Student = () => {
           <button
             key={tab.key}
             onClick={() => setActiveTab(tab.key)}
-            className={`pb-2 px-2 font-medium ${
-              activeTab === tab.key
+            className={`pb-2 px-2 font-medium ${activeTab === tab.key
                 ? "border-b-2 border-blue-600 text-blue-600"
                 : "text-gray-600"
-            }`}
+              }`}
           >
             {tab.label}
           </button>
@@ -230,34 +229,32 @@ const Student = () => {
                   </span>
                   <div className="flex gap-2">
                     <button
-                      className={`px-4 py-2 rounded text-white text-sm ${
-                        isCourseEnrolled(course)
+                      className={`px-4 py-2 rounded text-white text-sm ${isCourseEnrolled(course)
                           ? "bg-gray-400 cursor-not-allowed"
                           : "bg-green-600 hover:bg-green-700"
-                      }`}
+                        }`}
                       disabled={isCourseEnrolled(course)}
                       onClick={async () => {
                         if (isCourseEnrolled(course)) return;
                         try {
                           const res = await API.post(
                             "/student/enroll",
-                            { courseId: course.courseId },
+                            { courseId: course._id }, // ✅ FIXED: send correct id
                             { headers: { Authorization: `Bearer ${token}` } }
                           );
                           if (res.data.success) {
                             alert("Enrolled successfully!");
-                            setMyCourses((prev) => [...prev, course._id]);
+                            setMyCourses((prev) => [...prev, course._id]); // ✅ keep _id for consistency
                           }
                         } catch (err) {
-                          console.error(err);
-                          alert(
-                            err.response?.data?.message || "Enrollment failed"
-                          );
+                          console.error("Enrollment error:", err);
+                          alert(err.response?.data?.message || "Enrollment failed");
                         }
                       }}
                     >
                       {isCourseEnrolled(course) ? "Enrolled" : "Enroll"}
                     </button>
+
 
                     <button
                       className="px-4 py-2 bg-blue-600 text-white rounded hover:bg-blue-700 text-sm"
@@ -390,13 +387,12 @@ const Student = () => {
                   >
                     <span>{a.jobTitle}</span>
                     <span
-                      className={`text-sm ${
-                        a.status === "Accepted"
+                      className={`text-sm ${a.status === "Accepted"
                           ? "text-green-600"
                           : a.status === "Rejected"
-                          ? "text-red-600"
-                          : "text-yellow-600"
-                      }`}
+                            ? "text-red-600"
+                            : "text-yellow-600"
+                        }`}
                     >
                       {a.status}
                     </span>
