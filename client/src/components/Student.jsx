@@ -1,7 +1,7 @@
 import { useState, useEffect } from "react";
 import { GraduationCap, MapPin, DollarSign, Clock, Star, Briefcase, FileText, User, LogOut, Award, Plus, X } from "lucide-react";
 import API from "../api";
-import logo2 from "../images/logo2-removebg-preview.png";
+
 function Student() {
   const [student, setStudent] = useState(null);
   const [activeTab, setActiveTab] = useState("courses");
