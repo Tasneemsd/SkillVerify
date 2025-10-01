@@ -168,9 +168,10 @@ const Student = () => {
                 </div>
 
                 {/* Header */}
-                <div className="bg-gradient-to-r from-purple-100 to-indigo-100 p-4 relative">
-                  <h3 className="text-xl font-bold text-purple-700">
-                    Become a {course.courseName}
+                <div className="bg-gradient-to-r from-purple-300 to-indigo-200 p-4 relative">
+                  <h3 className="text-xl font-bold text-purple-500">
+                    Become a 
+                  {course.courseName} Developer
                   </h3>
                   <span className="absolute top-3 right-3 bg-orange-500 text-white text-xs px-2 py-1 rounded-full shadow">
                     ⭐ {course.rating || 4.5}
@@ -180,7 +181,7 @@ const Student = () => {
                 {/* Details */}
                 <div className="p-4 space-y-2">
                   <p className="text-gray-700 font-semibold">
-                    {course.courseName} Course
+                    {course.courseName} 
                   </p>
                   <p className="text-sm text-gray-600">
                     ⏳ {course.courseDuration || "6 months"} with LIVE sessions
