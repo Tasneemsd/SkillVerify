@@ -85,7 +85,7 @@ const Student = () => {
         <img
           src={logo2}
           alt="SkillVerify Logo"
-          className="h-20 w-auto object-contain"
+          className="h-10 w-auto object-contain borderRadius: 50%"
         />
 
         <div className="flex items-center gap-4">
