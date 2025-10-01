@@ -1,5 +1,19 @@
 import { useState, useEffect } from "react";
-import { GraduationCap, MapPin, DollarSign, Clock, Star, Briefcase, FileText, User, LogOut, Award, Plus, X } from "lucide-react";
+import {
+  GraduationCap,
+  MapPin,
+  DollarSign,
+  Clock,
+  Star,
+  Briefcase,
+  FileText,
+  User,
+  LogOut,
+  Award,
+  Plus,
+  X,
+} from "lucide-react";
+import { useNavigate } from "react-router-dom";
 import API from "../api";
 
 function Student() {
@@ -14,6 +28,8 @@ function Student() {
   const [newSkillName, setNewSkillName] = useState("");
   const [newSkillLevel, setNewSkillLevel] = useState("Basic");
 
+  const navigate = useNavigate();
+
   useEffect(() => {
     const userEmail = localStorage.getItem("userEmail") || "student@example.com";
     fetchStudentDetails(userEmail);
@@ -24,7 +40,7 @@ function Student() {
 
   const fetchStudentDetails = async (email) => {
     try {
-      const res = await API.get(`/student?email=${encodeURIComponent(email)}`); // ✅ fixed here
+      const res = await API.get(`/student?email=${encodeURIComponent(email)}`);
       setStudent(res.data);
     } catch (err) {
       console.error("Error fetching student:", err);
@@ -68,24 +84,6 @@ function Student() {
           highestSalary: "₹35,000",
           progress: 0,
         },
-        {
-          _id: "3",
-          courseName: "Human Resource Management",
-          courseDuration: "4 months",
-          courseFee: 25000,
-          rating: 4.3,
-          highestSalary: "₹3.6 lac",
-          progress: 40,
-        },
-        {
-          _id: "4",
-          courseName: "Digital Marketing",
-          courseDuration: "6 months",
-          courseFee: 30000,
-          rating: 4.4,
-          highestSalary: "₹3.6 lac",
-          progress: 0,
-        },
       ]);
     }
   };
@@ -105,22 +103,6 @@ function Student() {
           salary: "₹15,000/month",
           type: "Internship",
         },
-        {
-          _id: "2",
-          title: "Data Analyst",
-          company: "PhonePe",
-          location: "Bangalore",
-          salary: "₹6-8 LPA",
-          type: "Full-time",
-        },
-        {
-          _id: "3",
-          title: "Marketing Intern",
-          company: "Nearbuy",
-          location: "Delhi",
-          salary: "₹10,000/month",
-          type: "Internship",
-        },
       ]);
     }
   };
@@ -136,7 +118,7 @@ function Student() {
   };
 
   const getUserInitials = () => {
-    if (!student) return "U";
+    if (!student?.name) return "U";
     return student.name
       .split(" ")
       .map((n) => n[0])
@@ -212,7 +194,8 @@ function Student() {
 
   const enrolledCourses = student?.enrolledCourses?.length || 0;
   const totalCourses = courses.length;
-  const progress = totalCourses > 0 ? Math.round((enrolledCourses / totalCourses) * 100) : 0;
+  const progress =
+    totalCourses > 0 ? Math.round((enrolledCourses / totalCourses) * 100) : 0;
 
   if (loading) {
     return (
@@ -232,14 +215,11 @@ function Student() {
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
           <div className="flex justify-between items-center h-16">
             <div className="flex items-center gap-2">
-
               <img
                 src="/logos.png"
                 alt="SkillVerify Logo"
                 className="h-20 md:h-24 w-auto object-contain"
               />
-
-
             </div>
             <div className="relative">
               <button
@@ -251,8 +231,12 @@ function Student() {
               {showDropdown && (
                 <div className="absolute right-0 mt-2 w-56 bg-white rounded-lg shadow-xl py-2 z-50 border border-gray-200">
                   <div className="px-4 py-3 border-b">
-                    <p className="font-semibold text-gray-800">{student?.name || "Student"}</p>
-                    <p className="text-xs text-gray-500">{student?.branch || "CSE"}</p>
+                    <p className="font-semibold text-gray-800">
+                      {student?.name || "Student"}
+                    </p>
+                    <p className="text-xs text-gray-500">
+                      {student?.branch || "CSE"}
+                    </p>
                   </div>
                   <button
                     onClick={() => {
@@ -284,7 +268,7 @@ function Student() {
           <div className="flex flex-col md:flex-row justify-between items-center">
             <div className="z-10 text-center md:text-left">
               <h1 className="text-4xl md:text-5xl font-bold mb-2">
-                Welcome, {student?.name.split(" ")[0]}!
+                Welcome, {student?.name ? student.name.split(" ")[0] : "Student"}!
               </h1>
               <p className="text-xl md:text-2xl font-medium mb-3">
                 Ready to kickstart your career?
@@ -292,7 +276,10 @@ function Student() {
               <p className="text-lg opacity-95 mb-6">
                 Explore courses, enhance your skills, and land your dream job.
               </p>
-              <button className="bg-yellow-400 text-gray-900 font-bold px-8 py-3 rounded-lg hover:bg-yellow-500 transition-all duration-200 shadow-lg">
+              <button
+                onClick={() => navigate("/courses")}
+                className="bg-yellow-400 text-gray-900 font-bold px-8 py-3 rounded-lg hover:bg-yellow-500 transition-all duration-200 shadow-lg"
+              >
                 Know more
               </button>
             </div>
@@ -306,8 +293,6 @@ function Student() {
           </div>
         </div>
       </div>
-
-
 
       {/* Tabs */}
       <div className="bg-white border-b-slate-50 sticky top-16 z-40">

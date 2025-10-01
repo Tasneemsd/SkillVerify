@@ -3,7 +3,7 @@ const router = express.Router();
 const Student = require("../models/Student");
 const jwt = require("jsonwebtoken");
 
-// 🔹 GET student profile using JWT token
+// ✅ GET student profile using JWT
 router.get("/me", async (req, res) => {
   try {
     const authHeader = req.headers.authorization;
@@ -12,7 +12,12 @@ router.get("/me", async (req, res) => {
     }
 
     const token = authHeader.split(" ")[1].replace(/"/g, "");
-    const decoded = jwt.verify(token, process.env.JWT_SECRET || "supersecret");
+    let decoded;
+    try {
+      decoded = jwt.verify(token, process.env.JWT_SECRET || "supersecret");
+    } catch (err) {
+      return res.status(401).json({ message: "Invalid or expired token" });
+    }
 
     const student = await Student.findById(decoded.id).populate("registeredCourses");
     if (!student) {
@@ -21,12 +26,12 @@ router.get("/me", async (req, res) => {
 
     return res.status(200).json(student);
   } catch (err) {
-    console.error("❌ Student fetch error:", err);
+    console.error("❌ Student /me fetch error:", err);
     return res.status(500).json({ message: "Server error", error: err.message });
   }
 });
 
-// 🔹 (Existing) GET by email query
+// ✅ GET student by email (fallback for cases when JWT not sent)
 router.get("/", async (req, res) => {
   try {
     const { email } = req.query;
@@ -41,7 +46,7 @@ router.get("/", async (req, res) => {
 
     return res.status(200).json(student);
   } catch (err) {
-    console.error("❌ Student fetch error:", err);
+    console.error("❌ Student by email fetch error:", err);
     return res.status(500).json({ message: "Server error", error: err.message });
   }
 });
