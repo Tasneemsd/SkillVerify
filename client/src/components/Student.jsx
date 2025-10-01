@@ -1,7 +1,7 @@
 import React, { useEffect, useState } from "react";
 import { useNavigate } from "react-router-dom";
 import API from "../api";
-import logo2 from '../images/logo2.png';
+import logo2 from '../images/logo2.jpg';
 
 const Student = () => {
   const [courses, setCourses] = useState([]);
@@ -83,7 +83,7 @@ const Student = () => {
 
         <div className="flex items-center gap-4">
           <span className="text-gray-700 font-medium">
-            
+
             Welcome, {student?.name || user?.name || "Student"}
           </span>
           <div className="relative">
