@@ -11,6 +11,15 @@ const Student = () => {
   const token = localStorage.getItem("token");
   const user = JSON.parse(localStorage.getItem("user"));
 
+  // Function to get initials (NAA style)
+  const getInitials = (name = "") => {
+    if (!name) return "";
+    return name
+      .split(" ")
+      .map((n) => n[0].toUpperCase())
+      .join("");
+  };
+
   // Fetch student details
   useEffect(() => {
     if (!user?.email) return;
@@ -80,8 +89,23 @@ const Student = () => {
 
   return (
     <div className="min-h-screen bg-gray-50">
+      {/* Navbar */}
+      <nav className="bg-white shadow-md px-6 py-4 flex justify-between items-center">
+        <h1 className="text-xl font-bold text-gray-700">Student Portal</h1>
+        <ul className="flex space-x-6 text-gray-600 font-medium">
+          <li className="hover:text-blue-600 cursor-pointer">Home</li>
+          <li className="hover:text-blue-600 cursor-pointer">Courses</li>
+          <li className="hover:text-blue-600 cursor-pointer">Jobs</li>
+          <li className="hover:text-blue-600 cursor-pointer">Applications</li>
+        </ul>
+        {/* Profile Circle */}
+        <div className="w-10 h-10 rounded-full bg-blue-600 flex items-center justify-center text-white font-bold shadow-md">
+          {getInitials(student?.name || user?.name || "S")}
+        </div>
+      </nav>
+
       {/* Profile Header */}
-      <div className="bg-white shadow-md p-6">
+      <div className="bg-white shadow-md p-6 mt-4 mx-4 rounded-lg">
         <h2 className="text-2xl font-bold">{student?.name || "Student Name"}</h2>
         <p className="text-gray-600">
           {student?.branch || "CSE"} • {student?.college || "NEC"} • Class of{" "}
@@ -145,7 +169,9 @@ const Student = () => {
                 className="bg-white rounded-lg shadow hover:shadow-lg p-4"
               >
                 <h3 className="font-bold text-lg">{course.courseName}</h3>
-                <p className="text-sm text-gray-600">{course.courseDescription}</p>
+                <p className="text-sm text-gray-600">
+                  {course.courseDescription}
+                </p>
                 <p className="text-sm mt-2">₹{course.courseFee}</p>
                 <p className="text-sm">{course.courseDuration} hours</p>
                 <button
@@ -207,7 +233,8 @@ const Student = () => {
                   <p className="text-sm">Company: {app.company}</p>
                   <p className="text-sm">Status: {app.status}</p>
                   <p className="text-sm">
-                    Applied On: {new Date(app.appliedOn).toLocaleDateString()}
+                    Applied On:{" "}
+                    {new Date(app.appliedOn).toLocaleDateString()}
                   </p>
                 </div>
               ))
