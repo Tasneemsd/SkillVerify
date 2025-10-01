@@ -1,133 +1,169 @@
-import React, { useEffect, useState } from "react";
+import { useState, useEffect } from "react";
 import { useNavigate } from "react-router-dom";
 import API from "../api";
-import logo2 from "../images/logo2.jpg";
+import { getAuthToken } from "../api";
+import logo2 from "../images/logo2.png";
 
-const Student = () => {
-  const [courses, setCourses] = useState([]);
-  const [jobs, setJobs] = useState([]);
-  const [applications, setApplications] = useState([]);
-  const [student, setStudent] = useState(null);
-  const [activeTab, setActiveTab] = useState("courses");
-  const [dropdownOpen, setDropdownOpen] = useState(false);
-  const [myCourses, setMyCourses] = useState([]);
-
-  const user = JSON.parse(localStorage.getItem("user"));
+export default function Student() {
   const navigate = useNavigate();
+  const [student, setStudent] = useState(null);
+  const [activeTab, setActiveTab] = useState("available");
+  const [showDropdown, setShowDropdown] = useState(false);
 
-  const getInitials = (name = "") =>
-    name ? name.split(" ").map((n) => n[0].toUpperCase()).join("") : "S";
-
-  // Fetch student details
   useEffect(() => {
-    if (!user?.email) return;
-    API.get(`/student?email=${encodeURIComponent(user.email)}`)
-      .then((res) => {
-        setStudent(res.data);
-        if (res.data.registeredCourses) {
-          setMyCourses(res.data.registeredCourses.map((c) => c._id?.toString()));
-        }
-      })
-      .catch((err) => {
-        console.error("Fetch student error:", err);
-        if (err.response?.status === 401) {
-          localStorage.clear();
-          navigate("/login");
-        }
-      });
-  }, [user?.email, navigate]);
-
-  // Fetch courses
-  useEffect(() => {
-    API.get("/courses")
-      .then((res) => setCourses(res.data))
-      .catch((err) => console.error("Courses fetch error:", err));
+    fetchStudentDetails();
   }, []);
 
-  // Fetch jobs
-  useEffect(() => {
-    API.get("/jobs")
-      .then((res) => setJobs(res.data))
-      .catch((err) => console.error("Jobs fetch error:", err));
-  }, []);
-
-  // Fetch student applications
-  useEffect(() => {
-    if (!student?._id) return;
-    API.get("/applications")
-      .then((res) => setApplications(res.data))
-      .catch((err) => {
-        console.error("Applications fetch error:", err);
-        if (err.response?.status === 401) {
-          localStorage.clear();
-          navigate("/login");
-        }
+  const fetchStudentDetails = async () => {
+    try {
+      const token = getAuthToken();
+      const res = await API.get("/student/me", {
+        headers: { Authorization: `Bearer ${token}` },
       });
-  }, [student?._id, navigate]);
-
-  const handleLogout = () => {
-    localStorage.clear();
-    navigate("/login");
+      setStudent(res.data);
+    } catch (err) {
+      console.error("Error fetching student:", err);
+    }
   };
 
-  const isCourseEnrolled = (course) => myCourses.includes(course._id?.toString());
+  const getUserInitials = () => {
+    const name = student?.name || "User";
+    return name
+      .split(" ")
+      .map((n) => n[0])
+      .join("")
+      .toUpperCase()
+      .slice(0, 2);
+  };
 
-  const totalCourses = courses.length;
-  const enrolledCourses = courses.filter((c) => isCourseEnrolled(c)).length;
-  const progress =
-    totalCourses > 0 ? Math.round((enrolledCourses / totalCourses) * 100) : 0;
+  const handleLogout = () => {
+    localStorage.removeItem("token");
+    localStorage.removeItem("userName");
+    navigate("/login");
+  };
 
   return (
     <div className="min-h-screen bg-gray-50">
       {/* Navbar */}
-      <nav className="bg-white shadow-md px-6 py-4 flex justify-between items-center relative">
-        <img
-          src={logo2}
-          alt="SkillVerify Logo"
-          className="h-10 w-auto object-contain rounded-full"
-        />
-        <div className="flex items-center gap-4">
-          <span className="text-gray-700 font-medium">
-            Welcome, {student?.name || user?.name || "Student"}
-          </span>
-          <div className="relative">
-            <button
-              onClick={() => setDropdownOpen((prev) => !prev)}
-              className="w-10 h-10 rounded-full bg-blue-600 flex items-center justify-center text-white font-bold shadow-md focus:outline-none"
-            >
-              {getInitials(student?.name || user?.name)}
-            </button>
-            {dropdownOpen && (
-              <div className="absolute right-0 mt-2 w-40 bg-white border rounded-lg shadow-lg z-50">
-                <button
-                  className="block w-full text-left px-4 py-2 hover:bg-gray-100"
-                  onClick={() => setActiveTab("skill")}
-                >
-                  My Profile
-                </button>
-                <button
-                  className="block w-full text-left px-4 py-2 text-red-600 hover:bg-gray-100"
-                  onClick={handleLogout}
-                >
-                  Logout
-                </button>
-              </div>
-            )}
+      <nav className="bg-white shadow-sm border-b">
+        <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+          <div className="flex justify-between items-center h-16">
+            <div className="flex items-center">
+              <img src={logo2} alt="Logo" className="h-8" />
+            </div>
+            <div className="relative">
+              <button
+                onClick={() => setShowDropdown(!showDropdown)}
+                className="w-10 h-10 rounded-full bg-blue-600 text-white flex items-center justify-center font-semibold text-sm hover:bg-blue-700 transition"
+              >
+                {getUserInitials()}
+              </button>
+              {showDropdown && (
+                <div className="absolute right-0 mt-2 w-48 bg-white rounded-lg shadow-lg py-2 z-50 border">
+                  <button
+                    onClick={() => navigate("/profile")}
+                    className="block w-full text-left px-4 py-2 text-sm text-gray-700 hover:bg-gray-100"
+                  >
+                    Profile
+                  </button>
+                  <button
+                    onClick={() => navigate("/my-courses")}
+                    className="block w-full text-left px-4 py-2 text-sm text-gray-700 hover:bg-gray-100"
+                  >
+                    My Courses
+                  </button>
+                  <button
+                    onClick={handleLogout}
+                    className="block w-full text-left px-4 py-2 text-sm text-red-600 hover:bg-gray-100"
+                  >
+                    Logout
+                  </button>
+                </div>
+              )}
+            </div>
           </div>
         </div>
       </nav>
 
-      {/* Profile Header */}
-      <div className="bg-white shadow-md p-6 mt-4 mx-4 rounded-lg flex items-center gap-6">
-        <div className="w-16 h-16 rounded-full bg-blue-600 flex items-center justify-center text-white font-bold text-xl shadow-md">
-          {getInitials(student?.name || user?.name)}
-        </div>
-        <div>
-          <h2 className="text-2xl font-bold">{student?.name || "Student Name"}</h2>
-          <p className="text-gray-600">
-            {student?.branch || "CSE"} • {student?.college || "NEC"} • Class of{" "}
-            {student?.graduationYear || "2026"}
+      {/* 🔵 Hero Section (Internshala style) */}
+      <div className="bg-gradient-to-r from-blue-600 to-blue-800 text-white shadow-md p-8 mt-4 mx-4 rounded-lg flex flex-col md:flex-row justify-between items-center relative overflow-hidden">
+        {/* Left - Student Info */}
+        <div className="z-10">
+          <h2 className="text-3xl font-bold">{student?.name || "Student Name"}</h2>
+          <p className="mt-2 text-lg font-medium">
+            {student?.branch || "CSE"} • {student?.college || "Your College"}
           </p>
+          <p className="text-sm mt-1 opacity-90">
+            Class of {student?.graduationYear || "2026"}
+          </p>
+        </div>
+
+        {/* Right - Illustration */}
+        <div className="hidden md:block">
+          <img
+            src="https://internshala.com/static/images/pgc/hero-image.png"
+            alt="Student Banner Illustration"
+            className="h-44 object-contain animate-bounce"
+          />
+        </div>
+
+        {/* Decorative Overlay */}
+        <div className="absolute top-0 right-0 w-1/2 h-full bg-white/10 rounded-l-full"></div>
+      </div>
+
+      {/* Tabs */}
+      <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 mt-6">
+        <div className="flex gap-4 border-b pb-2 overflow-x-auto">
+          <button
+            onClick={() => setActiveTab("available")}
+            className={`pb-2 px-2 font-medium ${
+              activeTab === "available"
+                ? "border-b-2 border-blue-600 text-blue-600"
+                : "text-gray-600"
+            }`}
+          >
+            Available Courses
+          </button>
+          <button
+            onClick={() => setActiveTab("mycourses")}
+            className={`pb-2 px-2 font-medium ${
+              activeTab === "mycourses"
+                ? "border-b-2 border-blue-600 text-blue-600"
+                : "text-gray-600"
+            }`}
+          >
+            My Courses
+          </button>
+          <button
+            onClick={() => setActiveTab("progress")}
+            className={`pb-2 px-2 font-medium ${
+              activeTab === "progress"
+                ? "border-b-2 border-blue-600 text-blue-600"
+                : "text-gray-600"
+            }`}
+          >
+            Skill Progress
+          </button>
+          <button
+            onClick={() => setActiveTab("jobs")}
+            className={`pb-2 px-2 font-medium ${
+              activeTab === "jobs"
+                ? "border-b-2 border-blue-600 text-blue-600"
+                : "text-gray-600"
+            }`}
+          >
+            Jobs & Internships
+          </button>
+          <button
+            onClick={() => setActiveTab("applications")}
+            className={`pb-2 px-2 font-medium ${
+              activeTab === "applications"
+                ? "border-b-2 border-blue-600 text-blue-600"
+                : "text-gray-600"
+            }`}
+          >
+            My Applications
+          </button>
         </div>
       </div>
 
@@ -229,7 +265,7 @@ const Student = () => {
 
                     <button
                       className="px-4 py-2 bg-blue-600 text-white rounded hover:bg-blue-700 text-sm"
-                      onClick={() => navigate(`/courses/${course._id}`)} // ✅ changed /course to /courses
+                      onClick={() => navigate(`/course/${c._id}`)} // ✅ changed /course to /courses
                     >
                       Know More
                     </button>
@@ -368,4 +404,3 @@ const Student = () => {
   );
 };
 
-export default Student;
