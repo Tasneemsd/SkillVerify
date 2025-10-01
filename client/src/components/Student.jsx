@@ -7,11 +7,12 @@ const Student = () => {
   const [applications, setApplications] = useState([]);
   const [student, setStudent] = useState(null);
   const [activeTab, setActiveTab] = useState("skill");
+  const [dropdownOpen, setDropdownOpen] = useState(false);
 
   const token = localStorage.getItem("token");
   const user = JSON.parse(localStorage.getItem("user"));
 
-  // Function to get initials (NAA style)
+  // Function to get initials
   const getInitials = (name = "") => {
     if (!name) return "";
     return name
@@ -54,68 +55,73 @@ const Student = () => {
       .catch((err) => console.error("Applications fetch error:", err));
   }, [student?._id, token]);
 
-  // Enroll
-  const handleEnroll = async (courseId) => {
-    try {
-      const res = await API.post(
-        "/student/enroll",
-        { studentId: student._id, courseId },
-        { headers: { Authorization: `Bearer ${token}` } }
-      );
-      alert(res.data.message || "Enrolled successfully ✅");
-      setStudent((prev) => ({
-        ...prev,
-        registeredCourses: [...(prev?.registeredCourses || []), courseId],
-      }));
-    } catch (err) {
-      alert(err.response?.data?.message || "Enrollment failed ❌");
-    }
-  };
-
-  // Apply
-  const handleApply = async (jobId) => {
-    try {
-      const res = await API.post(
-        "/applications",
-        { studentId: student._id, jobId },
-        { headers: { Authorization: `Bearer ${token}` } }
-      );
-      alert(res.data.message || "Applied successfully ✅");
-      setApplications((prev) => [...prev, res.data.application]);
-    } catch (err) {
-      alert(err.response?.data?.message || "Application failed ❌");
-    }
+  // Logout
+  const handleLogout = () => {
+    localStorage.removeItem("token");
+    localStorage.removeItem("user");
+    window.location.href = "/login";
   };
 
   return (
     <div className="min-h-screen bg-gray-50">
       {/* Navbar */}
-      <nav className="bg-white shadow-md px-6 py-4 flex justify-between items-center">
-        <h1 className="text-xl font-bold text-gray-700">Student Portal</h1>
-        <ul className="flex space-x-6 text-gray-600 font-medium">
-          <li className="hover:text-blue-600 cursor-pointer">Home</li>
-          <li className="hover:text-blue-600 cursor-pointer">Courses</li>
-          <li className="hover:text-blue-600 cursor-pointer">Jobs</li>
-          <li className="hover:text-blue-600 cursor-pointer">Applications</li>
-        </ul>
-        {/* Profile Circle */}
-        <div className="w-10 h-10 rounded-full bg-blue-600 flex items-center justify-center text-white font-bold shadow-md">
-          {getInitials(student?.name || user?.name || "S")}
+      <nav className="bg-white shadow-md px-6 py-4 flex justify-between items-center relative">
+        <h1 className="text-xl font-bold text-blue-600">WHT - We Hire Today</h1>
+
+        <div className="flex items-center gap-4">
+          <span className="text-gray-700 font-medium">
+            Welcome, {student?.name || user?.name || "Student"}
+          </span>
+
+          {/* Profile Circle */}
+          <div className="relative">
+            <button
+              onClick={() => setDropdownOpen((prev) => !prev)}
+              className="w-10 h-10 rounded-full bg-blue-600 flex items-center justify-center text-white font-bold shadow-md focus:outline-none"
+            >
+              {getInitials(student?.name || user?.name || "S")[0]}
+            </button>
+
+            {/* Dropdown */}
+            {dropdownOpen && (
+              <div className="absolute right-0 mt-2 w-40 bg-white border rounded-lg shadow-lg">
+                <button
+                  className="block w-full text-left px-4 py-2 hover:bg-gray-100"
+                  onClick={() => setActiveTab("profile")}
+                >
+                  My Profile
+                </button>
+                <button
+                  className="block w-full text-left px-4 py-2 text-red-600 hover:bg-gray-100"
+                  onClick={handleLogout}
+                >
+                  Logout
+                </button>
+              </div>
+            )}
+          </div>
         </div>
       </nav>
 
       {/* Profile Header */}
-      <div className="bg-white shadow-md p-6 mt-4 mx-4 rounded-lg">
-        <h2 className="text-2xl font-bold">{student?.name || "Student Name"}</h2>
-        <p className="text-gray-600">
-          {student?.branch || "CSE"} • {student?.college || "NEC"} • Class of{" "}
-          {student?.graduationYear || "2026"}
-        </p>
-        <div className="mt-2">
-          <p className="font-semibold">Verified Skills (0)</p>
-          <p className="text-sm text-gray-500">
-            Complete the verification process to earn verified skill badges
+      <div className="bg-white shadow-md p-6 mt-4 mx-4 rounded-lg flex items-center gap-6">
+        {/* Big Profile Circle */}
+        <div className="w-16 h-16 rounded-full bg-blue-600 flex items-center justify-center text-white font-bold text-xl shadow-md">
+          {getInitials(student?.name || user?.name || "S")}
+        </div>
+
+        <div>
+          <h2 className="text-2xl font-bold">{student?.name || "Student Name"}</h2>
+          <p className="text-gray-600">
+            {student?.branch || "CSE"} • {student?.college || "NEC"} • Class of{" "}
+            {student?.graduationYear || "2026"}
           </p>
+          <div className="mt-2">
+            <p className="font-semibold">Verified Skills (0)</p>
+            <p className="text-sm text-gray-500">
+              Complete the verification process to earn verified skill badges
+            </p>
+          </div>
         </div>
       </div>
 
@@ -160,7 +166,7 @@ const Student = () => {
           </div>
         )}
 
-        {/* Available Courses */}
+        {/* Courses */}
         {activeTab === "courses" && (
           <div className="grid md:grid-cols-2 lg:grid-cols-3 gap-6">
             {courses.map((course) => (
@@ -176,7 +182,7 @@ const Student = () => {
                 <p className="text-sm">{course.courseDuration} hours</p>
                 <button
                   className="mt-2 bg-blue-600 text-white px-3 py-1 rounded"
-                  onClick={() => handleEnroll(course._id)}
+                  onClick={() => alert("Enroll API here")}
                 >
                   Enroll Now
                 </button>
@@ -185,7 +191,7 @@ const Student = () => {
           </div>
         )}
 
-        {/* Jobs & Internships */}
+        {/* Jobs */}
         {activeTab === "jobs" && (
           <div className="space-y-4">
             {jobs.map((job) => (
@@ -209,10 +215,7 @@ const Student = () => {
                     ))}
                   </div>
                 </div>
-                <button
-                  className="self-center bg-blue-600 text-white px-3 py-1 rounded"
-                  onClick={() => handleApply(job._id)}
-                >
+                <button className="self-center bg-blue-600 text-white px-3 py-1 rounded">
                   Apply
                 </button>
               </div>
@@ -220,7 +223,7 @@ const Student = () => {
           </div>
         )}
 
-        {/* My Applications */}
+        {/* Applications */}
         {activeTab === "applications" && (
           <div className="space-y-4">
             {applications.length ? (
@@ -233,8 +236,7 @@ const Student = () => {
                   <p className="text-sm">Company: {app.company}</p>
                   <p className="text-sm">Status: {app.status}</p>
                   <p className="text-sm">
-                    Applied On:{" "}
-                    {new Date(app.appliedOn).toLocaleDateString()}
+                    Applied On: {new Date(app.appliedOn).toLocaleDateString()}
                   </p>
                 </div>
               ))
