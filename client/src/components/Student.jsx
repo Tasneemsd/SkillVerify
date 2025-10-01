@@ -70,7 +70,12 @@ const Student = () => {
     <div className="min-h-screen bg-gray-50">
       {/* Navbar */}
       <nav className="bg-white shadow-md px-6 py-4 flex justify-between items-center relative">
-        <img src={logo} alt="We Hire Today" className="h-16 w-auto object-contain" />
+        <h1 className="text-3xl font-bold">
+          <span className="text-blue-600">We</span>{" "}
+          <span className="text-red-600">Hire</span>{" "}
+          <span className="text-green-600">Today</span>
+        </h1>
+
         <div className="flex items-center gap-4">
           <span className="text-gray-700 font-medium">
             Welcome, {student?.name || user?.name || "Student"}
@@ -134,11 +139,10 @@ const Student = () => {
           <button
             key={tab.key}
             onClick={() => setActiveTab(tab.key)}
-            className={`pb-2 px-2 font-medium ${
-              activeTab === tab.key
+            className={`pb-2 px-2 font-medium ${activeTab === tab.key
                 ? "border-b-2 border-blue-600 text-blue-600"
                 : "text-gray-600"
-            }`}
+              }`}
           >
             {tab.label}
           </button>
@@ -176,9 +180,8 @@ const Student = () => {
                   <p className="text-sm mt-2">₹{course.courseFee}</p>
                   <p className="text-sm">{course.courseDuration} hours</p>
                   <button
-                    className={`mt-2 px-3 py-1 rounded text-white ${
-                      enrolled ? "bg-gray-400 cursor-not-allowed" : "bg-blue-600"
-                    }`}
+                    className={`mt-2 px-3 py-1 rounded text-white ${enrolled ? "bg-gray-400 cursor-not-allowed" : "bg-blue-600"
+                      }`}
                     onClick={async () => {
                       if (enrolled) return;
                       try {
