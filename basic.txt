@@ -1,3 +1,32 @@
+student.js
+const express = require("express");
+const router = express.Router();
+const Student = require("../models/Student");
+
+// 🔹 GET student by email
+router.get("/", async (req, res) => {
+  try {
+    const { email } = req.query;
+    if (!email) {
+      return res.status(400).json({ message: "Email is required" });
+    }
+
+    const student = await Student.findOne({ email }).populate("registeredCourses");
+    if (!student) {
+      return res.status(404).json({ message: "Student not found" });
+    }
+
+    return res.status(200).json(student);
+  } catch (err) {
+    console.error("❌ Student fetch error:", err);
+    return res.status(500).json({ message: "Server error", error: err.message });
+  }
+});
+
+module.exports = router;
+
+Student.jsx
+
 import React, { useEffect, useState } from "react";
 import { useNavigate } from "react-router-dom";
 import API from "../api";
@@ -12,7 +41,7 @@ const Student = () => {
   const [dropdownOpen, setDropdownOpen] = useState(false);
   const [myCourses, setMyCourses] = useState([]);
 
-  // ✅ Fix: token cleanup
+  // ✅ Fix: clean token
   const rawToken = localStorage.getItem("token");
   const token = rawToken ? rawToken.replace(/"/g, "") : null;
 
@@ -20,9 +49,9 @@ const Student = () => {
   const navigate = useNavigate();
 
   const getInitials = (name = "") =>
-    name ? name.split(" ").map((n) => n[0].toUpperCase()).join("") : "S";
+    name ? name.split(" ").map((n) => n[0].toUpperCase()).join("") : "";
 
-  // ✅ Fetch student details
+  // Fetch student details
   useEffect(() => {
     if (!user?.email) return;
     API.get(`/student?email=${encodeURIComponent(user.email)}`, {
@@ -31,33 +60,29 @@ const Student = () => {
       .then((res) => {
         setStudent(res.data);
         if (res.data.registeredCourses) {
-          setMyCourses(res.data.registeredCourses.map((c) => c._id?.toString()));
+          setMyCourses(
+            res.data.registeredCourses.map((c) => (c._id ? c._id : c.toString()))
+          );
         }
       })
-      .catch((err) => {
-        console.error("Fetch student error:", err);
-        if (err.response?.status === 401) {
-          localStorage.clear();
-          navigate("/login");
-        }
-      });
-  }, [user?.email, token, navigate]);
+      .catch((err) => console.error("Fetch student error:", err));
+  }, [user?.email, token]);
 
-  // ✅ Fetch courses
+  // Fetch courses
   useEffect(() => {
     API.get("/courses")
       .then((res) => setCourses(res.data))
       .catch((err) => console.error("Courses fetch error:", err));
   }, []);
 
-  // ✅ Fetch jobs
+  // Fetch jobs
   useEffect(() => {
     API.get("/jobs")
       .then((res) => setJobs(res.data))
       .catch((err) => console.error("Jobs fetch error:", err));
   }, []);
 
-  // ✅ Fetch applications
+  // Fetch applications
   useEffect(() => {
     if (!student?._id) return;
     API.get(`/applications?studentId=${student._id}`, {
@@ -68,13 +93,15 @@ const Student = () => {
   }, [student?._id, token]);
 
   const handleLogout = () => {
-    localStorage.clear();
+    localStorage.removeItem("token");
+    localStorage.removeItem("user");
     navigate("/login");
   };
 
-  const isCourseEnrolled = (course) => myCourses.includes(course._id?.toString());
+  const isCourseEnrolled = (course) =>
+    myCourses.includes(course._id?.toString());
 
-  // ✅ Skill Progress Calculation
+  // -------- Skill Progress Calculation --------
   const totalCourses = courses.length;
   const enrolledCourses = courses.filter((c) => isCourseEnrolled(c)).length;
   const progress =
@@ -87,7 +114,7 @@ const Student = () => {
         <img
           src={logo2}
           alt="SkillVerify Logo"
-          className="h-10 w-auto object-contain rounded-full" // ✅ Fixed Tailwind class
+          className="h-10 w-auto object-contain borderRadius: 50%"
         />
 
         <div className="flex items-center gap-4">
@@ -99,10 +126,10 @@ const Student = () => {
               onClick={() => setDropdownOpen((prev) => !prev)}
               className="w-10 h-10 rounded-full bg-blue-600 flex items-center justify-center text-white font-bold shadow-md focus:outline-none"
             >
-              {getInitials(student?.name || user?.name)}
+              {getInitials(student?.name || user?.name || "S")}
             </button>
             {dropdownOpen && (
-              <div className="absolute right-0 mt-2 w-40 bg-white border rounded-lg shadow-lg z-50">
+              <div className="absolute right-0 mt-2 w-40 bg-white border rounded-lg shadow-lg">
                 <button
                   className="block w-full text-left px-4 py-2 hover:bg-gray-100"
                   onClick={() => setActiveTab("skill")}
@@ -124,10 +151,12 @@ const Student = () => {
       {/* Profile Header */}
       <div className="bg-white shadow-md p-6 mt-4 mx-4 rounded-lg flex items-center gap-6">
         <div className="w-16 h-16 rounded-full bg-blue-600 flex items-center justify-center text-white font-bold text-xl shadow-md">
-          {getInitials(student?.name || user?.name)}
+          {getInitials(student?.name || user?.name || "S")}
         </div>
         <div>
-          <h2 className="text-2xl font-bold">{student?.name || "Student Name"}</h2>
+          <h2 className="text-2xl font-bold">
+            {student?.name || "Student Name"}
+          </h2>
           <p className="text-gray-600">
             {student?.branch || "CSE"} • {student?.college || "NEC"} • Class of{" "}
             {student?.graduationYear || "2026"}
@@ -136,7 +165,7 @@ const Student = () => {
       </div>
 
       {/* Tabs */}
-      <div className="flex gap-6 border-b mt-4 px-6 overflow-x-auto">
+      <div className="flex gap-6 border-b mt-4 px-6">
         {[
           { key: "courses", label: "Available Courses" },
           { key: "myCourses", label: "My Courses" },
@@ -147,11 +176,10 @@ const Student = () => {
           <button
             key={tab.key}
             onClick={() => setActiveTab(tab.key)}
-            className={`pb-2 px-2 font-medium ${
-              activeTab === tab.key
+            className={`pb-2 px-2 font-medium ${activeTab === tab.key
                 ? "border-b-2 border-blue-600 text-blue-600"
-                : "text-gray-600 hover:text-blue-600"
-            }`}
+                : "text-gray-600"
+              }`}
           >
             {tab.label}
           </button>
@@ -160,7 +188,7 @@ const Student = () => {
 
       {/* Tab Content */}
       <div className="p-6">
-        {/* Courses */}
+        {/* Available Courses */}
         {activeTab === "courses" && (
           <div className="grid md:grid-cols-2 lg:grid-cols-3 gap-6">
             {courses.map((course) => (
@@ -168,10 +196,12 @@ const Student = () => {
                 key={course._id}
                 className="bg-white rounded-xl shadow-md hover:shadow-lg overflow-hidden relative"
               >
+                {/* Ribbon */}
                 <div className="absolute top-3 left-0 bg-yellow-400 text-black text-xs px-3 py-1 font-semibold rounded-r-lg shadow">
                   Placement Course with AI ✨
                 </div>
 
+                {/* Header */}
                 <div className="bg-gradient-to-r from-purple-300 to-indigo-200 p-4 relative">
                   <h3 className="text-xl font-bold text-black-700">
                     {course.courseName}
@@ -181,8 +211,11 @@ const Student = () => {
                   </span>
                 </div>
 
+                {/* Details */}
                 <div className="p-4 space-y-2">
-                  <p className="text-gray-700 font-semibold">{course.courseName}</p>
+                  <p className="text-gray-700 font-semibold">
+                    {course.courseName}
+                  </p>
                   <p className="text-sm text-gray-600">
                     ⏳ {course.courseDuration || "6 months"} with LIVE sessions
                   </p>
@@ -193,6 +226,7 @@ const Student = () => {
                     </span>
                   </p>
 
+                  {/* Placement Partner Logos */}
                   <p className="text-sm text-gray-600">Placement partners:</p>
                   <div className="flex items-center gap-3 mt-1">
                     {course.placementPartners?.length ? (
@@ -205,7 +239,9 @@ const Student = () => {
                         />
                       ))
                     ) : (
-                      <span className="text-sm text-gray-500">Top Companies</span>
+                      <span className="text-sm text-gray-500">
+                        Top Companies
+                      </span>
                     )}
                   </div>
 
@@ -215,44 +251,43 @@ const Student = () => {
                   </p>
                 </div>
 
+                {/* Footer */}
                 <div className="border-t p-4 flex justify-between items-center bg-gray-50">
                   <span className="text-sm text-red-500 font-semibold">
                     Application closes today!
                   </span>
                   <div className="flex gap-2">
                     <button
-                      className={`px-4 py-2 rounded text-white text-sm ${
-                        isCourseEnrolled(course)
+                      className={`px-4 py-2 rounded text-white text-sm ${isCourseEnrolled(course)
                           ? "bg-gray-400 cursor-not-allowed"
                           : "bg-green-600 hover:bg-green-700"
-                      }`}
+                        }`}
                       disabled={isCourseEnrolled(course)}
                       onClick={async () => {
                         if (isCourseEnrolled(course)) return;
                         try {
                           const res = await API.post(
                             "/student/enroll",
-                            { courseId: course._id },
+                            { courseId: course._id }, // ✅ FIXED: send correct id
                             { headers: { Authorization: `Bearer ${token}` } }
                           );
                           if (res.data.success) {
                             alert("Enrolled successfully!");
-                            setMyCourses((prev) => [...prev, course._id.toString()]);
+                            setMyCourses((prev) => [...prev, course._id]); // ✅ keep _id for consistency
                           }
                         } catch (err) {
                           console.error("Enrollment error:", err);
-                          alert(
-                            err.response?.data?.message || "Enrollment failed"
-                          );
+                          alert(err.response?.data?.message || "Enrollment failed");
                         }
                       }}
                     >
                       {isCourseEnrolled(course) ? "Enrolled" : "Enroll"}
                     </button>
 
+
                     <button
                       className="px-4 py-2 bg-blue-600 text-white rounded hover:bg-blue-700 text-sm"
-                      onClick={() => navigate(`/course/${course._id}`)} // ✅ fixed (use _id)
+                      onClick={() => navigate(`/course/${course.courseId}`)} // ✅ fixed
                     >
                       Know More
                     </button>
@@ -280,7 +315,7 @@ const Student = () => {
                     >
                       <span>{c.courseName}</span>
                       <button
-                        onClick={() => navigate(`/course/${c._id}`)} // ✅ fixed
+                        onClick={() => navigate(`/course/${c.courseId}`)} // ✅ fixed
                         className="text-blue-600 hover:underline"
                       >
                         View
@@ -295,12 +330,15 @@ const Student = () => {
         {/* Skill Progress */}
         {activeTab === "skill" && (
           <div className="mt-10 max-w-lg mx-auto text-center bg-white shadow rounded-lg p-6">
-            <h3 className="text-lg font-bold">Your Skill Verification Journey</h3>
+            <h3 className="text-lg font-bold">
+              Your Skill Verification Journey
+            </h3>
             <p className="mt-2 text-gray-600">
               Enrolled in <span className="font-semibold">{enrolledCourses}</span>{" "}
               out of {totalCourses} available courses
             </p>
 
+            {/* Progress Bar */}
             <div className="mt-4 w-full bg-gray-200 rounded-full h-4 overflow-hidden">
               <div
                 className="bg-blue-600 h-4 text-xs text-white text-center transition-all"
@@ -316,6 +354,7 @@ const Student = () => {
               </p>
             )}
 
+            {/* Per-course skill progress */}
             <div className="mt-6 space-y-4 text-left">
               {courses
                 .filter((c) => isCourseEnrolled(c))
@@ -340,7 +379,9 @@ const Student = () => {
         {/* Jobs */}
         {activeTab === "jobs" && (
           <div>
-            <h3 className="text-lg font-bold mb-4">Available Jobs & Internships</h3>
+            <h3 className="text-lg font-bold mb-4">
+              Available Jobs & Internships
+            </h3>
             <div className="grid md:grid-cols-2 lg:grid-cols-3 gap-6">
               {jobs.map((job) => (
                 <div
@@ -375,13 +416,12 @@ const Student = () => {
                   >
                     <span>{a.jobTitle}</span>
                     <span
-                      className={`text-sm ${
-                        a.status === "Accepted"
+                      className={`text-sm ${a.status === "Accepted"
                           ? "text-green-600"
                           : a.status === "Rejected"
-                          ? "text-red-600"
-                          : "text-yellow-600"
-                      }`}
+                            ? "text-red-600"
+                            : "text-yellow-600"
+                        }`}
                     >
                       {a.status}
                     </span>
@@ -397,3 +437,118 @@ const Student = () => {
 };
 
 export default Student;
+
+
+studentEnroll.js
+const express = require("express");
+const router = express.Router();
+const jwt = require("jsonwebtoken");
+const Student = require("../models/Student");
+const Course = require("../models/Course");
+
+router.post("/enroll", async (req, res) => {
+  try {
+    const { courseId } = req.body;
+
+    const authHeader = req.headers.authorization;
+    if (!authHeader || !authHeader.startsWith("Bearer ")) {
+      return res.status(401).json({ message: "No token provided or invalid format" });
+    }
+
+    const token = authHeader.split(" ")[1].replace(/"/g, "");
+
+    let decoded;
+    try {
+      decoded = jwt.verify(token, process.env.JWT_SECRET || "supersecret");
+    } catch (err) {
+      return res.status(401).json({ message: "Invalid or expired token" });
+    }
+
+    if (decoded.role !== "student")
+      return res.status(403).json({ message: "Only students can enroll" });
+
+    const student = await Student.findById(decoded.id);
+    const course = await Course.findById(courseId);
+    if (!student || !course) return res.status(404).json({ message: "Student or course not found" });
+
+    if (student.registeredCourses.some((c) => c.toString() === course._id.toString()))
+      return res.status(400).json({ message: "Already enrolled" });
+
+    student.registeredCourses.push(course._id);
+    await student.save();
+
+    return res.status(200).json({
+      success: true,
+      message: "Enrolled successfully",
+      registeredCourses: student.registeredCourses,
+      course,
+    });
+  } catch (err) {
+    console.error("Enroll error:", err);
+    return res.status(500).json({ message: "Enrollment failed", error: err.message });
+  }
+});
+
+module.exports = router;
+
+
+index.js
+
+const express = require("express");
+const cors = require("cors");
+const dotenv = require("dotenv");
+const connectDB = require("./config/db");
+
+// Load env vars
+dotenv.config({ path: "./.env" });
+
+if (!process.env.MONGO_URI) {
+  console.error("❌ MONGO_URI is missing. Check your .env file.");
+  process.exit(1);
+} else {
+  console.log("✅ MONGO_URI loaded");
+}
+
+connectDB();
+
+// Seed dummy courses (optional, safe to remove in production)
+const seedCourses = require("./seed/seedCourses");
+seedCourses();
+
+const app = express();
+
+// ✅ Allow frontend
+app.use(
+  cors({
+    origin: ["https://skill-verify.vercel.app"], // frontend domain
+    credentials: true,
+  })
+);
+
+app.use(express.json({ limit: "10mb" }));
+
+// ✅ Routes
+app.use("/api", require("./routes/auth"));
+app.use("/api/courses", require("./routes/courses"));
+app.use("/api/register-course", require("./routes/registerCourse"));
+app.use("/api/student", require("./routes/student"));
+app.use("/api/student/profile", require("./routes/studentProfile"));
+app.use("/api/student/register-course", require("./routes/registerCourse"));
+app.use("/api/jobs", require("./routes/jobs"));
+app.use("/api/applications", require("./routes/applications"));
+app.use("/api/recruiter", require("./routes/recruiter"));
+app.use("/api/admin", require("./routes/admin"));
+app.use("/api/notification", require("./routes/notification"));
+app.use("/api/otp", require("./routes/otp"));
+// Before
+// app.use("/api/student/enroll", require("./routes/studentEnroll"));
+
+// After
+app.use("/api/student", require("./routes/studentEnroll"));
+
+
+const PORT = process.env.PORT || 5000;
+app.listen(PORT, () => {
+  console.log(`🚀 Server running on port ${PORT}`);
+});
+
