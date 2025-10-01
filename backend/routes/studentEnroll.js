@@ -4,7 +4,6 @@ const jwt = require("jsonwebtoken");
 const Student = require("../models/Student");
 const Course = require("../models/Course");
 
-// POST /api/student/enroll
 router.post("/enroll", async (req, res) => {
   try {
     const { courseId } = req.body;
@@ -17,18 +16,17 @@ router.post("/enroll", async (req, res) => {
     }
 
     const student = await Student.findById(decoded.id);
-    const course = await Course.findById(courseId);
+    const course = await Course.findOne({ courseId }); // ✅ fixed here
 
     if (!student || !course) {
       return res.status(404).json({ message: "Student or course not found" });
     }
 
-    // Prevent duplicate enrollments
-    if (student.registeredCourses.some(c => c.toString() === courseId)) {
+    if (student.registeredCourses.some(c => c.toString() === course._id.toString())) {
       return res.status(400).json({ message: "Already enrolled in this course" });
     }
 
-    student.registeredCourses.push(courseId);
+    student.registeredCourses.push(course._id); // store MongoDB _id
     await student.save();
 
     return res.status(200).json({
@@ -43,5 +41,4 @@ router.post("/enroll", async (req, res) => {
     return res.status(500).json({ message: "Enrollment failed", error: err.message });
   }
 });
-
 module.exports = router;

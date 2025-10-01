@@ -1,6 +1,5 @@
 import React, { useEffect, useState } from "react";
 import API from "../api";
-import logo from "../images/logo.png";
 
 const Student = () => {
   const [courses, setCourses] = useState([]);
@@ -9,12 +8,11 @@ const Student = () => {
   const [student, setStudent] = useState(null);
   const [activeTab, setActiveTab] = useState("skill");
   const [dropdownOpen, setDropdownOpen] = useState(false);
-  const [myCourses, setMyCourses] = useState([]); // enrolled courses from backend
+  const [myCourses, setMyCourses] = useState([]);
 
   const token = localStorage.getItem("token");
   const user = JSON.parse(localStorage.getItem("user"));
 
-  // Function to get initials
   const getInitials = (name = "") =>
     name ? name.split(" ").map((n) => n[0].toUpperCase()).join("") : "";
 
@@ -55,14 +53,12 @@ const Student = () => {
       .catch((err) => console.error("Applications fetch error:", err));
   }, [student?._id, token]);
 
-  // Logout
   const handleLogout = () => {
     localStorage.removeItem("token");
     localStorage.removeItem("user");
     window.location.href = "/login";
   };
 
-  // Check if course is enrolled
   const isCourseEnrolled = (course) =>
     myCourses.some((c) => c._id === course._id || c.toString() === course._id);
 
@@ -118,32 +114,26 @@ const Student = () => {
             {student?.branch || "CSE"} • {student?.college || "NEC"} • Class of{" "}
             {student?.graduationYear || "2026"}
           </p>
-          <div className="mt-2">
-            <p className="font-semibold">Verified Skills (0)</p>
-            <p className="text-sm text-gray-500">
-              Complete the verification process to earn verified skill badges
-            </p>
-          </div>
         </div>
       </div>
 
       {/* Tabs */}
       <div className="flex gap-6 border-b mt-4 px-6">
         {[
-         
           { key: "courses", label: "Available Courses" },
           { key: "myCourses", label: "My Courses" },
-           { key: "skill", label: "Skill Progress" },
+          { key: "skill", label: "Skill Progress" },
           { key: "jobs", label: "Jobs & Internships" },
           { key: "applications", label: "My Applications" },
         ].map((tab) => (
           <button
             key={tab.key}
             onClick={() => setActiveTab(tab.key)}
-            className={`pb-2 px-2 font-medium ${activeTab === tab.key
-              ? "border-b-2 border-blue-600 text-blue-600"
-              : "text-gray-600"
-              }`}
+            className={`pb-2 px-2 font-medium ${
+              activeTab === tab.key
+                ? "border-b-2 border-blue-600 text-blue-600"
+                : "text-gray-600"
+            }`}
           >
             {tab.label}
           </button>
@@ -171,50 +161,131 @@ const Student = () => {
 
         {/* Available Courses */}
         {activeTab === "courses" && (
-          <div key={course._id} className="bg-white rounded-lg shadow hover:shadow-lg p-4">
-            {/* Course Name */}
-            <h3 className="font-bold text-lg">{course.courseName}</h3>
+          <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
+            {courses.map((course) => {
+              const enrolled = isCourseEnrolled(course);
+              return (
+                <div
+                  key={course._id}
+                  className="bg-white rounded-lg shadow hover:shadow-lg p-4 flex flex-col relative"
+                >
+                  {enrolled && (
+                    <span className="absolute top-2 right-2 bg-green-600 text-white text-xs px-2 py-1 rounded">
+                      Enrolled
+                    </span>
+                  )}
+                  <h3 className="font-bold text-lg">{course.courseName}</h3>
+                  <p className="text-sm text-gray-600 mb-2">{course.courseDescription}</p>
+                  <p className="text-sm">
+                    <span className="font-semibold">Duration:</span> {course.courseDuration}
+                  </p>
+                  <p className="text-sm">
+                    <span className="font-semibold">Rating:</span> ⭐ {course.rating}
+                  </p>
+                  <p className="text-sm">
+                    <span className="font-semibold">Highest Salary:</span> {course.highestSalary}
+                  </p>
+                  <p className="text-sm">
+                    <span className="font-semibold">Placement Partners:</span>{" "}
+                    {course.placementPartners?.length
+                      ? course.placementPartners.join(", ")
+                      : "NA"}
+                  </p>
+                  <p className="text-sm mt-2">
+                    <span className="font-semibold">Fee:</span> ₹{course.courseFee}
+                  </p>
 
-            {/* Description */}
-            <p className="text-sm text-gray-600 mb-2">{course.courseDescription}</p>
+                  <div className="mt-3 flex gap-2">
+                    <button
+                      className={`px-3 py-1 rounded text-white ${
+                        enrolled
+                          ? "bg-gray-400 cursor-not-allowed"
+                          : "bg-green-600 hover:bg-green-700"
+                      }`}
+                      disabled={enrolled}
+                      onClick={async () => {
+                        if (enrolled) return;
+                        try {
+                          const res = await API.post(
+                            "/student/enroll",
+                            { courseId: course.courseId },
+                            { headers: { Authorization: `Bearer ${token}` } }
+                          );
+                          if (res.data.success) {
+                            alert("Enrolled successfully!");
+                            setMyCourses((prev) => [...prev, course._id]);
+                          }
+                        } catch (err) {
+                          console.error(err);
+                          alert(err.response?.data?.message || "Enrollment failed");
+                        }
+                      }}
+                    >
+                      {enrolled ? "Enrolled" : "Enroll"}
+                    </button>
 
-            {/* Duration */}
-            <p className="text-sm">
-              <span className="font-semibold">Duration:</span> {course.courseDuration}
-            </p>
-
-            {/* Rating */}
-            <p className="text-sm">
-              <span className="font-semibold">Rating:</span> ⭐ {course.rating}
-            </p>
-
-            {/* Highest Salary */}
-            <p className="text-sm">
-              <span className="font-semibold">Highest Salary:</span> {course.highestSalary}
-            </p>
-
-            {/* Placement Partners */}
-            <p className="text-sm">
-              <span className="font-semibold">Placement Partners:</span>{" "}
-              {course.placementPartners && course.placementPartners.length > 0
-                ? course.placementPartners.join(", ")
-                : "NA"}
-            </p>
-
-            {/* Fee */}
-            <p className="text-sm mt-2">
-              <span className="font-semibold">Fee:</span> ₹{course.courseFee}
-            </p>
-
-            {/* Know More Button */}
-            <button
-              className="mt-3 px-3 py-1 bg-blue-600 text-white rounded hover:bg-blue-700 transition"
-              onClick={() => window.location.href = `/course/${course._id}`}
-            >
-              Know More
-            </button>
+                    <button
+                      className="px-3 py-1 bg-blue-600 text-white rounded hover:bg-blue-700 transition"
+                      onClick={() => (window.location.href = `/course/${course._id}`)}
+                    >
+                      Know More
+                    </button>
+                  </div>
+                </div>
+              );
+            })}
           </div>
+        )}
 
+        {/* My Courses */}
+        {activeTab === "myCourses" && (
+          <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
+            {myCourses.length ? (
+              myCourses.map((courseId) => {
+                const course = courses.find(
+                  (c) => c._id === courseId || c.courseId === courseId
+                );
+                if (!course) return null;
+                return (
+                  <div
+                    key={course._id}
+                    className="bg-white rounded-lg shadow hover:shadow-lg p-4 flex flex-col"
+                  >
+                    <h3 className="font-bold text-lg">{course.courseName}</h3>
+                    <p className="text-sm text-gray-600 mb-2">{course.courseDescription}</p>
+                    <p className="text-sm">
+                      <span className="font-semibold">Duration:</span> {course.courseDuration}
+                    </p>
+                    <p className="text-sm">
+                      <span className="font-semibold">Rating:</span> ⭐ {course.rating}
+                    </p>
+                    <p className="text-sm">
+                      <span className="font-semibold">Highest Salary:</span> {course.highestSalary}
+                    </p>
+                    <p className="text-sm">
+                      <span className="font-semibold">Placement Partners:</span>{" "}
+                      {course.placementPartners?.length
+                        ? course.placementPartners.join(", ")
+                        : "NA"}
+                    </p>
+                    <p className="text-sm mt-2">
+                      <span className="font-semibold">Fee:</span> ₹{course.courseFee}
+                    </p>
+                    <button
+                      className="mt-3 px-3 py-1 bg-blue-600 text-white rounded hover:bg-blue-700 transition"
+                      onClick={() => (window.location.href = `/course/${course._id}`)}
+                    >
+                      Know More
+                    </button>
+                  </div>
+                );
+              })
+            ) : (
+              <p className="text-center text-gray-600 col-span-full">
+                You have not enrolled in any courses yet.
+              </p>
+            )}
+          </div>
         )}
 
         {/* Jobs */}
