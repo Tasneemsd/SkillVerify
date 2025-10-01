@@ -9,6 +9,7 @@ const Student = () => {
   const [student, setStudent] = useState(null);
   const [activeTab, setActiveTab] = useState("skill");
   const [dropdownOpen, setDropdownOpen] = useState(false);
+  const [myCourses, setMyCourses] = useState([]); // stores enrolled courses
 
   const token = localStorage.getItem("token");
   const user = JSON.parse(localStorage.getItem("user"));
@@ -67,11 +68,11 @@ const Student = () => {
     <div className="min-h-screen bg-gray-50">
       {/* Navbar */}
       <nav className="bg-white shadow-md px-6 py-4 flex justify-between items-center relative">
-       <img
-  src={logo}
-  alt="We Hire Today"
-  className="h-20 w-auto object-contain"
-/>
+        <img
+          src={logo}
+          alt="We Hire Today"
+          className="h-16 w-auto object-contain"
+        />
         <div className="flex items-center gap-4">
           <span className="text-gray-700 font-medium">
             Welcome, {student?.name || user?.name || "Student"}
@@ -134,16 +135,18 @@ const Student = () => {
         {[
           { key: "skill", label: "Skill Progress" },
           { key: "courses", label: "Available Courses" },
+          { key: "myCourses", label: "My Courses" },
           { key: "jobs", label: "Jobs & Internships" },
           { key: "applications", label: "My Applications" },
         ].map((tab) => (
           <button
             key={tab.key}
             onClick={() => setActiveTab(tab.key)}
-            className={`pb-2 px-2 font-medium ${activeTab === tab.key
+            className={`pb-2 px-2 font-medium ${
+              activeTab === tab.key
                 ? "border-b-2 border-blue-600 text-blue-600"
                 : "text-gray-600"
-              }`}
+            }`}
           >
             {tab.label}
           </button>
@@ -172,25 +175,57 @@ const Student = () => {
         {/* Courses */}
         {activeTab === "courses" && (
           <div className="grid md:grid-cols-2 lg:grid-cols-3 gap-6">
-            {courses.map((course) => (
-              <div
-                key={course._id}
-                className="bg-white rounded-lg shadow hover:shadow-lg p-4"
-              >
-                <h3 className="font-bold text-lg">{course.courseName}</h3>
-                <p className="text-sm text-gray-600">
-                  {course.courseDescription}
-                </p>
-                <p className="text-sm mt-2">₹{course.courseFee}</p>
-                <p className="text-sm">{course.courseDuration} hours</p>
-                <button
-                  className="mt-2 bg-blue-600 text-white px-3 py-1 rounded"
-                  onClick={() => alert("Enroll API here")}
+            {courses.map((course) => {
+              const isEnrolled = myCourses.some((c) => c._id === course._id);
+              return (
+                <div
+                  key={course._id}
+                  className="bg-white rounded-lg shadow hover:shadow-lg p-4"
                 >
-                  Enroll Now
-                </button>
-              </div>
-            ))}
+                  <h3 className="font-bold text-lg">{course.courseName}</h3>
+                  <p className="text-sm text-gray-600">{course.courseDescription}</p>
+                  <p className="text-sm mt-2">₹{course.courseFee}</p>
+                  <p className="text-sm">{course.courseDuration} hours</p>
+                  <button
+                    className={`mt-2 px-3 py-1 rounded text-white ${
+                      isEnrolled ? "bg-gray-400 cursor-not-allowed" : "bg-blue-600"
+                    }`}
+                    onClick={() => {
+                      if (!isEnrolled) {
+                        setMyCourses((prev) => [...prev, course]);
+                        setActiveTab("myCourses");
+                      }
+                    }}
+                    disabled={isEnrolled}
+                  >
+                    {isEnrolled ? "Enrolled" : "Enroll Now"}
+                  </button>
+                </div>
+              );
+            })}
+          </div>
+        )}
+
+        {/* My Courses */}
+        {activeTab === "myCourses" && (
+          <div className="grid md:grid-cols-2 lg:grid-cols-3 gap-6">
+            {myCourses.length > 0 ? (
+              myCourses.map((course) => (
+                <div key={course._id} className="bg-white rounded-lg shadow p-4">
+                  <h3 className="font-bold text-lg">{course.courseName}</h3>
+                  <p className="text-sm text-gray-600">{course.courseDescription}</p>
+                  <p className="text-sm mt-2">₹{course.courseFee}</p>
+                  <p className="text-sm">{course.courseDuration} hours</p>
+                  <span className="mt-2 inline-block bg-green-600 text-white px-3 py-1 rounded">
+                    Enrolled Successfully
+                  </span>
+                </div>
+              ))
+            ) : (
+              <p className="text-gray-500 col-span-full">
+                You haven’t enrolled in any courses yet.
+              </p>
+            )}
           </div>
         )}
 
