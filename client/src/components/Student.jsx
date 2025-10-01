@@ -66,7 +66,11 @@ const Student = () => {
     <div className="min-h-screen bg-gray-50">
       {/* Navbar */}
       <nav className="bg-white shadow-md px-6 py-4 flex justify-between items-center relative">
-        <h1 className="text-xl font-bold text-blue-600">WHT - We Hire Today</h1>
+        <img
+          src="../images/image.png"
+          alt="We Hire Today"
+          className="h-10 w-auto"
+        />
 
         <div className="flex items-center gap-4">
           <span className="text-gray-700 font-medium">
@@ -136,11 +140,10 @@ const Student = () => {
           <button
             key={tab.key}
             onClick={() => setActiveTab(tab.key)}
-            className={`pb-2 px-2 font-medium ${
-              activeTab === tab.key
+            className={`pb-2 px-2 font-medium ${activeTab === tab.key
                 ? "border-b-2 border-blue-600 text-blue-600"
                 : "text-gray-600"
-            }`}
+              }`}
           >
             {tab.label}
           </button>
