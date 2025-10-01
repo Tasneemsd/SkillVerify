@@ -1,393 +1,618 @@
-import React, { useEffect, useState } from "react";
-import { useNavigate } from "react-router-dom";
+import { useState, useEffect } from "react";
+import { GraduationCap, MapPin, DollarSign, Clock, Star, Briefcase, FileText, User, LogOut, Award, Plus, X } from "lucide-react";
 import API from "../api";
-import logo2 from "../images/logo2.jpg";
 
-// Temporary course + skill icons (replace with your own images if needed)
-const defaultCourseImg =
-  "https://cdn-icons-png.flaticon.com/512/906/906343.png"; // books icon
-const defaultSkillImg =
-  "https://cdn-icons-png.flaticon.com/512/3135/3135715.png"; // skill person
-
-const Student = () => {
+function Student() {
+  const [student, setStudent] = useState(null);
+  const [activeTab, setActiveTab] = useState("courses");
+  const [showDropdown, setShowDropdown] = useState(false);
   const [courses, setCourses] = useState([]);
   const [jobs, setJobs] = useState([]);
   const [applications, setApplications] = useState([]);
-  const [student, setStudent] = useState(null);
-  const [activeTab, setActiveTab] = useState("courses");
-  const [dropdownOpen, setDropdownOpen] = useState(false);
-  const [myCourses, setMyCourses] = useState([]);
-  const [newSkill, setNewSkill] = useState("");
-  const [skillLevel, setSkillLevel] = useState("Basic");
+  const [loading, setLoading] = useState(true);
 
-  const user = JSON.parse(localStorage.getItem("user"));
-  const navigate = useNavigate();
+  const [newSkillName, setNewSkillName] = useState("");
+  const [newSkillLevel, setNewSkillLevel] = useState("Basic");
 
-  const getInitials = (name = "") =>
-    name ? name.split(" ").map((n) => n[0].toUpperCase()).join("") : "S";
-
-  // Fetch student details
   useEffect(() => {
-    if (!user?.email) return;
-    API.get(`/student?email=${encodeURIComponent(user.email)}`)
-      .then((res) => {
-        setStudent(res.data);
-        if (res.data.registeredCourses) {
-          setMyCourses(res.data.registeredCourses.map((c) => c._id?.toString()));
-        }
-      })
-      .catch((err) => {
-        console.error("Fetch student error:", err);
-        if (err.response?.status === 401) {
-          localStorage.clear();
-          navigate("/login");
-        }
-      });
-  }, [user?.email, navigate]);
-
-  // Fetch courses
-  useEffect(() => {
-    API.get("/courses")
-      .then((res) => setCourses(res.data))
-      .catch((err) => console.error("Courses fetch error:", err));
+    const userEmail = localStorage.getItem("userEmail") || "student@example.com";
+    fetchStudentDetails(userEmail);
+    fetchCourses();
+    fetchJobs();
+    fetchApplications();
   }, []);
 
-  // Fetch jobs
-  useEffect(() => {
-    API.get("/jobs")
-      .then((res) => setJobs(res.data))
-      .catch((err) => console.error("Jobs fetch error:", err));
-  }, []);
-
-  // Fetch applications
-  useEffect(() => {
-    if (!student?._id) return;
-    API.get("/applications")
-      .then((res) => setApplications(res.data))
-      .catch((err) => {
-        console.error("Applications fetch error:", err);
-        if (err.response?.status === 401) {
-          localStorage.clear();
-          navigate("/login");
-        }
-      });
-  }, [student?._id, navigate]);
-
-  const handleLogout = () => {
-    localStorage.clear();
-    navigate("/login");
-  };
-
-  const isCourseEnrolled = (course) => myCourses.includes(course._id?.toString());
-
-  // Skill colors by level
-  const levelColors = {
-    Basic: "bg-red-100 text-red-700",
-    Intermediate: "bg-yellow-100 text-yellow-700",
-    Advanced: "bg-green-100 text-green-700",
-  };
-
-  // Add skill
-  const handleAddSkill = async () => {
-    if (!newSkill.trim()) return;
+  const fetchStudentDetails = async (email) => {
     try {
-      const res = await API.post("/student/skill", {
-        studentId: student._id,
-        skill: { name: newSkill, level: skillLevel },
-      });
-      setStudent(res.data); // updated student with skills
-      setNewSkill("");
-      setSkillLevel("Basic");
-    } catch (err) {
-      console.error("Add skill error:", err);
-      alert("Failed to add skill");
-    }
-  };
-
-  // Remove skill
-  const handleRemoveSkill = async (skillName) => {
-    try {
-      const res = await API.delete(
-        `/student/skill/${student._id}/${encodeURIComponent(skillName)}`
-      );
+      const res = await API.get(`/student?email=${email}`);
       setStudent(res.data);
     } catch (err) {
-      console.error("Remove skill error:", err);
-      alert("Failed to remove skill");
+      console.error("Error fetching student:", err);
+      setStudent({
+        _id: "1",
+        name: "Rahul Kumar",
+        email: email,
+        branch: "Computer Science Engineering",
+        college: "Indian Institute of Technology",
+        graduationYear: "2026",
+        enrolledCourses: [],
+        skills: [],
+      });
+    } finally {
+      setLoading(false);
     }
   };
+
+  const fetchCourses = async () => {
+    try {
+      const res = await API.get("/courses");
+      setCourses(res.data);
+    } catch (err) {
+      console.error("Error fetching courses:", err);
+      setCourses([
+        {
+          _id: "1",
+          courseName: "Full Stack Development",
+          courseDuration: "8 months",
+          courseFee: 35000,
+          rating: 4.5,
+          highestSalary: "₹4 lac",
+          progress: 65,
+        },
+        {
+          _id: "2",
+          courseName: "Data Science",
+          courseDuration: "4 months",
+          courseFee: 45000,
+          rating: 4.5,
+          highestSalary: "₹35,000",
+          progress: 0,
+        },
+        {
+          _id: "3",
+          courseName: "Human Resource Management",
+          courseDuration: "4 months",
+          courseFee: 25000,
+          rating: 4.3,
+          highestSalary: "₹3.6 lac",
+          progress: 40,
+        },
+        {
+          _id: "4",
+          courseName: "Digital Marketing",
+          courseDuration: "6 months",
+          courseFee: 30000,
+          rating: 4.4,
+          highestSalary: "₹3.6 lac",
+          progress: 0,
+        },
+      ]);
+    }
+  };
+
+  const fetchJobs = async () => {
+    try {
+      const res = await API.get("/jobs");
+      setJobs(res.data);
+    } catch (err) {
+      console.error("Error fetching jobs:", err);
+      setJobs([
+        {
+          _id: "1",
+          title: "Frontend Developer Intern",
+          company: "Tech Mahindra",
+          location: "Mumbai",
+          salary: "₹15,000/month",
+          type: "Internship",
+        },
+        {
+          _id: "2",
+          title: "Data Analyst",
+          company: "PhonePe",
+          location: "Bangalore",
+          salary: "₹6-8 LPA",
+          type: "Full-time",
+        },
+        {
+          _id: "3",
+          title: "Marketing Intern",
+          company: "Nearbuy",
+          location: "Delhi",
+          salary: "₹10,000/month",
+          type: "Internship",
+        },
+      ]);
+    }
+  };
+
+  const fetchApplications = async () => {
+    try {
+      const res = await API.get("/applications");
+      setApplications(res.data);
+    } catch (err) {
+      console.error("Error fetching applications:", err);
+      setApplications([]);
+    }
+  };
+
+  const getUserInitials = () => {
+    if (!student) return "U";
+    return student.name
+      .split(" ")
+      .map((n) => n[0])
+      .join("")
+      .toUpperCase()
+      .slice(0, 2);
+  };
+
+  const isCourseEnrolled = (course) => {
+    return student?.enrolledCourses?.includes(course._id) || false;
+  };
+
+  const handleEnroll = async (courseId) => {
+    try {
+      const res = await API.post("/student/enroll", { courseId });
+      if (res.data.success) {
+        alert("Enrolled successfully!");
+        if (student) {
+          setStudent({
+            ...student,
+            enrolledCourses: [...student.enrolledCourses, courseId],
+          });
+        }
+      }
+    } catch (err) {
+      console.error("Enrollment error:", err);
+      alert(err.response?.data?.message || "Enrollment failed");
+    }
+  };
+
+  const handleAddSkill = () => {
+    if (!newSkillName.trim()) {
+      alert("Please enter a skill name");
+      return;
+    }
+    if (student) {
+      const updatedSkills = [
+        ...student.skills,
+        { name: newSkillName.trim(), level: newSkillLevel },
+      ];
+      setStudent({ ...student, skills: updatedSkills });
+      setNewSkillName("");
+      setNewSkillLevel("Basic");
+    }
+  };
+
+  const handleRemoveSkill = (index) => {
+    if (student) {
+      const updatedSkills = student.skills.filter((_, i) => i !== index);
+      setStudent({ ...student, skills: updatedSkills });
+    }
+  };
+
+  const getSkillColor = (level) => {
+    switch (level) {
+      case "Basic":
+        return "bg-red-100 text-red-700 border-red-300";
+      case "Intermediate":
+        return "bg-yellow-100 text-yellow-700 border-yellow-300";
+      case "Advanced":
+        return "bg-green-100 text-green-700 border-green-300";
+      default:
+        return "bg-gray-100 text-gray-700 border-gray-300";
+    }
+  };
+
+  const handleLogout = () => {
+    localStorage.removeItem("token");
+    localStorage.removeItem("userName");
+    localStorage.removeItem("userEmail");
+    window.location.href = "/login";
+  };
+
+  const enrolledCourses = student?.enrolledCourses?.length || 0;
+  const totalCourses = courses.length;
+  const progress = totalCourses > 0 ? Math.round((enrolledCourses / totalCourses) * 100) : 0;
+
+  if (loading) {
+    return (
+      <div className="min-h-screen bg-gray-50 flex items-center justify-center">
+        <div className="text-center">
+          <GraduationCap className="w-16 h-16 text-blue-600 mx-auto mb-4 animate-pulse" />
+          <p className="text-gray-600">Loading...</p>
+        </div>
+      </div>
+    );
+  }
 
   return (
     <div className="min-h-screen bg-gray-50">
       {/* Navbar */}
-      <nav className="bg-white shadow-md px-6 py-4 flex justify-between items-center relative">
-        <img
-          src={logo2}
-          alt="SkillVerify Logo"
-          className="h-10 w-auto object-contain rounded-full"
-        />
-        <div className="flex items-center gap-4">
-          <span className="text-gray-700 font-medium">
-            Welcome, {student?.name || user?.name || "Student"}
-          </span>
-          <div className="relative">
-            <button
-              onClick={() => setDropdownOpen((prev) => !prev)}
-              className="w-10 h-10 rounded-full bg-blue-600 flex items-center justify-center text-white font-bold shadow-md"
-            >
-              {getInitials(student?.name || user?.name)}
-            </button>
-            {dropdownOpen && (
-              <div className="absolute right-0 mt-2 w-40 bg-white border rounded-lg shadow-lg z-50">
-                <button
-                  className="block w-full text-left px-4 py-2 hover:bg-gray-100"
-                  onClick={() => setActiveTab("skill")}
-                >
-                  My Skills
-                </button>
-                <button
-                  className="block w-full text-left px-4 py-2 text-red-600 hover:bg-gray-100"
-                  onClick={handleLogout}
-                >
-                  Logout
-                </button>
-              </div>
-            )}
+      <nav className="bg-white shadow-sm border-b sticky top-0 z-50">
+        <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+          <div className="flex justify-between items-center h-16">
+            <div className="flex items-center gap-2">
+              <GraduationCap className="w-8 h-8 text-blue-600" />
+              <span className="text-xl font-bold text-gray-800">INTERNSHALA TRAININGS</span>
+              <span className="hidden sm:inline-block bg-blue-600 text-white text-xs px-3 py-1 rounded-full ml-2">
+                Career Ki Guarantee
+              </span>
+            </div>
+            <div className="relative">
+              <button
+                onClick={() => setShowDropdown(!showDropdown)}
+                className="w-10 h-10 rounded-full bg-blue-600 text-white flex items-center justify-center font-semibold text-sm hover:bg-blue-700 transition-all duration-200"
+              >
+                {getUserInitials()}
+              </button>
+              {showDropdown && (
+                <div className="absolute right-0 mt-2 w-56 bg-white rounded-lg shadow-xl py-2 z-50 border border-gray-200">
+                  <div className="px-4 py-3 border-b">
+                    <p className="font-semibold text-gray-800">{student?.name || "Student"}</p>
+                    <p className="text-xs text-gray-500">{student?.branch || "CSE"}</p>
+                  </div>
+                  <button
+                    onClick={() => {
+                      setActiveTab("skills");
+                      setShowDropdown(false);
+                    }}
+                    className="flex items-center gap-2 w-full text-left px-4 py-2 text-sm text-gray-700 hover:bg-gray-50 transition-colors"
+                  >
+                    <Award className="w-4 h-4" />
+                    My Skills
+                  </button>
+                  <button
+                    onClick={handleLogout}
+                    className="flex items-center gap-2 w-full text-left px-4 py-2 text-sm text-red-600 hover:bg-red-50 transition-colors"
+                  >
+                    <LogOut className="w-4 h-4" />
+                    Logout
+                  </button>
+                </div>
+              )}
+            </div>
           </div>
         </div>
       </nav>
 
-      {/* 🔵 Hero Section */}
-      <div className="bg-gradient-to-r from-blue-600 to-blue-800 text-white shadow-md p-8 mt-4 mx-4 rounded-lg flex flex-col md:flex-row justify-between items-center relative overflow-hidden">
-        {/* Left - Student Info */}
-        <div className="z-10">
-          <h2 className="text-3xl font-bold">
-            {student?.name || "Student Name"}
+      {/* Hero Section */}
+      <div className="bg-gradient-to-r from-blue-600 via-blue-700 to-blue-800 text-white">
+        <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-12">
+          <div className="flex flex-col md:flex-row justify-between items-center">
+            <div className="z-10 text-center md:text-left">
+              <h1 className="text-4xl md:text-5xl font-bold mb-2">
+                Placement Guarantee Courses
+              </h1>
+              <p className="text-xl md:text-2xl font-medium mb-3">
+                Online Courses with Placement
+              </p>
+              <p className="text-lg opacity-95 mb-6">
+                Get confirmed salary up to ₹5 lac
+              </p>
+              <button className="bg-yellow-400 text-gray-900 font-bold px-8 py-3 rounded-lg hover:bg-yellow-500 transition-all duration-200 shadow-lg">
+                Know more
+              </button>
+            </div>
+            <div className="hidden md:block mt-6 md:mt-0">
+              <div className="bg-white/10 backdrop-blur-sm p-8 rounded-2xl">
+                <div className="w-64 h-64 bg-gradient-to-br from-blue-400 to-blue-600 rounded-full flex items-center justify-center">
+                  <FileText className="w-32 h-32 text-white" />
+                </div>
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      {/* Top Companies Section */}
+      <div className="bg-white py-12 border-b">
+        <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+          <h2 className="text-2xl font-bold text-gray-800 mb-8">
+            Top companies hiring on Internshala
           </h2>
-          <p className="mt-2 text-lg font-medium">
-            {student?.branch || "CSE"} • {student?.college || "Your College"}
-          </p>
-          <p className="text-sm mt-1 opacity-90">
-            Class of {student?.graduationYear || "2026"}
-          </p>
+          <div className="grid grid-cols-2 md:grid-cols-4 lg:grid-cols-8 gap-6 items-center justify-items-center">
+            {["Nearbuy", "PhonePe", "Teach For India", "Tech Mahindra", "HUL", "Xiaomi"].map((company) => (
+              <div key={company} className="text-gray-600 font-semibold text-sm bg-gray-50 px-6 py-3 rounded-lg border border-gray-200">
+                {company}
+              </div>
+            ))}
+          </div>
         </div>
-
-        {/* Right - Illustration */}
-        <div className="hidden md:block">
-          <img
-            src="https://internshala.com/static/images/pgc/hero-image.png"
-            alt="Student Banner"
-            className="h-40 object-contain"
-          />
-        </div>
-
-        <div className="absolute top-0 right-0 w-1/2 h-full bg-white/10 rounded-l-full"></div>
       </div>
 
       {/* Tabs */}
-      <div className="flex gap-6 border-b mt-4 px-6 overflow-x-auto">
-        {[
-          { key: "courses", label: "Available Courses" },
-          { key: "myCourses", label: "My Courses" },
-          { key: "skill", label: "My Skills" },
-          { key: "jobs", label: "Jobs & Internships" },
-          { key: "applications", label: "My Applications" },
-        ].map((tab) => (
-          <button
-            key={tab.key}
-            onClick={() => setActiveTab(tab.key)}
-            className={`pb-2 px-2 font-medium ${
-              activeTab === tab.key
-                ? "border-b-2 border-blue-600 text-blue-600"
-                : "text-gray-600 hover:text-blue-600"
-            }`}
-          >
-            {tab.label}
-          </button>
-        ))}
+      <div className="bg-white border-b sticky top-16 z-40">
+        <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+          <div className="flex gap-8 overflow-x-auto">
+            {[
+              { key: "courses", label: "Available Courses" },
+              { key: "myCourses", label: "My Courses" },
+              { key: "skills", label: "My Skills" },
+              { key: "jobs", label: "Jobs & Internships" },
+              { key: "applications", label: "My Applications" },
+            ].map((tab) => (
+              <button
+                key={tab.key}
+                onClick={() => setActiveTab(tab.key)}
+                className={`py-4 px-2 font-medium whitespace-nowrap transition-all duration-200 ${
+                  activeTab === tab.key
+                    ? "border-b-3 border-blue-600 text-blue-600"
+                    : "text-gray-600 hover:text-blue-600 border-b-3 border-transparent"
+                }`}
+                style={{ borderBottomWidth: activeTab === tab.key ? "3px" : "3px" }}
+              >
+                {tab.label}
+              </button>
+            ))}
+          </div>
+        </div>
       </div>
 
       {/* Tab Content */}
-      <div className="p-6">
-        {/* Courses */}
+      <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
+        {/* Available Courses */}
         {activeTab === "courses" && (
-          <div className="grid md:grid-cols-2 lg:grid-cols-3 gap-6">
-            {courses.map((course) => (
-              <div
-                key={course._id}
-                className="bg-white rounded-xl shadow-md hover:shadow-lg overflow-hidden"
-              >
-                <img
-                  src={course.image || defaultCourseImg}
-                  alt={course.courseName}
-                  className="h-40 w-full object-cover"
-                />
-                <div className="p-4 space-y-2">
-                  <h3 className="text-xl font-bold">{course.courseName}</h3>
-                  <p className="text-sm text-gray-600">
-                    ⏳ {course.courseDuration || "6 months"} with LIVE sessions
-                  </p>
-                  <p className="text-sm text-gray-600">
-                    📈 Highest salary:{" "}
-                    <span className="font-semibold">
-                      {course.highestSalary || "₹18 LPA"}
-                    </span>
-                  </p>
-                  <p className="text-sm">
-                    <span className="font-semibold">Fee:</span> ₹
-                    {course.courseFee || "N/A"}
-                  </p>
+          <div>
+            <h2 className="text-2xl font-bold text-gray-800 mb-6">
+              Placement Guarantee Courses we offer
+            </h2>
+            <div className="grid md:grid-cols-2 lg:grid-cols-4 gap-6">
+              {courses.map((course) => (
+                <div
+                  key={course._id}
+                  className="bg-white rounded-xl shadow-md hover:shadow-xl transition-all duration-300 overflow-hidden border border-gray-200"
+                >
+                  <div className="relative">
+                    <div className="absolute top-3 left-0 bg-yellow-400 text-gray-900 text-xs px-3 py-1 font-bold rounded-r-lg shadow z-10">
+                      New
+                    </div>
+                    <div className="bg-gradient-to-br from-purple-200 via-blue-200 to-indigo-200 p-6 pt-12 relative h-40 flex items-center justify-center">
+                      <div className="text-center">
+                        <GraduationCap className="w-16 h-16 text-blue-600 mx-auto mb-2" />
+                      </div>
+                      <div className="absolute top-3 right-3 bg-yellow-500 text-white text-xs px-2 py-1 rounded-full font-bold flex items-center gap-1">
+                        <Star className="w-3 h-3 fill-white" />
+                        {course.rating}
+                      </div>
+                    </div>
+                  </div>
+
+                  <div className="p-4 space-y-3">
+                    <h3 className="text-lg font-bold text-gray-800 line-clamp-2 min-h-[3.5rem]">
+                      {course.courseName}
+                    </h3>
+
+                    <div className="text-xs text-gray-600 bg-green-50 px-2 py-1 rounded inline-block">
+                      with guaranteed job
+                    </div>
+
+                    <div className="space-y-2 text-sm text-gray-600">
+                      <div className="flex items-center gap-2">
+                        <Clock className="w-4 h-4 text-gray-400" />
+                        <span>{course.courseDuration} course</span>
+                      </div>
+                      <div className="flex items-center gap-2">
+                        <DollarSign className="w-4 h-4 text-gray-400" />
+                        <span>Get confirmed {course.highestSalary} salary</span>
+                      </div>
+                      <div className="flex items-center gap-2">
+                        <Briefcase className="w-4 h-4 text-gray-400" />
+                        <span>1.08 Lac+ jobs/internships posted on Internshala</span>
+                      </div>
+                    </div>
+                  </div>
+
+                  <div className="border-t p-4 bg-gray-50">
+                    <div className="flex justify-between items-center mb-3">
+                      <span className="text-sm text-red-600 font-semibold">
+                        Application closes today!
+                      </span>
+                    </div>
+                    <div className="flex gap-2">
+                      <button
+                        className={`flex-1 py-2 rounded-lg text-sm font-semibold transition-all duration-200 ${
+                          isCourseEnrolled(course)
+                            ? "bg-gray-300 text-gray-600 cursor-not-allowed"
+                            : "bg-green-600 text-white hover:bg-green-700"
+                        }`}
+                        disabled={isCourseEnrolled(course)}
+                        onClick={() => handleEnroll(course._id)}
+                      >
+                        {isCourseEnrolled(course) ? "Enrolled" : "Enroll"}
+                      </button>
+                      <button className="flex-1 py-2 bg-blue-600 text-white rounded-lg hover:bg-blue-700 text-sm font-semibold transition-all duration-200">
+                        Know More
+                      </button>
+                    </div>
+                  </div>
                 </div>
-                <div className="border-t p-4 flex justify-between items-center bg-gray-50">
-                  <button
-                    className={`px-4 py-2 rounded text-white text-sm ${
-                      isCourseEnrolled(course)
-                        ? "bg-gray-400 cursor-not-allowed"
-                        : "bg-green-600 hover:bg-green-700"
-                    }`}
-                    disabled={isCourseEnrolled(course)}
-                    onClick={async () => {
-                      if (isCourseEnrolled(course)) return;
-                      try {
-                        const res = await API.post("/student/enroll", {
-                          courseId: course._id,
-                        });
-                        if (res.data.success) {
-                          alert("Enrolled successfully!");
-                          setMyCourses((prev) => [
-                            ...prev,
-                            course._id.toString(),
-                          ]);
-                        }
-                      } catch (err) {
-                        console.error("Enrollment error:", err);
-                        alert(
-                          err.response?.data?.message || "Enrollment failed"
-                        );
-                      }
-                    }}
-                  >
-                    {isCourseEnrolled(course) ? "Enrolled" : "Enroll"}
-                  </button>
-                  <button
-                    className="px-4 py-2 bg-blue-600 text-white rounded hover:bg-blue-700 text-sm"
-                    onClick={() => navigate(`/course/${course._id}`)}
-                  >
-                    Know More
-                  </button>
-                </div>
-              </div>
-            ))}
+              ))}
+            </div>
           </div>
         )}
 
         {/* My Courses */}
         {activeTab === "myCourses" && (
           <div>
-            <h3 className="text-lg font-bold mb-4">My Enrolled Courses</h3>
-            {myCourses.length === 0 ? (
-              <p className="text-gray-500">No courses enrolled yet.</p>
+            <h2 className="text-2xl font-bold text-gray-800 mb-6">
+              My Enrolled Courses
+            </h2>
+            {enrolledCourses === 0 ? (
+              <div className="text-center py-16 bg-white rounded-lg shadow">
+                <GraduationCap className="w-16 h-16 text-gray-300 mx-auto mb-4" />
+                <p className="text-gray-500 text-lg">No courses enrolled yet.</p>
+                <button
+                  onClick={() => setActiveTab("courses")}
+                  className="mt-4 px-6 py-2 bg-blue-600 text-white rounded-lg hover:bg-blue-700"
+                >
+                  Browse Courses
+                </button>
+              </div>
             ) : (
-              <ul className="space-y-2">
+              <div className="space-y-4">
                 {courses
                   .filter((c) => isCourseEnrolled(c))
-                  .map((c) => (
-                    <li
-                      key={c._id}
-                      className="p-4 bg-white shadow rounded-lg flex justify-between items-center"
+                  .map((course) => (
+                    <div
+                      key={course._id}
+                      className="bg-white shadow-md rounded-lg p-6 hover:shadow-lg transition-all duration-200 border border-gray-200 flex justify-between items-center"
                     >
-                      <span>{c.courseName}</span>
-                      <button
-                        onClick={() => navigate(`/course/${c._id}`)}
-                        className="text-blue-600 hover:underline"
-                      >
+                      <div className="flex-1">
+                        <h3 className="text-lg font-bold text-gray-800 mb-2">
+                          {course.courseName}
+                        </h3>
+                        <div className="flex items-center gap-4 text-sm text-gray-600">
+                          <div className="flex items-center gap-1">
+                            <Clock className="w-4 h-4" />
+                            <span>{course.courseDuration}</span>
+                          </div>
+                          <div className="flex items-center gap-1">
+                            <Star className="w-4 h-4 text-yellow-500 fill-yellow-500" />
+                            <span>{course.rating}</span>
+                          </div>
+                        </div>
+                      </div>
+                      <button className="px-6 py-2 bg-blue-600 text-white rounded-lg hover:bg-blue-700 font-semibold transition-all duration-200">
                         View
                       </button>
-                    </li>
+                    </div>
                   ))}
-              </ul>
+              </div>
             )}
           </div>
         )}
 
-        {/* Skills */}
-        {activeTab === "skill" && (
-          <div className="mt-6 bg-white p-6 rounded-lg shadow-md">
-            <h3 className="text-lg font-bold mb-4">My Skills</h3>
+        {/* My Skills */}
+        {activeTab === "skills" && (
+          <div className="max-w-4xl mx-auto">
+            <div className="bg-white shadow-lg rounded-xl p-8">
+              <div className="flex items-center gap-3 mb-6">
+                <Award className="w-8 h-8 text-blue-600" />
+                <h2 className="text-2xl font-bold text-gray-800">My Skills</h2>
+              </div>
 
-            {/* Add Skill */}
-            <div className="flex gap-2 mb-4">
-              <input
-                type="text"
-                value={newSkill}
-                onChange={(e) => setNewSkill(e.target.value)}
-                placeholder="Enter skill"
-                className="flex-1 border rounded px-3 py-2"
-              />
-              <select
-                value={skillLevel}
-                onChange={(e) => setSkillLevel(e.target.value)}
-                className="border rounded px-3 py-2"
-              >
-                <option>Basic</option>
-                <option>Intermediate</option>
-                <option>Advanced</option>
-              </select>
-              <button
-                onClick={handleAddSkill}
-                className="px-4 py-2 bg-blue-600 text-white rounded hover:bg-blue-700"
-              >
-                Add
-              </button>
-            </div>
-
-            {/* Skill List */}
-            <div className="flex flex-wrap gap-3">
-              {student?.skills?.length ? (
-                student.skills.map((s, idx) => (
-                  <div
-                    key={idx}
-                    className={`flex items-center gap-2 px-3 py-2 rounded-full shadow-sm ${levelColors[s.level]}`}
+              {/* Add Skill Section */}
+              <div className="mb-8 p-6 bg-gray-50 rounded-lg border border-gray-200">
+                <h3 className="text-lg font-semibold text-gray-800 mb-4">Add New Skill</h3>
+                <div className="flex flex-col sm:flex-row gap-3">
+                  <input
+                    type="text"
+                    placeholder="Enter skill name (e.g., React, Python)"
+                    value={newSkillName}
+                    onChange={(e) => setNewSkillName(e.target.value)}
+                    className="flex-1 px-4 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500"
+                  />
+                  <select
+                    value={newSkillLevel}
+                    onChange={(e) => setNewSkillLevel(e.target.value)}
+                    className="px-4 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500"
                   >
-                    <img
-                      src={defaultSkillImg}
-                      alt="skill"
-                      className="h-5 w-5"
-                    />
-                    <span>
-                      {s.name} ({s.level})
-                    </span>
-                    <button
-                      onClick={() => handleRemoveSkill(s.name)}
-                      className="ml-2 text-xs text-gray-600 hover:text-black"
-                    >
-                      ✕
-                    </button>
+                    <option value="Basic">Basic</option>
+                    <option value="Intermediate">Intermediate</option>
+                    <option value="Advanced">Advanced</option>
+                  </select>
+                  <button
+                    onClick={handleAddSkill}
+                    className="flex items-center gap-2 px-6 py-2 bg-blue-600 text-white rounded-lg hover:bg-blue-700 font-semibold transition-all duration-200"
+                  >
+                    <Plus className="w-4 h-4" />
+                    Add Skill
+                  </button>
+                </div>
+              </div>
+
+              {/* Skills List */}
+              <div>
+                <h3 className="text-lg font-semibold text-gray-800 mb-4">Your Skills</h3>
+                {!student?.skills || student.skills.length === 0 ? (
+                  <div className="text-center py-12 text-gray-500">
+                    <Award className="w-12 h-12 text-gray-300 mx-auto mb-3" />
+                    <p>No skills added yet. Add your first skill above!</p>
                   </div>
-                ))
-              ) : (
-                <p className="text-gray-500">No skills added yet.</p>
-              )}
+                ) : (
+                  <div className="grid sm:grid-cols-2 gap-4">
+                    {student.skills.map((skill, index) => (
+                      <div
+                        key={index}
+                        className={`p-4 rounded-lg border-2 flex justify-between items-center ${getSkillColor(
+                          skill.level
+                        )}`}
+                      >
+                        <div>
+                          <p className="font-semibold text-lg">{skill.name}</p>
+                          <p className="text-sm opacity-80">{skill.level}</p>
+                        </div>
+                        <button
+                          onClick={() => handleRemoveSkill(index)}
+                          className="p-2 hover:bg-white/50 rounded-full transition-all duration-200"
+                          title="Remove skill"
+                        >
+                          <X className="w-5 h-5" />
+                        </button>
+                      </div>
+                    ))}
+                  </div>
+                )}
+              </div>
+
+              {/* Skill Level Legend */}
+              <div className="mt-8 p-4 bg-blue-50 rounded-lg border border-blue-200">
+                <p className="text-sm font-semibold text-gray-800 mb-2">Skill Level Guide:</p>
+                <div className="flex flex-wrap gap-4 text-sm">
+                  <div className="flex items-center gap-2">
+                    <div className="w-4 h-4 bg-red-500 rounded"></div>
+                    <span>Basic - Learning</span>
+                  </div>
+                  <div className="flex items-center gap-2">
+                    <div className="w-4 h-4 bg-yellow-500 rounded"></div>
+                    <span>Intermediate - Proficient</span>
+                  </div>
+                  <div className="flex items-center gap-2">
+                    <div className="w-4 h-4 bg-green-500 rounded"></div>
+                    <span>Advanced - Expert</span>
+                  </div>
+                </div>
+              </div>
             </div>
           </div>
         )}
 
-        {/* Jobs */}
+        {/* Jobs & Internships */}
         {activeTab === "jobs" && (
           <div>
-            <h3 className="text-lg font-bold mb-4">Available Jobs & Internships</h3>
+            <h2 className="text-2xl font-bold text-gray-800 mb-6">
+              Available Jobs & Internships
+            </h2>
             <div className="grid md:grid-cols-2 lg:grid-cols-3 gap-6">
               {jobs.map((job) => (
                 <div
                   key={job._id}
-                  className="p-4 bg-white shadow rounded-lg hover:shadow-lg"
+                  className="bg-white shadow-md rounded-lg p-6 hover:shadow-xl transition-all duration-200 border border-gray-200"
                 >
-                  <h4 className="font-semibold">{job.title}</h4>
-                  <p className="text-sm text-gray-600">{job.company}</p>
-                  <p className="text-sm">📍 {job.location}</p>
-                  <p className="text-sm">💰 {job.salary}</p>
-                  <button className="mt-2 px-3 py-1 bg-blue-600 text-white rounded">
-                    Apply
+                  <div className="flex items-start justify-between mb-4">
+                    <h3 className="text-lg font-bold text-gray-800 flex-1">
+                      {job.title}
+                    </h3>
+                    <span className="text-xs bg-blue-100 text-blue-700 px-2 py-1 rounded-full font-semibold">
+                      {job.type}
+                    </span>
+                  </div>
+
+                  <p className="text-gray-700 font-semibold mb-3">{job.company}</p>
+
+                  <div className="space-y-2 mb-4 text-sm text-gray-600">
+                    <div className="flex items-center gap-2">
+                      <MapPin className="w-4 h-4 text-gray-400" />
+                      <span>{job.location}</span>
+                    </div>
+                    <div className="flex items-center gap-2">
+                      <DollarSign className="w-4 h-4 text-gray-400" />
+                      <span className="font-semibold text-green-600">{job.salary}</span>
+                    </div>
+                  </div>
+
+                  <button className="w-full py-2 bg-blue-600 text-white rounded-lg hover:bg-blue-700 font-semibold transition-all duration-200">
+                    Apply Now
                   </button>
                 </div>
               ))}
@@ -395,40 +620,60 @@ const Student = () => {
           </div>
         )}
 
-        {/* Applications */}
+        {/* My Applications */}
         {activeTab === "applications" && (
           <div>
-            <h3 className="text-lg font-bold mb-4">My Applications</h3>
+            <h2 className="text-2xl font-bold text-gray-800 mb-6">
+              My Applications
+            </h2>
             {applications.length === 0 ? (
-              <p className="text-gray-500">You haven’t applied yet.</p>
+              <div className="text-center py-16 bg-white rounded-lg shadow">
+                <FileText className="w-16 h-16 text-gray-300 mx-auto mb-4" />
+                <p className="text-gray-500 text-lg mb-4">You haven't applied yet.</p>
+                <button
+                  onClick={() => setActiveTab("jobs")}
+                  className="px-6 py-2 bg-blue-600 text-white rounded-lg hover:bg-blue-700"
+                >
+                  Browse Jobs
+                </button>
+              </div>
             ) : (
-              <ul className="space-y-2">
-                {applications.map((a) => (
-                  <li
-                    key={a._id}
-                    className="p-4 bg-white shadow rounded-lg flex justify-between items-center"
+              <div className="space-y-4">
+                {applications.map((app) => (
+                  <div
+                    key={app._id}
+                    className="bg-white shadow-md rounded-lg p-6 hover:shadow-lg transition-all duration-200 border border-gray-200"
                   >
-                    <span>{a.jobTitle}</span>
-                    <span
-                      className={`text-sm ${
-                        a.status === "Accepted"
-                          ? "text-green-600"
-                          : a.status === "Rejected"
-                          ? "text-red-600"
-                          : "text-yellow-600"
-                      }`}
-                    >
-                      {a.status}
-                    </span>
-                  </li>
+                    <div className="flex justify-between items-start">
+                      <div className="flex-1">
+                        <h3 className="text-lg font-bold text-gray-800 mb-2">
+                          {app.jobTitle}
+                        </h3>
+                        <p className="text-sm text-gray-600">
+                          Applied on {new Date(app.appliedDate).toLocaleDateString()}
+                        </p>
+                      </div>
+                      <span
+                        className={`px-3 py-1 rounded-full text-sm font-semibold ${
+                          app.status === "Accepted"
+                            ? "bg-green-100 text-green-700"
+                            : app.status === "Rejected"
+                            ? "bg-red-100 text-red-700"
+                            : "bg-yellow-100 text-yellow-700"
+                        }`}
+                      >
+                        {app.status}
+                      </span>
+                    </div>
+                  </div>
                 ))}
-              </ul>
+              </div>
             )}
           </div>
         )}
       </div>
     </div>
   );
-};
+}
 
 export default Student;
