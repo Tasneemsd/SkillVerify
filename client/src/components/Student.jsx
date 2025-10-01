@@ -1,24 +1,8 @@
 import { useState, useEffect } from "react";
-import { useNavigate } from "react-router-dom";
-import {
-  GraduationCap,
-  MapPin,
-  DollarSign,
-  Clock,
-  Star,
-  Briefcase,
-  FileText,
-  LogOut,
-  Award,
-  Plus,
-  X,
-} from "lucide-react";
+import { GraduationCap, MapPin, DollarSign, Clock, Star, Briefcase, FileText, User, LogOut, Award, Plus, X } from "lucide-react";
 import API from "../api";
 import logo2 from "../images/logo2-removebg-preview.png";
-
 function Student() {
-  const navigate = useNavigate();
-
   const [student, setStudent] = useState(null);
   const [activeTab, setActiveTab] = useState("courses");
   const [showDropdown, setShowDropdown] = useState(false);
@@ -228,10 +212,7 @@ function Student() {
 
   const enrolledCourses = student?.enrolledCourses?.length || 0;
   const totalCourses = courses.length;
-  const progress =
-    totalCourses > 0
-      ? Math.round((enrolledCourses / totalCourses) * 100)
-      : 0;
+  const progress = totalCourses > 0 ? Math.round((enrolledCourses / totalCourses) * 100) : 0;
 
   if (loading) {
     return (
@@ -246,52 +227,195 @@ function Student() {
 
   return (
     <div className="min-h-screen bg-gray-50">
-      {/* ... Navbar + Hero + Tabs same ... */}
-
-      {/* Courses Section */}
-      {activeTab === "courses" && (
-        <div>
-          <h2 className="text-2xl font-bold text-gray-800 mb-6">
-            Placement Guarantee Courses we offer
-          </h2>
-          <div className="grid md:grid-cols-2 lg:grid-cols-4 gap-6">
-            {courses.map((course) => (
-              <div
-                key={course._id}
-                className="bg-white rounded-xl shadow-md hover:shadow-xl transition-all duration-300 overflow-hidden border border-gray-200"
+      {/* Navbar */}
+      <nav className="bg-white shadow-sm border-b sticky top-0 z-50">
+        <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+          <div className="flex justify-between items-center h-16">
+            <div className="flex items-center gap-2">
+              
+              <img src={logo2} alt="Logo" className="h-18 w-20" />
+              
+            </div>
+            <div className="relative">
+              <button
+                onClick={() => setShowDropdown(!showDropdown)}
+                className="w-10 h-10 rounded-full bg-blue-600 text-white flex items-center justify-center font-semibold text-sm hover:bg-blue-700 transition-all duration-200"
               >
-                {/* ... course content ... */}
-                <div className="border-t p-4 bg-gray-50">
-                  <div className="flex justify-between items-center mb-3">
-                    <span className="text-sm text-red-600 font-semibold">
-                      Application closes today!
-                    </span>
+                {getUserInitials()}
+              </button>
+              {showDropdown && (
+                <div className="absolute right-0 mt-2 w-56 bg-white rounded-lg shadow-xl py-2 z-50 border border-gray-200">
+                  <div className="px-4 py-3 border-b">
+                    <p className="font-semibold text-gray-800">{student?.name || "Student"}</p>
+                    <p className="text-xs text-gray-500">{student?.branch || "CSE"}</p>
                   </div>
-                  <div className="flex gap-2">
-                    <button
-                      className={`flex-1 py-2 rounded-lg text-sm font-semibold transition-all duration-200 ${
-                        isCourseEnrolled(course)
-                          ? "bg-gray-300 text-gray-600 cursor-not-allowed"
-                          : "bg-green-600 text-white hover:bg-green-700"
-                      }`}
-                      disabled={isCourseEnrolled(course)}
-                      onClick={() => handleEnroll(course._id)}
-                    >
-                      {isCourseEnrolled(course) ? "Enrolled" : "Enroll"}
-                    </button>
-                    <button
-                      className="flex-1 py-2 bg-blue-600 text-white rounded-lg hover:bg-blue-700 text-sm font-semibold transition-all duration-200"
-                      onClick={() => navigate(`/courses/${course._id}`)} // ✅ fixed here
-                    >
-                      Know More
-                    </button>
-                  </div>
+                  <button
+                    onClick={() => {
+                      setActiveTab("skills");
+                      setShowDropdown(false);
+                    }}
+                    className="flex items-center gap-2 w-full text-left px-4 py-2 text-sm text-gray-700 hover:bg-gray-50 transition-colors"
+                  >
+                    <Award className="w-4 h-4" />
+                    My Skills
+                  </button>
+                  <button
+                    onClick={handleLogout}
+                    className="flex items-center gap-2 w-full text-left px-4 py-2 text-sm text-red-600 hover:bg-red-50 transition-colors"
+                  >
+                    <LogOut className="w-4 h-4" />
+                    Logout
+                  </button>
+                </div>
+              )}
+            </div>
+          </div>
+        </div>
+      </nav>
+
+      {/* Hero Section */}
+      <div className="bg-gradient-to-r from-blue-600 via-blue-700 to-blue-800 text-white">
+        <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-12">
+          <div className="flex flex-col md:flex-row justify-between items-center">
+            <div className="z-10 text-center md:text-left">
+              <h1 className="text-4xl md:text-5xl font-bold mb-2">
+                Welcome, {student?.name.split(" ")[0]}!
+              </h1>
+              <p className="text-xl md:text-2xl font-medium mb-3">
+                Ready to kickstart your career?
+              </p>
+              <p className="text-lg opacity-95 mb-6">
+                Explore courses, enhance your skills, and land your dream job.
+              </p>
+              <button className="bg-yellow-400 text-gray-900 font-bold px-8 py-3 rounded-lg hover:bg-yellow-500 transition-all duration-200 shadow-lg">
+                Know more
+              </button>
+            </div>
+            <div className="hidden md:block mt-6 md:mt-0">
+              <div className="bg-white/10 backdrop-blur-sm p-8 rounded-2xl">
+                <div className="w-64 h-64 bg-gradient-to-br from-blue-400 to-blue-600 rounded-full flex items-center justify-center">
+                  <FileText className="w-32 h-32 text-white" />
                 </div>
               </div>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      
+
+      {/* Tabs */}
+      <div className="bg-white border-b-slate-50 sticky top-16 z-40">
+        <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+          <div className="flex gap-8 overflow-x-auto">
+            {[
+              { key: "courses", label: "Available Courses" },
+              { key: "myCourses", label: "My Courses" },
+              { key: "skills", label: "My Skills" },
+              { key: "jobs", label: "Jobs & Internships" },
+    
+              { key: "applications", label: "My Applications" },
+            ].map((tab) => (
+              <button
+                key={tab.key}
+                onClick={() => setActiveTab(tab.key)}
+                className={`py-4 px-2 font-medium whitespace-nowrap transition-all duration-200 ${
+                  activeTab === tab.key
+                    ? "border-b-3 border-blue-600 text-blue-600"
+                    : "text-gray-600 hover:text-blue-600 border-b-3 border-transparent"
+                }`}
+                style={{ borderBottomWidth: activeTab === tab.key ? "3px" : "3px" }}
+              >
+                {tab.label}
+              </button>
             ))}
           </div>
         </div>
-      )}
+      </div>
+
+      {/* Tab Content */}
+      <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
+        {/* Available Courses */}
+        {activeTab === "courses" && (
+          <div>
+            <h2 className="text-2xl font-bold text-gray-800 mb-6">
+              Placement Guarantee Courses we offer
+            </h2>
+            <div className="grid md:grid-cols-2 lg:grid-cols-4 gap-6">
+              {courses.map((course) => (
+                <div
+                  key={course._id}
+                  className="bg-white rounded-xl shadow-md hover:shadow-xl transition-all duration-300 overflow-hidden border border-gray-200"
+                >
+                  <div className="relative">
+                    <div className="absolute top-3 left-0 bg-yellow-400 text-gray-900 text-xs px-3 py-1 font-bold rounded-r-lg shadow z-10">
+                      New
+                    </div>
+                    <div className="bg-gradient-to-br from-purple-200 via-blue-200 to-indigo-200 p-6 pt-12 relative h-40 flex items-center justify-center">
+                      <div className="text-center">
+                        <GraduationCap className="w-16 h-16 text-blue-600 mx-auto mb-2" />
+                      </div>
+                      <div className="absolute top-3 right-3 bg-yellow-500 text-white text-xs px-2 py-1 rounded-full font-bold flex items-center gap-1">
+                        <Star className="w-3 h-3 fill-white" />
+                        {course.rating}
+                      </div>
+                    </div>
+                  </div>
+
+                  <div className="p-4 space-y-3">
+                    <h3 className="text-lg font-bold text-gray-800 line-clamp-2 min-h-[3.5rem]">
+                      {course.courseName}
+                    </h3>
+
+                    <div className="text-xs text-gray-600 bg-green-50 px-2 py-1 rounded inline-block">
+                      with guaranteed job
+                    </div>
+
+                    <div className="space-y-2 text-sm text-gray-600">
+                      <div className="flex items-center gap-2">
+                        <Clock className="w-4 h-4 text-gray-400" />
+                        <span>{course.courseDuration} course</span>
+                      </div>
+                      <div className="flex items-center gap-2">
+                        <DollarSign className="w-4 h-4 text-gray-400" />
+                        <span>Get confirmed {course.highestSalary} salary</span>
+                      </div>
+                      <div className="flex items-center gap-2">
+                        <Briefcase className="w-4 h-4 text-gray-400" />
+                        <span>1.08 Lac+ jobs/internships posted on Internshala</span>
+                      </div>
+                    </div>
+                  </div>
+
+                  <div className="border-t p-4 bg-gray-50">
+                    <div className="flex justify-between items-center mb-3">
+                      <span className="text-sm text-red-600 font-semibold">
+                        Application closes today!
+                      </span>
+                    </div>
+                    <div className="flex gap-2">
+                      <button
+                        className={`flex-1 py-2 rounded-lg text-sm font-semibold transition-all duration-200 ${
+                          isCourseEnrolled(course)
+                            ? "bg-gray-300 text-gray-600 cursor-not-allowed"
+                            : "bg-green-600 text-white hover:bg-green-700"
+                        }`}
+                        disabled={isCourseEnrolled(course)}
+                        onClick={() => handleEnroll(course._id)}
+                      >
+                        {isCourseEnrolled(course) ? "Enrolled" : "Enroll"}
+                      </button>
+                      <button className="flex-1 py-2 bg-blue-600 text-white rounded-lg hover:bg-blue-700 text-sm font-semibold transition-all duration-200">
+                        Know More
+                      </button>
+                    </div>
+                  </div>
+                </div>
+              ))}
+            </div>
+          </div>
+        )}
+
         {/* My Courses */}
         {activeTab === "myCourses" && (
           <div>
@@ -533,7 +657,7 @@ function Student() {
           </div>
         )}
       </div>
-
+    </div>
   );
 }
 
