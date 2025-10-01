@@ -17,11 +17,13 @@ const courseSchema = new mongoose.Schema({
     required: true,
     trim: true,
   },
-  courseFee: {
-    type: Number, // e.g., 34999
-    required: true,
-    min: 0,
-  },
+courseFee: {
+  type: Number,
+  required: true,
+  min: 0,
+  default: 0, // ✅ avoids validation error
+},
+
   courseDescription: {
     type: String,
     trim: true,
