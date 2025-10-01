@@ -1,8 +1,8 @@
 import { useState, useEffect } from 'react';
 import { useParams, useNavigate } from 'react-router-dom';
-import API from '../services/api';
-import { getAuthToken } from '../utils/auth';
-import logo2 from '../assets/logo2.png';
+import API from '../api';
+import { getAuthToken } from '../api';
+import logo2 from '../images/logo2-removebg-preview.png';
 
 export default function CourseDetails() {
   const { id } = useParams();
