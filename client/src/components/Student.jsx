@@ -67,7 +67,7 @@ const Student = () => {
       {/* Navbar */}
       <nav className="bg-white shadow-md px-6 py-4 flex justify-between items-center relative">
         <img
-          src="../images/image.png"
+          src="client\src\images\image.png"
           alt="We Hire Today"
           className="h-10 w-auto"
         />
