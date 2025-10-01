@@ -6,12 +6,12 @@ const Student = () => {
   const [jobs, setJobs] = useState([]);
   const [applications, setApplications] = useState([]);
   const [student, setStudent] = useState(null);
-  const [activeTab, setActiveTab] = useState("available"); // "available" | "enrolled" | "applied"
+  const [activeTab, setActiveTab] = useState("available");
 
   const token = localStorage.getItem("token");
   const user = JSON.parse(localStorage.getItem("user"));
 
-  // Fetch student details by email
+  // Fetch student details
   useEffect(() => {
     if (!user?.email) return;
     API.get(`/student?email=${encodeURIComponent(user.email)}`, {
@@ -21,21 +21,21 @@ const Student = () => {
       .catch((err) => console.error("Fetch student error:", err));
   }, [user?.email, token]);
 
-  // Fetch all courses
+  // Fetch courses
   useEffect(() => {
     API.get("/courses")
       .then((res) => setCourses(res.data))
       .catch((err) => console.error("Courses fetch error:", err));
   }, []);
 
-  // Fetch all jobs
+  // Fetch jobs
   useEffect(() => {
     API.get("/jobs")
       .then((res) => setJobs(res.data))
       .catch((err) => console.error("Jobs fetch error:", err));
   }, []);
 
-  // Fetch student applications
+  // Fetch applications
   useEffect(() => {
     if (!student?._id) return;
     API.get(`/applications?studentId=${student._id}`, {
@@ -45,7 +45,7 @@ const Student = () => {
       .catch((err) => console.error("Applications fetch error:", err));
   }, [student?._id, token]);
 
-  // Enroll in course
+  // Enroll
   const handleEnroll = async (courseId) => {
     try {
       const res = await API.post(
@@ -63,7 +63,7 @@ const Student = () => {
     }
   };
 
-  // Apply for job
+  // Apply
   const handleApply = async (jobId) => {
     try {
       const res = await API.post(
@@ -78,8 +78,8 @@ const Student = () => {
     }
   };
 
-  // Render top 3 images for a card
-  const renderCardImages = (images) => (
+  // Render 3 images per card
+  const renderImages = (images) => (
     <div className="flex gap-1 mb-2">
       {images?.slice(0, 3).map((img, idx) => (
         <img
@@ -93,90 +93,92 @@ const Student = () => {
   );
 
   return (
-    <div className="p-6">
-      {/* Tabs */}
-      <div className="flex gap-4 mb-6">
-        <button
-          onClick={() => setActiveTab("available")}
-          className={`px-4 py-2 rounded ${
-            activeTab === "available" ? "bg-blue-600 text-white" : "bg-gray-200"
-          }`}
-        >
-          Available
-        </button>
-        <button
-          onClick={() => setActiveTab("enrolled")}
-          className={`px-4 py-2 rounded ${
-            activeTab === "enrolled" ? "bg-blue-600 text-white" : "bg-gray-200"
-          }`}
-        >
-          My Courses
-        </button>
-        <button
-          onClick={() => setActiveTab("applied")}
-          className={`px-4 py-2 rounded ${
-            activeTab === "applied" ? "bg-blue-600 text-white" : "bg-gray-200"
-          }`}
-        >
-          My Applications
-        </button>
+    <div className="min-h-screen bg-gray-50">
+      {/* Navbar / Profile */}
+      <div className="flex items-center justify-between p-4 bg-white shadow-md">
+        <div>
+          <h2 className="text-xl font-bold">{student?.name || "Student Name"}</h2>
+          <p className="text-sm text-gray-500">{student?.email || "email@example.com"}</p>
+          <p className="text-sm text-gray-500 capitalize">{student?.role || "student"}</p>
+        </div>
+        <div>
+          <img
+            src={student?.avatar || "https://via.placeholder.com/50"}
+            alt="avatar"
+            className="w-12 h-12 rounded-full border"
+          />
+        </div>
       </div>
 
-      {/* Available Courses & Jobs */}
-      {activeTab === "available" && (
-        <div className="grid md:grid-cols-2 lg:grid-cols-3 gap-6">
-          {courses.map((course) => (
-            <div
-              key={course._id}
-              className="border p-4 rounded-lg shadow hover:shadow-lg"
-            >
-              {renderCardImages(course.images || [])}
-              <h3 className="font-bold text-lg">{course.courseName}</h3>
-              <p className="text-sm text-gray-600">{course.courseDescription}</p>
-              <p className="text-sm">Duration: {course.courseDuration}</p>
-              <p className="text-sm">Fee: ₹{course.courseFee}</p>
-              <button
-                className="mt-2 bg-green-500 text-white px-3 py-1 rounded"
-                onClick={() => handleEnroll(course._id)}
-              >
-                Enroll
-              </button>
-            </div>
-          ))}
+      {/* Tabs */}
+      <div className="flex gap-4 justify-center mt-4 mb-6">
+        {["available", "enrolled", "applied"].map((tab) => (
+          <button
+            key={tab}
+            onClick={() => setActiveTab(tab)}
+            className={`px-4 py-2 rounded ${
+              activeTab === tab ? "bg-blue-600 text-white" : "bg-gray-200"
+            }`}
+          >
+            {tab === "available"
+              ? "Available"
+              : tab === "enrolled"
+              ? "My Courses"
+              : "My Applications"}
+          </button>
+        ))}
+      </div>
 
-          {jobs.map((job) => (
-            <div
-              key={job._id}
-              className="border p-4 rounded-lg shadow hover:shadow-lg"
-            >
-              {renderCardImages(job.images || [])}
-              <h3 className="font-bold text-lg">{job.title}</h3>
-              <p className="text-sm text-gray-600">{job.description}</p>
-              <p className="text-sm">Location: {job.location}</p>
-              <p className="text-sm">Salary: {job.salary}</p>
-              <button
-                className="mt-2 bg-blue-500 text-white px-3 py-1 rounded"
-                onClick={() => handleApply(job._id)}
+      {/* Grid content */}
+      <div className="p-4 grid md:grid-cols-2 lg:grid-cols-3 gap-6">
+        {activeTab === "available" &&
+          [...courses, ...jobs].map((item) => {
+            const isCourse = item.courseName;
+            return (
+              <div
+                key={item._id}
+                className="bg-white rounded-lg shadow hover:shadow-lg p-4"
               >
-                Apply Job
-              </button>
-            </div>
-          ))}
-        </div>
-      )}
+                {renderImages(item.images)}
+                <h3 className="font-bold text-lg">{isCourse ? item.courseName : item.title}</h3>
+                <p className="text-sm text-gray-600">{isCourse ? item.courseDescription : item.description}</p>
+                {isCourse ? (
+                  <>
+                    <p className="text-sm">Duration: {item.courseDuration}</p>
+                    <p className="text-sm">Fee: ₹{item.courseFee}</p>
+                    <button
+                      className="mt-2 bg-green-500 text-white px-3 py-1 rounded"
+                      onClick={() => handleEnroll(item._id)}
+                    >
+                      Enroll
+                    </button>
+                  </>
+                ) : (
+                  <>
+                    <p className="text-sm">Location: {item.location}</p>
+                    <p className="text-sm">Salary: {item.salary}</p>
+                    <button
+                      className="mt-2 bg-blue-500 text-white px-3 py-1 rounded"
+                      onClick={() => handleApply(item._id)}
+                    >
+                      Apply Job
+                    </button>
+                  </>
+                )}
+              </div>
+            );
+          })}
 
-      {/* Enrolled Courses */}
-      {activeTab === "enrolled" && (
-        <div className="grid md:grid-cols-2 lg:grid-cols-3 gap-6">
-          {student?.registeredCourses?.length ? (
+        {activeTab === "enrolled" &&
+          (student?.registeredCourses?.length ? (
             student.registeredCourses.map((courseId) => {
               const course = courses.find((c) => c._id === courseId);
               return (
                 <div
                   key={courseId}
-                  className="border p-4 rounded-lg shadow hover:shadow-lg"
+                  className="bg-white rounded-lg shadow hover:shadow-lg p-4"
                 >
-                  {renderCardImages(course?.images || [])}
+                  {renderImages(course?.images)}
                   <h3 className="font-bold text-lg">{course?.courseName}</h3>
                   <p className="text-sm">{course?.courseDescription}</p>
                   <p className="text-sm">Duration: {course?.courseDuration}</p>
@@ -185,21 +187,17 @@ const Student = () => {
               );
             })
           ) : (
-            <p>No courses enrolled yet.</p>
-          )}
-        </div>
-      )}
+            <p className="col-span-full text-center">No courses enrolled yet.</p>
+          ))}
 
-      {/* My Applications */}
-      {activeTab === "applied" && (
-        <div className="grid md:grid-cols-2 lg:grid-cols-3 gap-6">
-          {applications.length ? (
+        {activeTab === "applied" &&
+          (applications.length ? (
             applications.map((app) => (
               <div
                 key={app._id}
-                className="border p-4 rounded-lg shadow hover:shadow-lg"
+                className="bg-white rounded-lg shadow hover:shadow-lg p-4"
               >
-                {renderCardImages(app.images || [])}
+                {renderImages(app.images)}
                 <h3 className="font-bold text-lg">{app.jobTitle}</h3>
                 <p className="text-sm">Company: {app.company}</p>
                 <p className="text-sm">Status: {app.status}</p>
@@ -209,10 +207,9 @@ const Student = () => {
               </div>
             ))
           ) : (
-            <p>No job applications yet.</p>
-          )}
-        </div>
-      )}
+            <p className="col-span-full text-center">No job applications yet.</p>
+          ))}
+      </div>
     </div>
   );
 };
