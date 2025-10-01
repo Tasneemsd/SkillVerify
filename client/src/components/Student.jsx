@@ -232,9 +232,14 @@ function Student() {
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
           <div className="flex justify-between items-center h-16">
             <div className="flex items-center gap-2">
-              
-              <img src={logo2} alt="Logo" className="h-18 w-20" />
-              
+
+              <img
+                src="/logos.png"
+                alt="SkillVerify Logo"
+                className="h-20 md:h-24 w-auto object-contain"
+              />
+
+
             </div>
             <div className="relative">
               <button
@@ -302,7 +307,7 @@ function Student() {
         </div>
       </div>
 
-      
+
 
       {/* Tabs */}
       <div className="bg-white border-b-slate-50 sticky top-16 z-40">
@@ -313,17 +318,16 @@ function Student() {
               { key: "myCourses", label: "My Courses" },
               { key: "skills", label: "My Skills" },
               { key: "jobs", label: "Jobs & Internships" },
-    
+
               { key: "applications", label: "My Applications" },
             ].map((tab) => (
               <button
                 key={tab.key}
                 onClick={() => setActiveTab(tab.key)}
-                className={`py-4 px-2 font-medium whitespace-nowrap transition-all duration-200 ${
-                  activeTab === tab.key
-                    ? "border-b-3 border-blue-600 text-blue-600"
-                    : "text-gray-600 hover:text-blue-600 border-b-3 border-transparent"
-                }`}
+                className={`py-4 px-2 font-medium whitespace-nowrap transition-all duration-200 ${activeTab === tab.key
+                  ? "border-b-3 border-blue-600 text-blue-600"
+                  : "text-gray-600 hover:text-blue-600 border-b-3 border-transparent"
+                  }`}
                 style={{ borderBottomWidth: activeTab === tab.key ? "3px" : "3px" }}
               >
                 {tab.label}
@@ -395,11 +399,10 @@ function Student() {
                     </div>
                     <div className="flex gap-2">
                       <button
-                        className={`flex-1 py-2 rounded-lg text-sm font-semibold transition-all duration-200 ${
-                          isCourseEnrolled(course)
-                            ? "bg-gray-300 text-gray-600 cursor-not-allowed"
-                            : "bg-green-600 text-white hover:bg-green-700"
-                        }`}
+                        className={`flex-1 py-2 rounded-lg text-sm font-semibold transition-all duration-200 ${isCourseEnrolled(course)
+                          ? "bg-gray-300 text-gray-600 cursor-not-allowed"
+                          : "bg-green-600 text-white hover:bg-green-700"
+                          }`}
                         disabled={isCourseEnrolled(course)}
                         onClick={() => handleEnroll(course._id)}
                       >
@@ -566,7 +569,7 @@ function Student() {
         {activeTab === "jobs" && (
           <div>
             <h2 className="text-2xl font-bold text-gray-800 mb-6">
-             Don’t just learn. Get an Internship + Stipend guaranteed. If we fail, we pay you back.
+              Don’t just learn. Get an Internship + Stipend guaranteed. If we fail, we pay you back.
             </h2>
             <div className="grid md:grid-cols-2 lg:grid-cols-3 gap-6">
               {jobs.map((job) => (
@@ -639,13 +642,12 @@ function Student() {
                         </p>
                       </div>
                       <span
-                        className={`px-3 py-1 rounded-full text-sm font-semibold ${
-                          app.status === "Accepted"
-                            ? "bg-green-100 text-green-700"
-                            : app.status === "Rejected"
+                        className={`px-3 py-1 rounded-full text-sm font-semibold ${app.status === "Accepted"
+                          ? "bg-green-100 text-green-700"
+                          : app.status === "Rejected"
                             ? "bg-red-100 text-red-700"
                             : "bg-yellow-100 text-yellow-700"
-                        }`}
+                          }`}
                       >
                         {app.status}
                       </span>

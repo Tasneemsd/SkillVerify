@@ -1,8 +1,32 @@
 const express = require("express");
 const router = express.Router();
 const Student = require("../models/Student");
+const jwt = require("jsonwebtoken");
 
-// 🔹 GET student by email
+// 🔹 GET student profile using JWT token
+router.get("/me", async (req, res) => {
+  try {
+    const authHeader = req.headers.authorization;
+    if (!authHeader || !authHeader.startsWith("Bearer ")) {
+      return res.status(401).json({ message: "No token provided or invalid format" });
+    }
+
+    const token = authHeader.split(" ")[1].replace(/"/g, "");
+    const decoded = jwt.verify(token, process.env.JWT_SECRET || "supersecret");
+
+    const student = await Student.findById(decoded.id).populate("registeredCourses");
+    if (!student) {
+      return res.status(404).json({ message: "Student not found" });
+    }
+
+    return res.status(200).json(student);
+  } catch (err) {
+    console.error("❌ Student fetch error:", err);
+    return res.status(500).json({ message: "Server error", error: err.message });
+  }
+});
+
+// 🔹 (Existing) GET by email query
 router.get("/", async (req, res) => {
   try {
     const { email } = req.query;
