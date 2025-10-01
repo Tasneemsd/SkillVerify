@@ -16,7 +16,10 @@ router.post("/enroll", async (req, res) => {
     }
 
     const student = await Student.findById(decoded.id);
-    const course = await Course.findById(courseId); // ✅ use _id
+// studentEnrollment.js
+const course =
+  (await Course.findById(courseId)) || (await Course.findOne({ courseId }));
+
 
     if (!student || !course) {
       return res.status(404).json({ message: "Student or course not found" });

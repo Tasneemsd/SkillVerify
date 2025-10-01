@@ -341,8 +341,11 @@ const Recruiter = () => {
                     <h4 className="font-semibold text-gray-900">{cand.name}</h4>
                     <p className="text-gray-600">{cand.email}</p>
                     <p className="text-sm text-gray-500">
-                      Course: {cand.course}, College: {cand.college}, Year:{" "}
-                      {cand.year}
+                      Branch: {cand.branch || "-"}, College: {cand.college},{" "}
+                      Graduation: {cand.graduationYear}
+                    </p>
+                    <p className="text-sm text-gray-500">
+                      Skills: {cand.skills?.length ? cand.skills.join(", ") : "-"}
                     </p>
                   </div>
                 ))}

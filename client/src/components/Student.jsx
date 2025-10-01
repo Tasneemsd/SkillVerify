@@ -79,7 +79,7 @@ const Student = () => {
     <div className="min-h-screen bg-gray-50">
       {/* Navbar */}
       <nav className="bg-white shadow-md px-6 py-4 flex justify-between items-center relative">
-        <img src={logo2} alt="SkillVerify Logo" className="h-10 w-auto" />
+        <img src={logo2} alt="SkillVerify Logo" className="h-20 w-auto object-contain" />
 
         <div className="flex items-center gap-4">
           <span className="text-gray-700 font-medium">
