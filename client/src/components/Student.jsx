@@ -27,7 +27,6 @@ const Student = () => {
       .then((res) => {
         setStudent(res.data);
         if (res.data.registeredCourses) {
-          // Ensure myCourses contains only IDs
           setMyCourses(
             res.data.registeredCourses.map((c) => (c._id ? c._id : c.toString()))
           );
@@ -247,46 +246,101 @@ const Student = () => {
         {/* My Courses */}
         {activeTab === "myCourses" && (
           <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
-            {myCourses.length ? (
-              myCourses.map((courseId) => {
-                const course = courses.find(
-                  (c) => c._id === courseId || c.courseId === courseId
-                );
-                if (!course) return null;
-                return (
+            {courses.filter((c) => isCourseEnrolled(c)).length ? (
+              courses
+                .filter((c) => isCourseEnrolled(c))
+                .map((course) => (
                   <div
                     key={course._id}
-                    className="bg-white rounded-lg shadow hover:shadow-lg p-4 flex flex-col"
+                    className="bg-white rounded-xl shadow-md hover:shadow-lg overflow-hidden relative flex flex-col"
                   >
-                    <h3 className="font-bold text-lg">{course.courseName}</h3>
-                    <p className="text-sm text-gray-600 mb-2">{course.courseDescription}</p>
-                    <p className="text-sm">
-                      <span className="font-semibold">Duration:</span> {course.courseDuration}
-                    </p>
-                    <p className="text-sm">
-                      <span className="font-semibold">Rating:</span> ⭐ {course.rating}
-                    </p>
-                    <p className="text-sm">
-                      <span className="font-semibold">Highest Salary:</span> {course.highestSalary}
-                    </p>
-                    <p className="text-sm">
-                      <span className="font-semibold">Placement Partners:</span>{" "}
-                      {course.placementPartners?.length
-                        ? course.placementPartners.join(", ")
-                        : "NA"}
-                    </p>
-                    <p className="text-sm mt-2">
-                      <span className="font-semibold">Fee:</span> ₹{course.courseFee}
-                    </p>
-                    <button
-                      className="mt-3 px-3 py-1 bg-blue-600 text-white rounded hover:bg-blue-700 transition"
-                      onClick={() => navigate(`/course/${course._id}`)}
-                    >
-                      Know More
-                    </button>
+                    {/* Header */}
+                    <div className="bg-gradient-to-r from-purple-100 to-indigo-100 p-4 relative">
+                      <h3 className="text-lg font-bold text-purple-700">
+                        Become a {course.courseName}
+                      </h3>
+                      <span className="absolute top-3 right-3 bg-orange-500 text-white text-xs font-semibold px-2 py-1 rounded-full">
+                        ⭐ {course.rating || "4.5"}
+                      </span>
+                    </div>
+
+                    {/* Ribbon */}
+                    <div className="bg-yellow-100 text-yellow-700 text-xs font-medium px-3 py-1">
+                      Placement Course with AI ✨
+                    </div>
+
+                    {/* Body */}
+                    <div className="p-4 flex-1 space-y-2">
+                      <p className="font-semibold text-gray-800">
+                        {course.courseName} Course
+                      </p>
+                      <p className="text-sm text-gray-600 flex items-center">
+                        ⏳ {course.courseDuration || "6 months"} course with LIVE sessions
+                      </p>
+                      <p className="text-sm text-gray-600">
+                        📈 Highest salary offered:{" "}
+                        <span className="font-semibold text-black">
+                          {course.highestSalary || "₹18 LPA"}
+                        </span>
+                      </p>
+                      <p className="text-sm text-gray-600">
+                        Learn from industry experts of{" "}
+                        <span className="font-semibold">
+                          {course.placementPartners?.length
+                            ? course.placementPartners.join(", ")
+                            : "Top Companies"}
+                        </span>
+                      </p>
+                      <p className="text-sm">
+                        <span className="font-semibold">Fee:</span> ₹{course.courseFee || "N/A"}
+                      </p>
+                    </div>
+
+                    {/* Footer */}
+                    <div className="border-t p-4 flex flex-col sm:flex-row sm:justify-between sm:items-center gap-3">
+                      <span className="text-sm text-gray-500">
+                        Application closes <span className="font-semibold text-black">Today</span>
+                      </span>
+
+                      <div className="flex gap-2">
+                        <button
+                          className={`px-4 py-2 rounded text-white text-sm ${
+                            isCourseEnrolled(course)
+                              ? "bg-gray-400 cursor-not-allowed"
+                              : "bg-green-600 hover:bg-green-700"
+                          }`}
+                          disabled={isCourseEnrolled(course)}
+                          onClick={async () => {
+                            if (isCourseEnrolled(course)) return;
+                            try {
+                              const res = await API.post(
+                                "/student/enroll",
+                                { courseId: course.courseId },
+                                { headers: { Authorization: `Bearer ${token}` } }
+                              );
+                              if (res.data.success) {
+                                alert("Enrolled successfully!");
+                                setMyCourses((prev) => [...prev, course._id]);
+                              }
+                            } catch (err) {
+                              console.error(err);
+                              alert(err.response?.data?.message || "Enrollment failed");
+                            }
+                          }}
+                        >
+                          {isCourseEnrolled(course) ? "Enrolled" : "Enroll"}
+                        </button>
+
+                        <button
+                          className="px-4 py-2 bg-blue-600 text-white rounded hover:bg-blue-700 text-sm"
+                          onClick={() => navigate(`/course/${course._id}`)}
+                        >
+                          Know More
+                        </button>
+                      </div>
+                    </div>
                   </div>
-                );
-              })
+                ))
             ) : (
               <p className="text-center text-gray-600 col-span-full">
                 You have not enrolled in any courses yet.
