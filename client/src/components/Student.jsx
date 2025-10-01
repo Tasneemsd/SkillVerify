@@ -167,7 +167,7 @@ const Student = () => {
 
                 {/* Header */}
                 <div className="bg-gradient-to-r from-purple-300 to-indigo-200 p-4 relative">
-                  <h3 className="text-xl font-bold text-black-500">
+                  <h3 className="text-xl font-bold text-black-700">
                   
                   {course.courseName} 
                   </h3>
