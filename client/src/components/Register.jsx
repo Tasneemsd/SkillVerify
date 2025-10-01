@@ -81,9 +81,12 @@ export default function Register() {
       <div className="bg-white w-full max-w-md shadow-2xl rounded-2xl p-8">
         {/* Header */}
         <div className="text-center mb-6">
-           <h2 className="text-2xl sm:text-3xl font-bold text-gray-800">Create Your Account</h2>
+          <h2 className="text-2xl sm:text-3xl font-bold text-gray-800">Create Your Account</h2>
           <p className="text-gray-500">
-            Join as a <span className="font-semibold">{form.role === "student" ? "Student" : "Recruiter"}</span>
+            Join as a{" "}
+            <span className="font-semibold">
+              {form.role.charAt(0).toUpperCase() + form.role.slice(1)}
+            </span>
           </p>
         </div>
 
@@ -101,28 +104,19 @@ export default function Register() {
 
         {/* Role Selection */}
         <div className="flex justify-around mb-6">
-          <label className="flex items-center gap-2 cursor-pointer">
-            <input
-              type="radio"
-              name="role"
-              value="student"
-              checked={form.role === "student"}
-              onChange={handleChange}
-              className="accent-indigo-500"
-            />
-            Student
-          </label>
-          <label className="flex items-center gap-2 cursor-pointer">
-            <input
-              type="radio"
-              name="role"
-              value="recruiter"
-              checked={form.role === "recruiter"}
-              onChange={handleChange}
-              className="accent-indigo-500"
-            />
-            Recruiter
-          </label>
+          {["student", "recruiter", "admin"].map((roleOption) => (
+            <label key={roleOption} className="flex items-center gap-2 cursor-pointer">
+              <input
+                type="radio"
+                name="role"
+                value={roleOption}
+                checked={form.role === roleOption}
+                onChange={handleChange}
+                className="accent-indigo-500"
+              />
+              {roleOption.charAt(0).toUpperCase() + roleOption.slice(1)}
+            </label>
+          ))}
         </div>
 
         {/* Form */}
@@ -147,6 +141,7 @@ export default function Register() {
               className="border px-3 py-2 rounded-md focus:ring-2 focus:ring-indigo-400 focus:outline-none w-full"
             />
           </div>
+
           <input
             type="email"
             name="email"
@@ -156,6 +151,7 @@ export default function Register() {
             required
             className="w-full border px-3 py-2 rounded-md focus:ring-2 focus:ring-indigo-400 focus:outline-none"
           />
+
           <div className="flex gap-2">
             <input
               type="tel"
@@ -175,6 +171,7 @@ export default function Register() {
               {otpSent ? "OTP Sent" : "Send OTP"}
             </button>
           </div>
+
           {otpSent && (
             <input
               type="text"
@@ -186,6 +183,7 @@ export default function Register() {
               className="w-full border px-3 py-2 rounded-md focus:ring-2 focus:ring-indigo-400 focus:outline-none"
             />
           )}
+
           <input
             type="password"
             name="password"
@@ -214,11 +212,9 @@ export default function Register() {
           </button>
         </form>
 
-        {/* Error / Success */}
         {error && <p className="text-red-500 text-center mt-3">{error}</p>}
         {success && <p className="text-green-600 text-center mt-3">{success}</p>}
 
-        {/* Login Link */}
         <p className="text-center text-sm text-gray-500 mt-6">
           Already have an account?{" "}
           <Link to="/login" className="text-indigo-600 font-medium hover:underline">

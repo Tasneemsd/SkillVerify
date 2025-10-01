@@ -32,16 +32,14 @@ export default function Login() {
         role: form.role,
       });
 
-      // Save JWT + user details
       localStorage.setItem("userToken", res.data.token);
       localStorage.setItem("user", JSON.stringify(res.data.user));
 
       setSuccess(`✅ Logged in as ${res.data.user.email}`);
 
-      // Redirect based on role
       if (res.data.user.role === "student") navigate("/student");
-
       else if (res.data.user.role === "recruiter") navigate("/recruiter");
+      else if (res.data.user.role === "admin") navigate("/admin"); // Admin redirect
     } catch (err) {
       setError(err.response?.data?.message || "Invalid email or password!");
     } finally {
@@ -52,7 +50,6 @@ export default function Login() {
   return (
     <div className="min-h-screen flex items-center justify-center bg-gradient-to-b from-indigo-100 to-white px-4">
       <div className="bg-white w-full max-w-md shadow-2xl rounded-2xl p-8">
-        {/* Header */}
         <div className="text-center mb-6">
           <h2 className="text-2xl sm:text-3xl font-bold text-gray-800">Welcome Back</h2>
           <p className="text-gray-500">
@@ -75,29 +72,19 @@ export default function Login() {
 
         {/* Role Selection */}
         <div className="flex justify-around mb-6">
-          <label className="flex items-center gap-2 cursor-pointer">
-            <input
-              type="radio"
-              name="role"
-              value="student"
-              checked={form.role === "student"}
-              onChange={handleChange}
-              className="accent-indigo-500"
-            />
-            Student
-          </label>
-          <label className="flex items-center gap-2 cursor-pointer">
-            <input
-              type="radio"
-              name="role"
-              value="recruiter"
-              checked={form.role === "recruiter"}
-              onChange={handleChange}
-              className="accent-indigo-500"
-            />
-            Recruiter
-          </label>
-          
+          {["student", "recruiter", "admin"].map((roleOption) => (
+            <label key={roleOption} className="flex items-center gap-2 cursor-pointer">
+              <input
+                type="radio"
+                name="role"
+                value={roleOption}
+                checked={form.role === roleOption}
+                onChange={handleChange}
+                className="accent-indigo-500"
+              />
+              {roleOption.charAt(0).toUpperCase() + roleOption.slice(1)}
+            </label>
+          ))}
         </div>
 
         {/* Form */}
@@ -125,9 +112,7 @@ export default function Login() {
             <label className="flex items-center gap-2">
               <input type="checkbox" className="accent-indigo-500" /> Remember me
             </label>
-            <a href="#" className="hover:text-indigo-600">
-              Forgot password?
-            </a>
+            <a href="#" className="hover:text-indigo-600">Forgot password?</a>
           </div>
 
           <button
@@ -139,11 +124,9 @@ export default function Login() {
           </button>
         </form>
 
-        {/* Error / Success */}
         {error && <p className="text-red-500 text-center mt-3">{error}</p>}
         {success && <p className="text-green-600 text-center mt-3">{success}</p>}
 
-        {/* Register Link */}
         <p className="text-center text-sm text-gray-500 mt-6">
           Don’t have an account?{" "}
           <Link to="/register" className="text-indigo-600 font-medium hover:underline">
