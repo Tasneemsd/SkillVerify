@@ -8,34 +8,46 @@ const studentSchema = new mongoose.Schema({
   college: { type: String },
   year: { type: Number },
   course: { type: String },
-  skills: [{ type: String }],
-  verifiedSkillsCount: { type: Number, default: 0 },
-  isFavorite: { type: Boolean, default: false },
-  isShortlisted: { type: Boolean, default: false },
-  avatar: { type: String },
-phone: { type: String },
-  registeredCourses: [
-    { type: mongoose.Schema.Types.ObjectId, ref: "Course" }
-  ],
   rollNo: { type: String },
   phone: { type: String },
-  socialLinks: {
-    facebook: { type: String },
-    github: { type: String },
-    linkedin: { type: String },
-    instagram: { type: String }
-  },
-  codingLinks: {
-    leetcode: { type: String },
-    hackerrank: { type: String },
-    codeforces: { type: String },
-    codechef: { type: String }
-  },
+
   profilePicture: { type: String },
+
+  // Skills
   skills: [{
     name: { type: String, required: true },
     verified: { type: Boolean, default: false }
   }],
+  verifiedSkillsCount: { type: Number, default: 0 },
+
+  // Registered courses
+  registeredCourses: [
+    { type: mongoose.Schema.Types.ObjectId, ref: "Course" }
+  ],
+
+  // Job applications
+  applications: [
+    {
+      jobId: { type: mongoose.Schema.Types.ObjectId, ref: "Job" },
+      jobTitle: String,
+      company: String,
+      status: { type: String, default: "Applied" },
+      appliedOn: { type: Date, default: Date.now }
+    }
+  ],
+
+  socialLinks: {
+    facebook: String,
+    github: String,
+    linkedin: String,
+    instagram: String
+  },
+  codingLinks: {
+    leetcode: String,
+    hackerrank: String,
+    codeforces: String,
+    codechef: String
+  },
 });
 
 module.exports = mongoose.model('Student', studentSchema);
