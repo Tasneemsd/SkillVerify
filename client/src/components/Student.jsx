@@ -67,12 +67,11 @@ const Student = () => {
     <div className="min-h-screen bg-gray-50">
       {/* Navbar */}
       <nav className="bg-white shadow-md px-6 py-4 flex justify-between items-center relative">
-        <img
-          src={logo}
-          alt="We Hire Today"
-         
-        />
-
+       <img
+  src={logo}
+  alt="We Hire Today"
+  className="h-20 w-auto object-contain"
+/>
         <div className="flex items-center gap-4">
           <span className="text-gray-700 font-medium">
             Welcome, {student?.name || user?.name || "Student"}
