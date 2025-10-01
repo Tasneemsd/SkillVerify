@@ -9,7 +9,8 @@ const CourseDetails = () => {
 
   useEffect(() => {
     if (!id) return;
-    API.get(`/courses/${id}`)
+  API.get(`/courses/id/${id}`)
+
       .then((res) => {
         setCourse(res.data);
         setLoading(false);

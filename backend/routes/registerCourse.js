@@ -31,5 +31,14 @@ router.post("/enroll", async (req, res) => {
     res.status(500).json({ message: "Server error" });
   }
 });
-
+// Get by courseId instead of Mongo _id
+router.get("/id/:courseId", async (req, res) => {
+  try {
+    const course = await Course.findOne({ courseId: req.params.courseId });
+    if (!course) return res.status(404).json({ error: "Course not found" });
+    res.json(course);
+  } catch (err) {
+    res.status(500).json({ error: "Server error" });
+  }
+});
 module.exports = router;
