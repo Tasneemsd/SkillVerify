@@ -7,7 +7,6 @@ import {
   Star,
   Briefcase,
   FileText,
-  User,
   LogOut,
   Award,
   Plus,
