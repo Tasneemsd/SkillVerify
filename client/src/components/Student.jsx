@@ -7,6 +7,7 @@ import {
   FileText,
   Award,
   Plus,
+    Star,
   X,
   LogOut,
 } from "lucide-react";
