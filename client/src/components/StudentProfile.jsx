@@ -83,22 +83,11 @@ function StudentProfile() {
           <div className="flex justify-between h-16 items-center">
             {/* Logo */}
             <Link to="/" className="flex items-center gap-2 text-blue-600 font-bold text-xl hover:opacity-80 transition-opacity">
-              <GraduationCap className="w-6 h-6" />
-              <img src="/logos.png" alt="Logo" className="h-8 w-auto" />
+              
+              <img src="/logos.png" alt="Logo" className="h-28 w-auto" />
             </Link>
 
-            {/* Menu */}
-            <div className="hidden md:flex gap-6">
-              <Link to="/student/courses" className="flex items-center gap-1.5 text-gray-700 hover:text-blue-600 transition-colors font-medium">
-                <Star className="w-4 h-4" /> Courses
-              </Link>
-              <Link to="/student/internships" className="flex items-center gap-1.5 text-gray-700 hover:text-blue-600 transition-colors font-medium">
-                <Briefcase className="w-4 h-4" /> Internships
-              </Link>
-              <Link to="/student/profile" className="flex items-center gap-1.5 text-blue-600 transition-colors font-medium border-b-2 border-blue-600">
-                <User className="w-4 h-4" /> Profile
-              </Link>
-            </div>
+            
 
             {/* User Dropdown */}
             <div className="relative flex items-center gap-3">
