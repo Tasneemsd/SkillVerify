@@ -182,12 +182,10 @@ const Recruiter = () => {
       {/* Header */}
       <div className="bg-white shadow-sm border-b sticky top-0 z-50">
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 flex justify-between items-center py-6">
-          <div className="flex items-center">
-            <Briefcase className="h-8 w-8 text-blue-600 mr-3" />
-            <h1 className="text-xl sm:text-2xl font-bold text-gray-900">
-              SkillVerify
-            </h1>
-          </div>
+          <Link to="/" className="flex items-center gap-2 text-blue-600 font-bold text-xl hover:opacity-80 transition-opacity">
+              
+              <img src="/logos.png" alt="Logo" className="h-48 w-auto" />
+            </Link>
           {recruiter && (
             <div className="flex items-center space-x-4">
               <span className="hidden sm:block text-sm text-gray-600">

@@ -2,7 +2,7 @@ import { useState, useEffect } from 'react';
 import { useParams, useNavigate } from 'react-router-dom';
 import API from '../api';
 import { getAuthToken } from '../api';
-import logo2 from '../images/logoz.png';
+
 
 export default function CourseDetails() {
   const { id } = useParams();
@@ -96,9 +96,10 @@ export default function CourseDetails() {
       <nav className="bg-white shadow-sm border-b sticky top-0 z-50">
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
           <div className="flex justify-between items-center h-16">
-            <div className="flex items-center">
-              <img src={logo2} alt="Logo" className="h-20 w-auto object-contain" />
-            </div>
+            <Link to="/" className="flex items-center gap-2 text-blue-600 font-bold text-xl hover:opacity-80 transition-opacity">
+              
+              <img src="/logos.png" alt="Logo" className="h-48 w-auto" />
+            </Link>
             <div className="relative">
               <button
                 onClick={() => setShowDropdown(!showDropdown)}
