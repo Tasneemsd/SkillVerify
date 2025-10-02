@@ -33,7 +33,7 @@ function Student() {
 
   // Load initial data
   useEffect(() => {
-    const email = localStorage.getItem("userEmail"); // fetch by email
+    const email = localStorage.getItem("userEmail");
     if (!email) return navigate("/login");
 
     fetchStudentByEmail(email);
@@ -45,8 +45,14 @@ function Student() {
   const fetchStudentByEmail = async (email) => {
     try {
       const res = await API.get(`/student/email/${encodeURIComponent(email)}`);
-      setStudent(res.data);
-      fetchApplications(res.data._id);
+      const studentData = res.data;
+
+      // ✅ Ensure arrays exist
+      studentData.enrolledCourses = studentData.enrolledCourses || [];
+      studentData.skills = studentData.skills || [];
+
+      setStudent(studentData);
+      fetchApplications(studentData._id);
     } catch (err) {
       console.error("Error fetching student:", err);
       alert(err.response?.data?.message || err.message || "Failed to fetch student");
@@ -99,7 +105,7 @@ function Student() {
       if (!student?._id) throw new Error("Student not loaded");
 
       // Already enrolled safeguard
-      if (student.enrolledCourses.includes(courseId)) return;
+      if (student?.enrolledCourses?.includes(courseId)) return;
 
       const token = localStorage.getItem("token");
       const res = await API.post(
@@ -110,10 +116,9 @@ function Student() {
 
       if (res.data.success) {
         alert("Enrolled successfully!");
-        // update state so UI refreshes immediately
         setStudent((prev) => ({
           ...prev,
-          enrolledCourses: [...prev.enrolledCourses, courseId],
+          enrolledCourses: [...(prev.enrolledCourses || []), courseId],
         }));
       }
     } catch (err) {
@@ -127,7 +132,7 @@ function Student() {
     if (!newSkillName.trim()) return alert("Please enter a skill name");
     if (student) {
       const updatedSkills = [
-        ...student.skills,
+        ...(student.skills || []),
         { name: newSkillName.trim(), level: newSkillLevel },
       ];
       setStudent({ ...student, skills: updatedSkills });
@@ -138,7 +143,7 @@ function Student() {
 
   const handleRemoveSkill = (index) => {
     if (student) {
-      const updatedSkills = student.skills.filter((_, i) => i !== index);
+      const updatedSkills = (student.skills || []).filter((_, i) => i !== index);
       setStudent({ ...student, skills: updatedSkills });
     }
   };
@@ -166,7 +171,7 @@ function Student() {
 
   // ✅ Helper to check enrollment
   const isCourseEnrolled = (course) =>
-    student?.enrolledCourses?.includes(course._id);
+    student?.enrolledCourses?.includes(course._id) ?? false;
 
   const enrolledCourses = student?.enrolledCourses?.length || 0;
   const totalCourses = courses.length;
@@ -196,6 +201,7 @@ function Student() {
       </div>
     );
   }
+
 
   return (
     <div className="min-h-screen bg-gray-50">
