@@ -15,7 +15,8 @@ import {
 } from "lucide-react";
 import { useNavigate } from "react-router-dom";
 import API from "../api";
-
+import { getUserData } from "../api";
+import { getUserInitials } from ".config/helpers";
 function Student() {
   const [student, setStudent] = useState(null);
   const [activeTab, setActiveTab] = useState("courses");
