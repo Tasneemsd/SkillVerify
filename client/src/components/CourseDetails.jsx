@@ -89,9 +89,10 @@ export default function CourseDetails() {
     );
   }
 
-  const originalPrice = course.price || 3000;
+  // ✅ Fix schema usage
+  const originalPrice = course.courseFee ? course.courseFee + 150 : 3000;
   const discount = 150;
-  const finalPrice = originalPrice - discount;
+  const finalPrice = course.courseFee || originalPrice - discount;
 
   return (
     <div className="min-h-screen bg-gray-50">
@@ -150,10 +151,10 @@ export default function CourseDetails() {
                   </span>
                 </div>
                 <h1 className="text-3xl font-bold text-gray-900 mb-2">
-                  {course.title || 'Web Development with AI'}
+                  {course.courseName}
                 </h1>
                 <p className="text-gray-700 text-base leading-relaxed">
-                  {course.description || 'Master modern web development with AI-powered tools and techniques'}
+                  {course.courseDescription}
                 </p>
               </div>
 
@@ -172,78 +173,27 @@ export default function CourseDetails() {
                   ))}
                 </div>
                 <span className="text-gray-700 font-semibold">{course.rating || '4.5'}</span>
-                <span className="text-gray-600">({course.reviews || '2,450'} reviews)</span>
               </div>
 
-              {/* Features */}
-              <div className="grid grid-cols-2 gap-4 mb-6">
-                <div className="flex items-start gap-3">
-                  <div className="w-5 h-5 mt-0.5 text-green-600">
-                    <svg fill="currentColor" viewBox="0 0 20 20">
-                      <path fillRule="evenodd" d="M10 18a8 8 0 100-16 8 8 0 000 16zm3.707-9.293a1 1 0 00-1.414-1.414L9 10.586 7.707 9.293a1 1 0 00-1.414 1.414l2 2a1 1 0 001.414 0l4-4z" clipRule="evenodd" />
-                    </svg>
-                  </div>
-                  <div>
-                    <p className="text-sm font-semibold text-gray-800">Live interactive classes</p>
-                    <p className="text-xs text-gray-600">Learn from industry experts</p>
-                  </div>
-                </div>
-                <div className="flex items-start gap-3">
-                  <div className="w-5 h-5 mt-0.5 text-green-600">
-                    <svg fill="currentColor" viewBox="0 0 20 20">
-                      <path fillRule="evenodd" d="M10 18a8 8 0 100-16 8 8 0 000 16zm3.707-9.293a1 1 0 00-1.414-1.414L9 10.586 7.707 9.293a1 1 0 00-1.414 1.414l2 2a1 1 0 001.414 0l4-4z" clipRule="evenodd" />
-                    </svg>
-                  </div>
-                  <div>
-                    <p className="text-sm font-semibold text-gray-800">Hands-on projects</p>
-                    <p className="text-xs text-gray-600">Build real-world applications</p>
-                  </div>
-                </div>
-                <div className="flex items-start gap-3">
-                  <div className="w-5 h-5 mt-0.5 text-green-600">
-                    <svg fill="currentColor" viewBox="0 0 20 20">
-                      <path fillRule="evenodd" d="M10 18a8 8 0 100-16 8 8 0 000 16zm3.707-9.293a1 1 0 00-1.414-1.414L9 10.586 7.707 9.293a1 1 0 00-1.414 1.414l2 2a1 1 0 001.414 0l4-4z" clipRule="evenodd" />
-                    </svg>
-                  </div>
-                  <div>
-                    <p className="text-sm font-semibold text-gray-800">Placement assistance</p>
-                    <p className="text-xs text-gray-600">100+ hiring partners</p>
-                  </div>
-                </div>
-                <div className="flex items-start gap-3">
-                  <div className="w-5 h-5 mt-0.5 text-green-600">
-                    <svg fill="currentColor" viewBox="0 0 20 20">
-                      <path fillRule="evenodd" d="M10 18a8 8 0 100-16 8 8 0 000 16zm3.707-9.293a1 1 0 00-1.414-1.414L9 10.586 7.707 9.293a1 1 0 00-1.414 1.414l2 2a1 1 0 001.414 0l4-4z" clipRule="evenodd" />
-                    </svg>
-                  </div>
-                  <div>
-                    <p className="text-sm font-semibold text-gray-800">Certificate of completion</p>
-                    <p className="text-xs text-gray-600">Recognized by industry</p>
-                  </div>
-                </div>
-              </div>
-
-              {/* Duration and Language */}
+              {/* Duration */}
               <div className="flex flex-wrap gap-6 mb-6">
                 <div className="flex items-center gap-2">
                   <svg className="w-5 h-5 text-gray-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                     <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 8v4l3 3m6-3a9 9 0 11-18 0 9 9 0 0118 0z" />
                   </svg>
-                  <span className="text-sm font-medium text-gray-700">Duration: {course.duration || '8 weeks'}</span>
-                </div>
-                <div className="flex items-center gap-2">
-                  <svg className="w-5 h-5 text-gray-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M3 5h12M9 3v2m1.048 9.5A18.022 18.022 0 016.412 9m6.088 9h7M11 21l5-10 5 10M12.751 5C11.783 10.77 8.07 15.61 3 18.129" />
-                  </svg>
-                  <span className="text-sm font-medium text-gray-700">Language: {course.language || 'English, Hindi'}</span>
+                  <span className="text-sm font-medium text-gray-700">Duration: {course.courseDuration}</span>
                 </div>
               </div>
 
               {/* Placement Partners */}
-              {course.placementPartners && (
+              {course.placementPartners?.length > 0 && (
                 <div className="bg-white rounded-xl p-5 shadow-sm">
                   <h3 className="text-lg font-semibold text-gray-800 mb-3">Our Placement Partners</h3>
-                  <p className="text-sm text-gray-600">{course.placementPartners}</p>
+                  <ul className="list-disc list-inside text-sm text-gray-600">
+                    {course.placementPartners.map((partner, idx) => (
+                      <li key={idx}>{partner}</li>
+                    ))}
+                  </ul>
                 </div>
               )}
 
@@ -353,15 +303,6 @@ export default function CourseDetails() {
               </button>
             </div>
           </div>
-        </div>
-      </div>
-
-      {/* Bottom Banner */}
-      <div className="fixed bottom-0 left-0 right-0 bg-gradient-to-r from-orange-500 to-red-500 text-white py-3 shadow-lg z-40">
-        <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
-          <p className="text-center text-sm font-medium">
-            India ❤️ Internshala – Batches filling fast! Only few seats left. Enroll now!
-          </p>
         </div>
       </div>
     </div>
