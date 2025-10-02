@@ -17,12 +17,7 @@ const courseSchema = new mongoose.Schema({
     required: true,
     trim: true,
   },
-courseFee: {
-  type: Number,
-  required: true,
-  min: 0,
-  default: 0, // ✅ avoids validation error
-},
+
 
   courseDescription: {
     type: String,
@@ -33,9 +28,9 @@ courseFee: {
     type: Number,
     default: 4.5, // shown as ★4.5
   },
-  highestSalary: {
+  stipend: {
     type: String,
-    default: "18 LPA",
+    default: "Min. 5K- 10K/month",
   },
   placementPartners: {
     type: [String], // e.g., ["Samsung", "Xto10x", "Haptik"]

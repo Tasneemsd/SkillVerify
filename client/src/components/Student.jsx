@@ -239,66 +239,8 @@ function Student() {
       <nav className="bg-white shadow-sm border-b sticky top-0 z-50">
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
           <div className="flex justify-between items-center h-16">
-
-            {/* Logo / SVG */}
             <div className="flex items-center">
-              <svg
-                xmlns="http://www.w3.org/2000/svg"
-                viewBox="0 0 1000 500"
-                className="h-16 w-auto"
-              >
-                <path
-                  d="M100 50 L220 450 L340 50"
-                  stroke="url(#grad1)"
-                  strokeWidth="30"
-                  fill="none"
-                  strokeLinecap="round"
-                  strokeLinejoin="round"
-                />
-                <circle cx="100" cy="50" r="12" fill="red" />
-                <circle cx="160" cy="250" r="12" fill="blue" />
-                <circle cx="220" cy="450" r="12" fill="green" />
-
-                <defs>
-                  <linearGradient id="grad1" x1="0%" y1="0%" x2="100%" y2="0%">
-                    <stop offset="0%" stopColor="#e63946" />
-                    <stop offset="50%" stopColor="#1d4ed8" />
-                    <stop offset="100%" stopColor="#22c55e" />
-                  </linearGradient>
-                </defs>
-
-                <text
-                  x="370"
-                  y="250"
-                  fontSize="100"
-                  fontWeight="bold"
-                  fill="#1d4ed8"
-                  fontFamily="Arial, sans-serif"
-                >
-                  HIRE
-                </text>
-                <text
-                  x="650"
-                  y="250"
-                  fontSize="100"
-                  fontWeight="bold"
-                  fill="#22c55e"
-                  fontFamily="Arial, sans-serif"
-                >
-                  TODAY
-                </text>
-
-                <line
-                  x1="370"
-                  y1="280"
-                  x2="900"
-                  y2="280"
-                  stroke="#22c55e"
-                  strokeWidth="8"
-                />
-                <circle cx="370" cy="280" r="8" fill="red" />
-                <circle cx="900" cy="280" r="8" fill="green" />
-              </svg>
+              <img src="/logoz.png" alt="Logo" className="h-16 w-auto object-contain -my-2 drop-shadow-md" />
             </div>
 
             {/* Profile Section */}
@@ -425,7 +367,7 @@ function Student() {
         {activeTab === "courses" && (
           <div>
             <h2 className="text-2xl font-bold text-gray-800 mb-6">
-              Placement Guarantee Courses we offer
+              We offer courses to help you upskill and get job stipend realted Internships for 3 months.
             </h2>
             <div className="grid md:grid-cols-2 lg:grid-cols-4 gap-6">
               {courses.map((course) => (
@@ -454,7 +396,7 @@ function Student() {
                     </h3>
 
                     <div className="text-xs text-gray-600 bg-green-50 px-2 py-1 rounded inline-block">
-                      with guaranteed job
+                      with guaranteed Stipend related Internships
                     </div>
 
                     <div className="space-y-2 text-sm text-gray-600">
@@ -464,11 +406,11 @@ function Student() {
                       </div>
                       <div className="flex items-center gap-2">
                         <DollarSign className="w-4 h-4 text-gray-400" />
-                        <span>Get confirmed {course.highestSalary} salary</span>
+                        <span>Get confirmed {course.stipend} stipend</span>
                       </div>
                       <div className="flex items-center gap-2">
                         <Briefcase className="w-4 h-4 text-gray-400" />
-                        <span>1.08 Lac+ jobs/internships posted on Internshala</span>
+                        <span>Don’t just learn. Get an Internship + Stipend guaranteed. If we fail, we pay you back</span>
                       </div>
                     </div>
                   </div>
@@ -476,7 +418,7 @@ function Student() {
                   <div className="border-t p-4 bg-gray-50">
                     <div className="flex justify-between items-center mb-3">
                       <span className="text-sm text-red-600 font-semibold">
-                        Application closes today!
+                        Application closes soon. Apply now!
                       </span>
                     </div>
                     <div className="flex gap-2">
@@ -655,7 +597,7 @@ function Student() {
         {activeTab === "jobs" && (
           <div>
             <h2 className="text-2xl font-bold text-gray-800 mb-6">
-              Don’t just learn. Get an Internship + Stipend guaranteed. If we fail, we pay you back.
+              Explore Jobs & Internships
             </h2>
             <div className="grid md:grid-cols-2 lg:grid-cols-3 gap-6">
               {jobs.map((job) => (

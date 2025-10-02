@@ -89,10 +89,7 @@ export default function CourseDetails() {
     );
   }
 
-  const originalPrice = course.courseFee ? course.courseFee + 150 : 3000;
-  const discount = 150;
-  const finalPrice = course.courseFee || originalPrice - discount;
-
+  
   return (
     <div className="min-h-screen bg-gray-50">
       {/* Navbar */}
@@ -150,16 +147,16 @@ export default function CourseDetails() {
             <div className="mb-4 mt-16">
               <div className="flex flex-wrap items-center gap-3 mb-3">
                 <span className="bg-white text-green-700 text-xs font-semibold px-3 py-1 rounded-full border border-green-300 hover:scale-105 transition-transform">
-                  🏆 Govt-certified
+                  ⭐ {course.rating || '4.5'} Rating
                 </span>
                 {course.isPlacementGuaranteed && (
                   <span className="bg-yellow-100 text-yellow-800 text-xs font-semibold px-3 py-1 rounded-full border border-yellow-300 hover:scale-105 transition-transform">
-                    💼 Placement Guaranteed
+                   Stipend Related Internship Gurantee
                   </span>
                 )}
                 {course.hasLiveClasses && (
                   <span className="bg-blue-100 text-blue-800 text-xs font-semibold px-3 py-1 rounded-full border border-blue-300 hover:scale-105 transition-transform">
-                    🎥 Live Classes
+                    🎥 Live Classes will be updated soon
                   </span>
                 )}
                 <span className="bg-purple-100 text-purple-800 text-xs font-semibold px-3 py-1 rounded-full border border-purple-300 hover:scale-105 transition-transform">
@@ -276,16 +273,7 @@ export default function CourseDetails() {
               </select>
             </div>
 
-            <div className="mb-4 p-4 bg-green-50 rounded-lg border border-green-200">
-              <div className="flex items-center justify-between mb-2">
-                <span className="text-sm text-gray-600">Course fee</span>
-                <div className="flex items-center gap-2">
-                  <span className="text-lg line-through text-gray-400">₹{originalPrice}</span>
-                  <span className="text-2xl font-bold text-gray-900">₹{finalPrice}</span>
-                </div>
-              </div>
-              <p className="text-sm text-green-700 font-medium">You saved ₹{discount}/-</p>
-            </div>
+           
 
             <div className="mb-4">
               <p className="text-xs text-gray-500 text-center">
@@ -302,7 +290,7 @@ export default function CourseDetails() {
 
           {/* Banner */}
           <div className="bg-blue-600 text-white p-6 rounded-xl flex flex-col md:flex-row items-center justify-between shadow-lg">
-            <p className="text-lg md:text-xl font-bold">💯 100% Job Placement Assistance</p>
+            <p className="text-lg md:text-xl font-bold">💯 100% Internships Guranteed</p>
             <button onClick={() => window.scrollTo({ top: 0, behavior: 'smooth' })}
               className="mt-3 md:mt-0 bg-white text-blue-600 px-6 py-2 rounded-lg font-semibold hover:bg-gray-100 transition"
             >
