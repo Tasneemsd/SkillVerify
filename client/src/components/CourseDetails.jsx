@@ -96,11 +96,15 @@ export default function CourseDetails() {
   return (
     <div className="min-h-screen bg-gray-50">
       {/* Navbar */}
-      <nav className="bg-white shadow-sm border-b">
+      <nav className="flex items-center justify-between px-6 py-2 bg-white shadow relative">
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
           <div className="flex justify-between items-center h-16">
             <div className="flex items-center">
-              <img src={logo2} alt="Logo" className="h-20 w-auto object-contain" />
+              <img
+                src={logo2}
+                alt="Logo"
+                className="h-16 w-auto object-contain -my-2 drop-shadow-md"
+              />
             </div>
             <div className="relative">
               <button
