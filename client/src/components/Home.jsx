@@ -3,7 +3,7 @@ import {
   GraduationCap,
   Menu,
   X,
-  user,
+  User,
 } from "lucide-react";
 import { useNavigate, Link } from "react-router-dom";
 
