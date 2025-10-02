@@ -26,7 +26,7 @@ export default function Home() {
               Verification Process
             </a>
             <a href="#courses" className="hover:text-blue-600">
-              Courses
+              Course
             </a>
             <a href="#about" className="hover:text-blue-600">
               About Us
