@@ -84,7 +84,7 @@ function StudentProfile() {
             {/* Logo */}
             <Link to="/" className="flex items-center gap-2 text-blue-600 font-bold text-xl hover:opacity-80 transition-opacity">
               
-              <img src="/logos.png" alt="Logo" className="h-28 w-auto" />
+              <img src="/logos.png" alt="Logo" className="h-38 w-auto" />
             </Link>
 
             
