@@ -15,8 +15,8 @@ import {
 } from "lucide-react";
 import { useNavigate } from "react-router-dom";
 import API from "../api";
-import { getUserData } from "../api";
 import { getUserInitials } from "../utils/helpers";
+
 function Student() {
   const [student, setStudent] = useState(null);
   const [activeTab, setActiveTab] = useState("courses");
@@ -31,91 +31,109 @@ function Student() {
 
   const navigate = useNavigate();
 
+  // Load initial data
   useEffect(() => {
-    const userEmail = localStorage.getItem("userEmail") || "student@example.com";
+    const userEmail = localStorage.getItem("userEmail");
+    if (!userEmail) return navigate("/login");
+
     fetchStudentDetails(userEmail);
     fetchCourses();
     fetchJobs();
   }, []);
 
+  // Fetch student by email
   const fetchStudentDetails = async (email) => {
     try {
-      const res = await API.get(`/students/${encodeURIComponent(email)}`);
+      const token = localStorage.getItem("token");
+      if (!token) throw new Error("No token found");
+
+      const res = await API.get(`/student/email/${encodeURIComponent(email)}`, {
+        headers: { Authorization: `Bearer ${token}` },
+      });
+
       setStudent(res.data);
-      fetchApplications(res.data._id); // load applications for this student
+      fetchApplications(res.data._id);
     } catch (err) {
       console.error("Error fetching student:", err);
-      setStudent({
-        _id: "1",
-        name: "Rahul Kumar",
-        email: email,
-        branch: "Computer Science Engineering",
-        college: "Indian Institute of Technology",
-        graduationYear: "2026",
-        enrolledCourses: [],
-        skills: [],
-      });
+      alert(err.response?.data?.message || err.message || "Failed to fetch student");
+      setLoading(false);
+      setStudent(null);
     } finally {
       setLoading(false);
     }
   };
 
+  // Fetch courses
   const fetchCourses = async () => {
     try {
       const res = await API.get("/courses");
       setCourses(res.data);
     } catch (err) {
       console.error("Error fetching courses:", err);
+      alert(err.response?.data?.message || "Failed to fetch courses");
       setCourses([]);
     }
   };
 
+  // Fetch jobs
   const fetchJobs = async () => {
     try {
       const res = await API.get("/jobs");
       setJobs(res.data);
     } catch (err) {
       console.error("Error fetching jobs:", err);
+      alert(err.response?.data?.message || "Failed to fetch jobs");
       setJobs([]);
     }
   };
 
+  // Fetch student applications
   const fetchApplications = async (studentId) => {
     try {
-      const res = await API.get(`/applications/${studentId}`);
+      const token = localStorage.getItem("token");
+      if (!token) throw new Error("No token found");
+
+      const res = await API.get(`/applications/${studentId}`, {
+        headers: { Authorization: `Bearer ${token}` },
+      });
       setApplications(res.data);
     } catch (err) {
       console.error("Error fetching applications:", err);
+      alert(err.response?.data?.message || "Failed to fetch applications");
       setApplications([]);
     }
   };
 
+  // Enroll in course
   const handleEnroll = async (courseId) => {
     try {
-      if (!student?._id) return;
-      const res = await API.post(`/students/${student._id}/enroll`, { courseId });
+      if (!student?._id) throw new Error("Student not loaded");
+
+      const token = localStorage.getItem("token");
+      const res = await API.post(
+        `/student/enroll`,
+        { courseId },
+        { headers: { Authorization: `Bearer ${token}` } }
+      );
+
       if (res.data.success) {
         alert("Enrolled successfully!");
-        setStudent({
-          ...student,
-          enrolledCourses: [...student.enrolledCourses, courseId],
-        });
+        setStudent((prev) => ({
+          ...prev,
+          enrolledCourses: [...prev.enrolledCourses, courseId],
+        }));
       }
     } catch (err) {
       console.error("Enrollment error:", err);
-      alert(err.response?.data?.message || "Enrollment failed");
+      alert(err.response?.data?.message || err.message || "Enrollment failed");
     }
   };
+
+  // Skill management
   const handleAddSkill = () => {
-    if (!newSkillName.trim()) {
-      alert("Please enter a skill name");
-      return;
-    }
+    if (!newSkillName.trim()) return alert("Please enter a skill name");
     if (student) {
-      const updatedSkills = [
-        ...student.skills,
-        { name: newSkillName.trim(), level: newSkillLevel },
-      ];
+      const updatedSkills = [...student.skills, { name: newSkillName.trim(), level: newSkillLevel }];
       setStudent({ ...student, skills: updatedSkills });
       setNewSkillName("");
       setNewSkillLevel("Basic");
@@ -131,14 +149,10 @@ function Student() {
 
   const getSkillColor = (level) => {
     switch (level) {
-      case "Basic":
-        return "bg-red-100 text-red-700 border-red-300";
-      case "Intermediate":
-        return "bg-yellow-100 text-yellow-700 border-yellow-300";
-      case "Advanced":
-        return "bg-green-100 text-green-700 border-green-300";
-      default:
-        return "bg-gray-100 text-gray-700 border-gray-300";
+      case "Basic": return "bg-red-100 text-red-700 border-red-300";
+      case "Intermediate": return "bg-yellow-100 text-yellow-700 border-yellow-300";
+      case "Advanced": return "bg-green-100 text-green-700 border-green-300";
+      default: return "bg-gray-100 text-gray-700 border-gray-300";
     }
   };
 
@@ -146,24 +160,39 @@ function Student() {
     localStorage.removeItem("token");
     localStorage.removeItem("userName");
     localStorage.removeItem("userEmail");
-    window.location.href = "/login";
+    navigate("/login");
   };
+
+  const isCourseEnrolled = (course) =>
+    student?.enrolledCourses?.includes(course._id);
 
   const enrolledCourses = student?.enrolledCourses?.length || 0;
   const totalCourses = courses.length;
-  const progress =
-    totalCourses > 0 ? Math.round((enrolledCourses / totalCourses) * 100) : 0;
+  const progress = totalCourses ? Math.round((enrolledCourses / totalCourses) * 100) : 0;
 
   if (loading) {
     return (
-      <div className="min-h-screen bg-gray-50 flex items-center justify-center">
-        <div className="text-center">
-          <GraduationCap className="w-16 h-16 text-blue-600 mx-auto mb-4 animate-pulse" />
-          <p className="text-gray-600">Loading...</p>
-        </div>
+      <div className="min-h-screen flex items-center justify-center bg-gray-50">
+        <GraduationCap className="w-16 h-16 text-blue-600 animate-pulse" />
+        <p className="text-gray-600 mt-2">Loading...</p>
       </div>
     );
   }
+
+  if (!student) {
+    return (
+      <div className="min-h-screen flex flex-col items-center justify-center bg-gray-50">
+        <p className="text-red-600 text-lg mb-4">Failed to load student profile.</p>
+        <button
+          onClick={() => navigate("/login")}
+          className="px-6 py-2 bg-blue-600 text-white rounded-lg hover:bg-blue-700"
+        >
+          Go to Login
+        </button>
+      </div>
+    );
+  }
+
 
   return (
     <div className="min-h-screen bg-gray-50">
