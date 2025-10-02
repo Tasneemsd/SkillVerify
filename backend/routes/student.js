@@ -20,7 +20,7 @@ router.get("/me", async (req, res) => {
       return res.status(401).json({ message: "Invalid or expired token" });
     }
 
-    const student = await Student.findById(decoded.id).populate("registeredCourses");
+    const student = await Student.findById(decoded.id).populate("enrolledCourses");
     if (!student) {
       return res.status(404).json({ message: "Student not found" });
     }
@@ -40,7 +40,7 @@ router.get("/", async (req, res) => {
       return res.status(400).json({ message: "Email is required" });
     }
 
-    const student = await Student.findOne({ email }).populate("registeredCourses");
+    const student = await Student.findOne({ email }).populate("enrolledCourses");
     if (!student) {
       return res.status(404).json({ message: "Student not found" });
     }
@@ -57,7 +57,7 @@ router.get("/email/:email", async (req, res) => {
   try {
     const email = decodeURIComponent(req.params.email);
 
-    const student = await Student.findOne({ email }).populate("registeredCourses");
+    const student = await Student.findOne({ email }).populate("enrolledCourses");
     if (!student) {
       return res.status(404).json({ message: "Student not found" });
     }

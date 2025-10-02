@@ -46,6 +46,7 @@ app.use("/api/recruiter", require("./routes/recruiter"));
 app.use("/api/admin", require("./routes/admin"));
 app.use("/api/notification", require("./routes/notification"));
 app.use("/api/otp", require("./routes/otp"));
+app.use("/api/student/skills", require("./routes/studentSkills")); // ✅ student skills route
 
 // Default error handler
 app.use((err, req, res, next) => {

@@ -7,8 +7,13 @@ const studentSchema = new mongoose.Schema({
   branch: { type: String },
   college: { type: String },
   graduationYear: { type: String },
-  registeredCourses: [{ type: mongoose.Schema.Types.ObjectId, ref: "Course" }],
-  skills: [{ type: String }],
+  enrolledCourses: [{ type: mongoose.Schema.Types.ObjectId, ref: "Course" }], // ✅ unified name
+  skills: [
+    {
+      name: { type: String, required: true },
+      level: { type: String, enum: ["Basic", "Intermediate", "Advanced"], default: "Basic" }
+    }
+  ],
 });
 
 module.exports = mongoose.model("Student", studentSchema);

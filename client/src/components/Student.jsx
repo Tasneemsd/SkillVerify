@@ -125,21 +125,41 @@ function Student() {
   };
 
   // Skills
-  const handleAddSkill = () => {
-    if (!newSkillName.trim()) return alert("Please enter a skill name");
-    const updatedSkills = [
-      ...(student.skills || []),
+ // Add Skill
+const handleAddSkill = async () => {
+  if (!newSkillName.trim()) return alert("Please enter a skill name");
+
+  try {
+    const token = localStorage.getItem("token");
+    const res = await API.post(
+      "/student/skills/add",
       { name: newSkillName.trim(), level: newSkillLevel },
-    ];
-    setStudent({ ...student, skills: updatedSkills });
+      { headers: { Authorization: `Bearer ${token}` } }
+    );
+
+    setStudent({ ...student, skills: res.data.skills });
     setNewSkillName("");
     setNewSkillLevel("Basic");
-  };
+  } catch (err) {
+    console.error("Skill add error:", err);
+    alert(err.response?.data?.message || "Failed to add skill");
+  }
+};
 
-  const handleRemoveSkill = (index) => {
-    const updatedSkills = (student.skills || []).filter((_, i) => i !== index);
-    setStudent({ ...student, skills: updatedSkills });
-  };
+// Remove Skill
+const handleRemoveSkill = async (index) => {
+  try {
+    const token = localStorage.getItem("token");
+    const res = await API.delete(`/student/skills/remove/${index}`, {
+      headers: { Authorization: `Bearer ${token}` },
+    });
+
+    setStudent({ ...student, skills: res.data.skills });
+  } catch (err) {
+    console.error("Skill remove error:", err);
+    alert(err.response?.data?.message || "Failed to remove skill");
+  }
+};
 
   const getSkillColor = (level) => {
     switch (level) {
