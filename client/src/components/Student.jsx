@@ -98,31 +98,40 @@ function Student() {
     }
   };
 
-  // Enroll
-  const handleEnroll = async (courseId) => {
-    try {
-      if (!student?._id) throw new Error("Student not loaded");
-      if (student?.enrolledCourses?.includes(courseId)) return;
+ // Enroll
+const handleEnroll = async (course) => {
+  try {
+    if (!student?._id) throw new Error("Student not loaded");
 
-      const token = localStorage.getItem("token");
-      const res = await API.post(
-        `/student/enroll`,
-        { courseId },
-        { headers: { Authorization: `Bearer ${token}` } }
-      );
-
-      if (res.data.success) {
-        alert("Enrolled successfully!");
-        setStudent((prev) => ({
-          ...prev,
-          enrolledCourses: [...(prev.enrolledCourses || []), courseId],
-        }));
-      }
-    } catch (err) {
-      console.error("Enrollment error:", err);
-      alert(err.response?.data?.message || err.message || "Enrollment failed");
+    // ✅ Check whether already enrolled (handles both IDs & populated objects)
+    if (
+      student?.enrolledCourses?.some(
+        (c) => c?._id?.toString() === course._id?.toString() || c?.toString() === course._id?.toString()
+      )
+    ) {
+      return alert("Already enrolled in this course");
     }
-  };
+
+    const token = localStorage.getItem("token");
+    const res = await API.post(
+      `/student/enroll`,
+      { courseId: course._id },
+      { headers: { Authorization: `Bearer ${token}` } }
+    );
+
+    if (res.data.success) {
+      alert("Enrolled successfully!");
+      setStudent((prev) => ({
+        ...prev,
+        // ✅ Add full course object returned by backend
+        enrolledCourses: [...(prev.enrolledCourses || []), res.data.course],
+      }));
+    }
+  } catch (err) {
+    console.error("Enrollment error:", err);
+    alert(err.response?.data?.message || err.message || "Enrollment failed");
+  }
+};
 
   // Skills
  // Add Skill
