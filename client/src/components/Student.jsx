@@ -7,6 +7,7 @@ import {
   Star,
   Briefcase,
   FileText,
+  User,
   LogOut,
   Award,
   Plus,
@@ -34,13 +35,13 @@ function Student() {
     fetchStudentDetails(userEmail);
     fetchCourses();
     fetchJobs();
-    fetchApplications();
   }, []);
 
   const fetchStudentDetails = async (email) => {
     try {
-      const res = await API.get(`/student?email=${encodeURIComponent(email)}`);
+      const res = await API.get(`/students/${encodeURIComponent(email)}`);
       setStudent(res.data);
+      fetchApplications(res.data._id); // load applications for this student
     } catch (err) {
       console.error("Error fetching student:", err);
       setStudent({
@@ -64,26 +65,7 @@ function Student() {
       setCourses(res.data);
     } catch (err) {
       console.error("Error fetching courses:", err);
-      setCourses([
-        {
-          _id: "1",
-          courseName: "Full Stack Development",
-          courseDuration: "8 months",
-          courseFee: 35000,
-          rating: 4.5,
-          highestSalary: "₹4 lac",
-          progress: 65,
-        },
-        {
-          _id: "2",
-          courseName: "Data Science",
-          courseDuration: "4 months",
-          courseFee: 45000,
-          rating: 4.5,
-          highestSalary: "₹35,000",
-          progress: 0,
-        },
-      ]);
+      setCourses([]);
     }
   };
 
@@ -93,22 +75,13 @@ function Student() {
       setJobs(res.data);
     } catch (err) {
       console.error("Error fetching jobs:", err);
-      setJobs([
-        {
-          _id: "1",
-          title: "Frontend Developer Intern",
-          company: "Tech Mahindra",
-          location: "Mumbai",
-          salary: "₹15,000/month",
-          type: "Internship",
-        },
-      ]);
+      setJobs([]);
     }
   };
 
-  const fetchApplications = async () => {
+  const fetchApplications = async (studentId) => {
     try {
-      const res = await API.get("/applications");
+      const res = await API.get(`/applications/${studentId}`);
       setApplications(res.data);
     } catch (err) {
       console.error("Error fetching applications:", err);
@@ -116,38 +89,22 @@ function Student() {
     }
   };
 
-  const getUserInitials = () => {
-    if (!student?.name) return "U";
-    return student.name
-      .split(" ")
-      .map((n) => n[0])
-      .join("")
-      .toUpperCase()
-      .slice(0, 2);
-  };
-
-  const isCourseEnrolled = (course) => {
-    return student?.enrolledCourses?.includes(course._id) || false;
-  };
-
   const handleEnroll = async (courseId) => {
     try {
-      const res = await API.post("/student/enroll", { courseId });
+      if (!student?._id) return;
+      const res = await API.post(`/students/${student._id}/enroll`, { courseId });
       if (res.data.success) {
         alert("Enrolled successfully!");
-        if (student) {
-          setStudent({
-            ...student,
-            enrolledCourses: [...student.enrolledCourses, courseId],
-          });
-        }
+        setStudent({
+          ...student,
+          enrolledCourses: [...student.enrolledCourses, courseId],
+        });
       }
     } catch (err) {
       console.error("Enrollment error:", err);
       alert(err.response?.data?.message || "Enrollment failed");
     }
   };
-
   const handleAddSkill = () => {
     if (!newSkillName.trim()) {
       alert("Please enter a skill name");
