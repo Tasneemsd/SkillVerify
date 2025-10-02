@@ -8,6 +8,7 @@ import Student from "./components/Student";
 import Recruiter from "./components/Recruiter";
 import CourseDetails from "./components/CourseDetails";
 import "./index.css";
+import StudentProfile from "./components/StudentProfile";
 
 // Check if user logged in
 const isAuthenticated = () => !!localStorage.getItem("token");
@@ -45,6 +46,7 @@ const App = () => {
         <Route path="/login" element={<Login />} />
         <Route path="/register" element={<Register />} />
         <Route path="/courses/:id" element={<CourseDetails />} />
+        <Route path="/student/profile" element={<StudentProfile />} />
 
 
         {/* Protected routes */}

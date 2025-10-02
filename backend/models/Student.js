@@ -14,6 +14,12 @@ const studentSchema = new mongoose.Schema({
       level: { type: String, enum: ["Basic", "Intermediate", "Advanced"], default: "Basic" }
     }
   ],
+  resumeUrl: { type: String },  // store uploaded resume link
+github: { type: String },
+linkedin: { type: String },
+leetcode: { type: String },
+portfolio: { type: String },
+
 });
 
 module.exports = mongoose.model("Student", studentSchema);
