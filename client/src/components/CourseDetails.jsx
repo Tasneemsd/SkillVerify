@@ -101,7 +101,7 @@ export default function CourseDetails() {
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
           <div className="flex justify-between items-center h-16">
             <div className="flex items-center">
-              <img src={logo2} alt="Logo" className="h-8" />
+              <img src={logo2} alt="Logo" className="h-20 w-auto object-contain" />
             </div>
             <div className="relative">
               <button
