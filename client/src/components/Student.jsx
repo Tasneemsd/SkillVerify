@@ -98,90 +98,90 @@ function Student() {
     }
   };
 
- // Enroll
-// ✅ Fixed handleEnroll function
-const handleEnroll = async (course) => {
-  try {
-    if (!student?._id) throw new Error("Student not loaded");
+  // Enroll
+  // ✅ Fixed handleEnroll function
+  const handleEnroll = async (course) => {
+    try {
+      if (!student?._id) throw new Error("Student not loaded");
 
-    // ✅ Prevent duplicate enrollment
-    const alreadyEnrolled = student?.enrolledCourses?.some(
-      (c) =>
-        c?._id?.toString() === course._id?.toString() ||
-        c?.toString() === course._id?.toString()
-    );
+      // ✅ Prevent duplicate enrollment
+      const alreadyEnrolled = student?.enrolledCourses?.some(
+        (c) =>
+          c?._id?.toString() === course._id?.toString() ||
+          c?.toString() === course._id?.toString()
+      );
 
-    if (alreadyEnrolled) {
-      alert("Already enrolled in this course");
-      return;
-    }
+      if (alreadyEnrolled) {
+        alert("Already enrolled in this course");
+        return;
+      }
 
-    const token = localStorage.getItem("token");
-    const res = await API.post(
-      `/student/enroll`,
-      { courseId: course._id }, // send courseId only
-      { headers: { Authorization: `Bearer ${token}` } }
-    );
+      const token = localStorage.getItem("token");
+      const res = await API.post(
+        `/student/enroll`,
+        { courseId: course._id }, // send courseId only
+        { headers: { Authorization: `Bearer ${token}` } }
+      );
 
-    if (res.data.success) {
-      alert("Enrolled successfully!");
-      setStudent((prev) => ({
-        ...prev,
-        // ✅ If backend sends updated student → use it
-        ...(res.data.student
-          ? res.data.student
-          : {
+      if (res.data.success) {
+        alert("Enrolled successfully!");
+        setStudent((prev) => ({
+          ...prev,
+          // ✅ If backend sends updated student → use it
+          ...(res.data.student
+            ? res.data.student
+            : {
               // otherwise append course manually
               enrolledCourses: [
                 ...(prev.enrolledCourses || []),
                 res.data.course || course,
               ],
             }),
-      }));
+        }));
+      }
+    } catch (err) {
+      console.error("Enrollment error:", err);
+      alert(err.response?.data?.message || err.message || "Enrollment failed");
     }
-  } catch (err) {
-    console.error("Enrollment error:", err);
-    alert(err.response?.data?.message || err.message || "Enrollment failed");
-  }
-};
+  };
 
 
   // Skills
- // Add Skill
-const handleAddSkill = async () => {
-  if (!newSkillName.trim()) return alert("Please enter a skill name");
+  // Add Skill
+  const handleAddSkill = async () => {
+    if (!newSkillName.trim()) return alert("Please enter a skill name");
 
-  try {
-    const token = localStorage.getItem("token");
-    const res = await API.post(
-      "/student/skills/add",
-      { name: newSkillName.trim(), level: newSkillLevel },
-      { headers: { Authorization: `Bearer ${token}` } }
-    );
+    try {
+      const token = localStorage.getItem("token");
+      const res = await API.post(
+        "/student/skills/add",
+        { name: newSkillName.trim(), level: newSkillLevel },
+        { headers: { Authorization: `Bearer ${token}` } }
+      );
 
-    setStudent({ ...student, skills: res.data.skills });
-    setNewSkillName("");
-    setNewSkillLevel("Basic");
-  } catch (err) {
-    console.error("Skill add error:", err);
-    alert(err.response?.data?.message || "Failed to add skill");
-  }
-};
+      setStudent({ ...student, skills: res.data.skills });
+      setNewSkillName("");
+      setNewSkillLevel("Basic");
+    } catch (err) {
+      console.error("Skill add error:", err);
+      alert(err.response?.data?.message || "Failed to add skill");
+    }
+  };
 
-// Remove Skill
-const handleRemoveSkill = async (index) => {
-  try {
-    const token = localStorage.getItem("token");
-    const res = await API.delete(`/student/skills/remove/${index}`, {
-      headers: { Authorization: `Bearer ${token}` },
-    });
+  // Remove Skill
+  const handleRemoveSkill = async (index) => {
+    try {
+      const token = localStorage.getItem("token");
+      const res = await API.delete(`/student/skills/remove/${index}`, {
+        headers: { Authorization: `Bearer ${token}` },
+      });
 
-    setStudent({ ...student, skills: res.data.skills });
-  } catch (err) {
-    console.error("Skill remove error:", err);
-    alert(err.response?.data?.message || "Failed to remove skill");
-  }
-};
+      setStudent({ ...student, skills: res.data.skills });
+    } catch (err) {
+      console.error("Skill remove error:", err);
+      alert(err.response?.data?.message || "Failed to remove skill");
+    }
+  };
 
   const getSkillColor = (level) => {
     switch (level) {
@@ -202,10 +202,10 @@ const handleRemoveSkill = async (index) => {
   };
 
 
-    const isCourseEnrolled = (course) =>
-  student?.enrolledCourses?.some(
-    (c) => c?._id?.toString() === course._id?.toString() || c?.toString() === course._id?.toString()
-  );
+  const isCourseEnrolled = (course) =>
+    student?.enrolledCourses?.some(
+      (c) => c?._id?.toString() === course._id?.toString() || c?.toString() === course._id?.toString()
+    );
 
 
   const enrolledCourses = student?.enrolledCourses?.length || 0;
@@ -247,8 +247,9 @@ const handleRemoveSkill = async (index) => {
                 onClick={() => setShowDropdown(!showDropdown)}
                 className="w-10 h-10 rounded-full bg-blue-600 text-white flex items-center justify-center font-semibold text-sm hover:bg-blue-700 transition-all duration-200"
               >
-                {getUserInitials()}
+                {getUserInitials(student?.name)}
               </button>
+
               {showDropdown && (
                 <div className="absolute right-0 mt-2 w-56 bg-white rounded-lg shadow-xl py-2 z-50 border border-gray-200">
                   <div className="px-4 py-3 border-b">
@@ -318,11 +319,10 @@ const handleRemoveSkill = async (index) => {
               <button
                 key={tab.key}
                 onClick={() => setActiveTab(tab.key)}
-                className={`py-4 px-2 font-medium whitespace-nowrap transition-all duration-200 ${
-                  activeTab === tab.key
-                    ? "border-b-3 border-blue-600 text-blue-600"
-                    : "text-gray-600 hover:text-blue-600 border-b-3 border-transparent"
-                }`}
+                className={`py-4 px-2 font-medium whitespace-nowrap transition-all duration-200 ${activeTab === tab.key
+                  ? "border-b-3 border-blue-600 text-blue-600"
+                  : "text-gray-600 hover:text-blue-600 border-b-3 border-transparent"
+                  }`}
                 style={{ borderBottomWidth: "3px" }}
               >
                 {tab.label}
@@ -404,9 +404,13 @@ const handleRemoveSkill = async (index) => {
                       >
                         {isCourseEnrolled(course) ? "Enrolled" : "Enroll"}
                       </button>
-                      <button className="flex-1 py-2 bg-blue-600 text-white rounded-lg hover:bg-blue-700 text-sm font-semibold transition-all duration-200 onClick={() => navigate(`/courses/${course._id}`)}>">
-                       Know More
+                      <button
+                        onClick={() => navigate(`/courses/${course._id}`)}
+                        className="flex-1 py-2 bg-blue-600 text-white rounded-lg hover:bg-blue-700 text-sm font-semibold transition-all duration-200"
+                      >
+                        Know More
                       </button>
+
                     </div>
                   </div>
                 </div>
