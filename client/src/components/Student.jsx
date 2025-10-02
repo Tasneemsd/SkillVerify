@@ -99,23 +99,27 @@ function Student() {
   };
 
  // Enroll
+// ✅ Fixed handleEnroll function
 const handleEnroll = async (course) => {
   try {
     if (!student?._id) throw new Error("Student not loaded");
 
-    // ✅ Check whether already enrolled (handles both IDs & populated objects)
-    if (
-      student?.enrolledCourses?.some(
-        (c) => c?._id?.toString() === course._id?.toString() || c?.toString() === course._id?.toString()
-      )
-    ) {
-      return alert("Already enrolled in this course");
+    // ✅ Prevent duplicate enrollment
+    const alreadyEnrolled = student?.enrolledCourses?.some(
+      (c) =>
+        c?._id?.toString() === course._id?.toString() ||
+        c?.toString() === course._id?.toString()
+    );
+
+    if (alreadyEnrolled) {
+      alert("Already enrolled in this course");
+      return;
     }
 
     const token = localStorage.getItem("token");
     const res = await API.post(
       `/student/enroll`,
-      { courseId: course._id },
+      { courseId: course._id }, // send courseId only
       { headers: { Authorization: `Bearer ${token}` } }
     );
 
@@ -123,8 +127,16 @@ const handleEnroll = async (course) => {
       alert("Enrolled successfully!");
       setStudent((prev) => ({
         ...prev,
-        // ✅ Add full course object returned by backend
-        enrolledCourses: [...(prev.enrolledCourses || []), res.data.course],
+        // ✅ If backend sends updated student → use it
+        ...(res.data.student
+          ? res.data.student
+          : {
+              // otherwise append course manually
+              enrolledCourses: [
+                ...(prev.enrolledCourses || []),
+                res.data.course || course,
+              ],
+            }),
       }));
     }
   } catch (err) {
@@ -132,6 +144,7 @@ const handleEnroll = async (course) => {
     alert(err.response?.data?.message || err.message || "Enrollment failed");
   }
 };
+
 
   // Skills
  // Add Skill
@@ -188,8 +201,12 @@ const handleRemoveSkill = async (index) => {
     navigate("/login");
   };
 
-  const isCourseEnrolled = (course) =>
-    student?.enrolledCourses?.includes(course._id);
+
+    const isCourseEnrolled = (course) =>
+  student?.enrolledCourses?.some(
+    (c) => c?._id?.toString() === course._id?.toString() || c?.toString() === course._id?.toString()
+  );
+
 
   const enrolledCourses = student?.enrolledCourses?.length || 0;
   const totalCourses = courses.length;
@@ -383,7 +400,7 @@ const handleRemoveSkill = async (index) => {
                           : "bg-green-600 text-white hover:bg-green-700"
                           }`}
                         disabled={isCourseEnrolled(course)}
-                        onClick={() => handleEnroll(course._id)}
+                        onClick={() => handleEnroll(course)}
                       >
                         {isCourseEnrolled(course) ? "Enrolled" : "Enroll"}
                       </button>
