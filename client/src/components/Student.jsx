@@ -7,11 +7,10 @@ import {
   Star,
   Briefcase,
   FileText,
-  User,
-  LogOut,
   Award,
   Plus,
   X,
+  LogOut,
 } from "lucide-react";
 import { useNavigate } from "react-router-dom";
 import API from "../api";
@@ -33,29 +32,23 @@ function Student() {
 
   // Load initial data
   useEffect(() => {
-    const token = localStorage.getItem("token");
-    const userEmail = localStorage.getItem("userEmail");
+    const email = localStorage.getItem("userEmail"); // fetch by email
+    if (!email) return navigate("/login");
 
-    if (!token || !userEmail) return navigate("/login");
-
-    fetchStudentDetails(userEmail, token);
+    fetchStudentByEmail(email);
     fetchCourses();
     fetchJobs();
   }, []);
 
   // Fetch student by email
-  const fetchStudentDetails = async (email, token) => {
+  const fetchStudentByEmail = async (email) => {
     try {
-      const res = await API.get(`/student/email/${encodeURIComponent(email)}`, {
-        headers: { Authorization: `Bearer ${token}` },
-      });
-
+      const res = await API.get(`/student/email/${encodeURIComponent(email)}`);
       setStudent(res.data);
       fetchApplications(res.data._id);
     } catch (err) {
       console.error("Error fetching student:", err);
       alert(err.response?.data?.message || err.message || "Failed to fetch student");
-      setLoading(false);
       setStudent(null);
       navigate("/login");
     } finally {
@@ -70,7 +63,6 @@ function Student() {
       setCourses(res.data);
     } catch (err) {
       console.error("Error fetching courses:", err);
-      alert(err.response?.data?.message || "Failed to fetch courses");
       setCourses([]);
     }
   };
@@ -82,7 +74,6 @@ function Student() {
       setJobs(res.data);
     } catch (err) {
       console.error("Error fetching jobs:", err);
-      alert(err.response?.data?.message || "Failed to fetch jobs");
       setJobs([]);
     }
   };
@@ -91,13 +82,12 @@ function Student() {
   const fetchApplications = async (studentId) => {
     try {
       const token = localStorage.getItem("token");
-      const res = await API.get(`/applications/${studentId}`, {
+      const res = await API.get(`/applications`, {
         headers: { Authorization: `Bearer ${token}` },
       });
       setApplications(res.data);
     } catch (err) {
       console.error("Error fetching applications:", err);
-      alert(err.response?.data?.message || "Failed to fetch applications");
       setApplications([]);
     }
   };
@@ -215,12 +205,8 @@ function Student() {
               {showDropdown && (
                 <div className="absolute right-0 mt-2 w-56 bg-white rounded-lg shadow-xl py-2 z-50 border border-gray-200">
                   <div className="px-4 py-3 border-b">
-                    <p className="font-semibold text-gray-800">
-                      {student?.name || "Student"}
-                    </p>
-                    <p className="text-xs text-gray-500">
-                      {student?.branch || "CSE"}
-                    </p>
+                    <p className="font-semibold text-gray-800">{student?.name || "Student"}</p>
+                    <p className="text-xs text-gray-500">{student?.branch || "CSE"}</p>
                   </div>
                   <button
                     onClick={() => {
