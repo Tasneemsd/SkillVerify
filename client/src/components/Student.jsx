@@ -239,9 +239,19 @@ function Student() {
       <nav className="bg-white shadow-sm border-b sticky top-0 z-50">
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
           <div className="flex justify-between items-center h-16">
-            <div className="flex items-center gap-2">
-              <img src="/logos.png" alt="Logo" className="h-20 md:h-24 w-auto object-contain" />
-            </div>
+            <nav className="flex items-center px-6 py-2 bg-white shadow">
+              <div className="flex items-center space-x-2">
+                {/* V (Circuit Style) */}
+                <img src="/logoz.png" alt="V" className="h-10 w-auto" />
+
+                {/* Text */}
+                <h1 className="text-2xl font-extrabold tracking-wide flex items-center">
+                  <span className="text-blue-600 mr-1">HIRE</span>
+                  <span className="text-green-600">TODAY</span>
+                </h1>
+              </div>
+            </nav>
+
             <div className="relative">
               <button
                 onClick={() => setShowDropdown(!showDropdown)}
@@ -284,7 +294,7 @@ function Student() {
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-12">
           <div className="flex flex-col md:flex-row justify-between items-center">
             <div className="z-10 text-center md:text-left">
-              <h1 className="text-4xl md:text-5xl font-bold mb-2">
+              <h1 className="text-4xl md:text-5xl font-bold mb-2 text-blue-700">
                 Welcome, {student?.name ? student.name.split(" ")[0] : "Student"}!
               </h1>
               <p className="text-xl md:text-2xl font-medium mb-3">Ready to kickstart your career?</p>
@@ -299,12 +309,20 @@ function Student() {
               </button>
             </div>
             <div className="hidden md:block mt-6 md:mt-0">
-              <div className="bg-white/10 backdrop-blur-sm p-8 rounded-2xl">
-                <div className="w-64 h-64 bg-gradient-to-br from-blue-400 to-blue-600 rounded-full flex items-center justify-center">
-                  <FileText className="w-32 h-32 text-white" />
+              <div className="hidden md:block mt-6 md:mt-0">
+                <div className="bg-white/10 backdrop-blur-sm p-8 rounded-2xl shadow-lg">
+                  <div className="w-64 h-64 bg-gradient-to-br from-blue-400 to-blue-600 rounded-full flex items-center justify-center">
+                    <img
+                      src="https://encrypted-tbn0.gstatic.com/images?q=tbn:ANd9GcQ4v_yrmx5GdQbfbvNyDEODvRXohkMnGz8pptYly0MvreTwACjFbIkd31rteWn1DBHqZuk&usqp=CAU"
+                      alt="Student Illustration"
+                      className="w-56 h-56 object-contain drop-shadow-lg"
+                    />
+                  </div>
                 </div>
               </div>
+
             </div>
+
           </div>
         </div>
       </div>
