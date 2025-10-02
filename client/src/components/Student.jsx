@@ -240,7 +240,7 @@ function Student() {
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
           <div className="flex justify-between items-center h-16">
             <div className="flex items-center">
-              <img src="/logoz.png" alt="Logo" className="h-16 w-auto object-contain -my-2 drop-shadow-md" />
+              <img src="/logos.png" alt="Logo" className="h-16 w-auto object-contain -my-2 drop-shadow-md" />
             </div>
 
             {/* Profile Section */}
@@ -401,15 +401,15 @@ function Student() {
 
                     <div className="space-y-2 text-sm text-gray-600">
                       <div className="flex items-center gap-2">
-                        <Clock className="w-4 h-4 text-gray-400" />
+                        <Clock className="w-4 h-4 text-gray-500" />
                         <span>{course.courseDuration} course</span>
                       </div>
                       <div className="flex items-center gap-2">
-                        <DollarSign className="w-4 h-4 text-gray-400" />
-                        <span>Get confirmed {course.stipend} stipend</span>
+                        <DollarSign className="w-4 h-4 text-gray-500" />
+                        <span>Get confirmed {course.stipend}</span>
                       </div>
                       <div className="flex items-center gap-2">
-                        <Briefcase className="w-4 h-4 text-gray-400" />
+                        <Briefcase className="w-4 h-4 text-gray-500" />
                         <span>Don’t just learn. Get an Internship + Stipend guaranteed. If we fail, we pay you back</span>
                       </div>
                     </div>
@@ -600,41 +600,48 @@ function Student() {
               Explore Jobs & Internships
             </h2>
             <div className="grid md:grid-cols-2 lg:grid-cols-3 gap-6">
-              {jobs.map((job) => (
-                <div
-                  key={job._id}
-                  className="bg-white shadow-md rounded-lg p-6 hover:shadow-xl transition-all duration-200 border border-gray-200"
-                >
-                  <div className="flex items-start justify-between mb-4">
-                    <h3 className="text-lg font-bold text-gray-800 flex-1">
-                      {job.title}
-                    </h3>
-                    <span className="text-xs bg-blue-100 text-blue-700 px-2 py-1 rounded-full font-semibold">
-                      {job.type}
-                    </span>
-                  </div>
-
-                  <p className="text-gray-700 font-semibold mb-3">{job.company}</p>
-
-                  <div className="space-y-2 mb-4 text-sm text-gray-600">
-                    <div className="flex items-center gap-2">
-                      <MapPin className="w-4 h-4 text-gray-400" />
-                      <span>{job.location}</span>
+              {jobs.length > 0 ? (
+                jobs.map((job) => (
+                  <div
+                    key={job._id}
+                    className="bg-white shadow-md rounded-lg p-6 hover:shadow-xl transition-all duration-200 border border-gray-200"
+                  >
+                    <div className="flex items-start justify-between mb-4">
+                      <h3 className="text-lg font-bold text-gray-800 flex-1">
+                        {job.title}
+                      </h3>
+                      <span className="text-xs bg-blue-100 text-blue-700 px-2 py-1 rounded-full font-semibold">
+                        {job.type}
+                      </span>
                     </div>
-                    <div className="flex items-center gap-2">
-                      <DollarSign className="w-4 h-4 text-gray-400" />
-                      <span className="font-semibold text-green-600">{job.salary}</span>
-                    </div>
-                  </div>
 
-                  <button className="w-full py-2 bg-blue-600 text-white rounded-lg hover:bg-blue-700 font-semibold transition-all duration-200">
-                    Apply Now
-                  </button>
-                </div>
-              ))}
+                    <p className="text-gray-700 font-semibold mb-3">{job.company}</p>
+
+                    <div className="space-y-2 mb-4 text-sm text-gray-600">
+                      <div className="flex items-center gap-2">
+                        <MapPin className="w-4 h-4 text-gray-400" />
+                        <span>{job.location}</span>
+                      </div>
+                      <div className="flex items-center gap-2">
+                        <DollarSign className="w-4 h-4 text-gray-400" />
+                        <span className="font-semibold text-green-600">
+                          {job.salary}
+                        </span>
+                      </div>
+                    </div>
+
+                    <button className="w-full py-2 bg-blue-600 text-white rounded-lg hover:bg-blue-700 font-semibold transition-all duration-200">
+                      Apply Now
+                    </button>
+                  </div>
+                ))
+              ) : (
+                <p className="text-gray-500">No jobs or internships available.</p>
+              )}
             </div>
           </div>
         )}
+
 
         {/* My Applications */}
         {activeTab === "applications" && (

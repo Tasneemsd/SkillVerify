@@ -171,7 +171,7 @@ export default function CourseDetails() {
             <div className="grid grid-cols-1 md:grid-cols-3 gap-4 mb-6 mt-4">
               <div className="flex items-center gap-2 bg-white/60 p-3 rounded-lg shadow-sm hover:scale-105 transition-transform">
                 <span className="text-green-600 text-xl">💼</span>
-                <p className="text-sm md:text-base font-medium text-gray-700">Job Oriented</p>
+                <p className="text-sm md:text-base font-medium text-gray-700">Internships Oriented</p>
               </div>
               <div className="flex items-center gap-2 bg-white/60 p-3 rounded-lg shadow-sm hover:scale-105 transition-transform">
                 <span className="text-blue-600 text-xl">🎓</span>
@@ -209,7 +209,7 @@ export default function CourseDetails() {
               </div>
               <div className="flex items-center gap-2 bg-white/50 px-3 py-2 rounded-lg shadow-sm">
                 <span className="text-green-600 text-lg">📈</span>
-                <span className="text-sm font-medium text-gray-700">Avg. Salary: {course.highestSalary || '₹ N/A'}</span>
+                <span className="text-sm font-medium text-gray-700">Avg. Salary: {course.stipend || '₹ N/A'}</span>
               </div>
             </div>
 

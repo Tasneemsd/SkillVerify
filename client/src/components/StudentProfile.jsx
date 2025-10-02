@@ -88,7 +88,7 @@ function StudentProfile() {
             {/* Logo */}
             <Link to="/" className="flex items-center gap-2 text-blue-600 font-bold text-xl">
               <GraduationCap className="w-6 h-6" />
-              CampusConnect
+             <img src="/logos.png" alt="Logo" className="h-8" />
             </Link>
 
             {/* Menu */}
