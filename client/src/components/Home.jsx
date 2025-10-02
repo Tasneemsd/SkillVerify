@@ -6,6 +6,11 @@ import {
   User,
 } from "lucide-react";
 import { useNavigate, Link } from "react-router-dom";
+import { getUserInitials } from "../utils/helpers";
+
+
+
+const User = localStorage.getItem("userEmail");
 
 export default function Home() {
   const navigate = useNavigate();
