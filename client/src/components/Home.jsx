@@ -4,7 +4,7 @@ import {
   Menu,
   X,
 } from "lucide-react";
-import { useNavigate } from "react-router-dom";
+import { useNavigate, Link } from "react-router-dom";
 
 export default function Home() {
   const navigate = useNavigate();
@@ -12,12 +12,15 @@ export default function Home() {
 
   return (
     <div className="bg-gradient-to-b from-blue-50 to-white text-gray-800">
-      
+
       <nav className="bg-white shadow-md sticky top-0 z-50">
         <div className="max-w-7xl mx-auto px-4 sm:px-6 py-4 flex justify-between items-center">
-   <img src="/logos.png" alt="SkillVerify Logo"  className="h-14 w-auto object-contain"/>
+          <Link to="/" className="flex items-center gap-2 text-blue-600 font-bold text-xl hover:opacity-80 transition-opacity">
 
-    
+            <img src="/logos.png" alt="Logo" className="h-48 w-auto" />
+          </Link>
+
+
           <div className="hidden md:flex gap-6 lg:gap-8 font-medium text-gray-700 text-sm lg:text-base">
             <a href="#verification" className="hover:text-blue-600">
               Verification Process
@@ -33,7 +36,7 @@ export default function Home() {
             </a>
           </div>
 
-        
+
           <div className="hidden sm:flex gap-2 sm:gap-4 text-sm sm:text-base">
             <button
               className="px-3 sm:px-4 py-2 border border-blue-600 text-blue-600 rounded-lg hover:bg-blue-50"
@@ -59,9 +62,8 @@ export default function Home() {
 
 
         <div
-          className={`md:hidden bg-white shadow-lg border-t overflow-hidden transition-all duration-300 ${
-            menuOpen ? "max-h-96 opacity-100" : "max-h-0 opacity-0"
-          }`}
+          className={`md:hidden bg-white shadow-lg border-t overflow-hidden transition-all duration-300 ${menuOpen ? "max-h-96 opacity-100" : "max-h-0 opacity-0"
+            }`}
         >
           <div className="flex flex-col gap-4 px-6 py-4 font-medium text-gray-700">
             <a
@@ -131,9 +133,9 @@ export default function Home() {
           <button className="flex items-center justify-center gap-2 bg-blue-600 text-white font-semibold px-5 sm:px-6 py-3 rounded-lg hover:bg-blue-700 transition text-sm sm:text-base">
             <GraduationCap size={20} className="text-black-600" />
             <a className="start" onClick={() => {
-                  
-                  navigate("/register");
-                }}>Start Your Journey</a>
+
+              navigate("/register");
+            }}>Start Your Journey</a>
           </button>
           <button className="flex items-center justify-center gap-2 border border-blue-600 text-blue-600 font-semibold px-5 sm:px-6 py-3 rounded-lg hover:bg-blue-50 transition text-sm sm:text-base">
             <img
@@ -142,9 +144,9 @@ export default function Home() {
               className="w-5 h-5 sm:w-6 sm:h-6"
             />
             <a className='rec' onClick={() => {
-                  
-                  navigate("/register");
-                }}>I'm a Recruiter</a>
+
+              navigate("/register");
+            }}>I'm a Recruiter</a>
           </button>
         </div>
       </section>
@@ -188,9 +190,8 @@ export default function Home() {
           ].map((item, idx) => (
             <div
               key={idx}
-              className={`p-6 rounded-xl shadow border ${
-                item.active ? "bg-blue-50 border-blue-400" : "bg-gray-50"
-              }`}
+              className={`p-6 rounded-xl shadow border ${item.active ? "bg-blue-50 border-blue-400" : "bg-gray-50"
+                }`}
             >
               <div className="flex items-center gap-4">
                 <img
@@ -212,7 +213,7 @@ export default function Home() {
         </div>
       </section>
 
-  
+
       <section className="py-12 sm:py-16 bg-gradient-to-r from-blue-50 to-green-50">
         <h2 className="text-xl sm:text-2xl font-bold text-center mb-10 sm:mb-12">
           Your Journey to Verified Skills
@@ -260,7 +261,7 @@ export default function Home() {
         </div>
       </section>
 
- 
+
       <section
         id="courses"
         className="py-12 sm:py-16 max-w-6xl mx-auto px-4 sm:px-6"
