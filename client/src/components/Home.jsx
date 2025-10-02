@@ -5,6 +5,7 @@ import {
   X,
 } from "lucide-react";
 import { useNavigate } from "react-router-dom";
+import logo from "..public/logos.png";
 
 export default function Home() {
   const navigate = useNavigate();
@@ -15,9 +16,7 @@ export default function Home() {
       
       <nav className="bg-white shadow-md sticky top-0 z-50">
         <div className="max-w-7xl mx-auto px-4 sm:px-6 py-4 flex justify-between items-center">
-          <h1 className="text-xl sm:text-2xl font-bold text-blue-600">
-            SkillVerify
-          </h1>
+          <img src={logo} alt="SkillVerify Logo" className="h-8 sm:h-10 cursor-pointer" onClick={() => navigate("/")} />
 
     
           <div className="hidden md:flex gap-6 lg:gap-8 font-medium text-gray-700 text-sm lg:text-base">

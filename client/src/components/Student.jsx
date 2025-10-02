@@ -80,7 +80,7 @@ function Student() {
   };
 
   // Fetch student applications
-  const fetchApplications = async (studentId) => {
+  const fetchApplications = async () => {
     try {
       const token = localStorage.getItem("token");
       const res = await API.get(`/applications`, {
@@ -93,10 +93,13 @@ function Student() {
     }
   };
 
-  // Enroll in course
+  // ✅ Enroll in course
   const handleEnroll = async (courseId) => {
     try {
       if (!student?._id) throw new Error("Student not loaded");
+
+      // Already enrolled safeguard
+      if (student.enrolledCourses.includes(courseId)) return;
 
       const token = localStorage.getItem("token");
       const res = await API.post(
@@ -107,6 +110,7 @@ function Student() {
 
       if (res.data.success) {
         alert("Enrolled successfully!");
+        // update state so UI refreshes immediately
         setStudent((prev) => ({
           ...prev,
           enrolledCourses: [...prev.enrolledCourses, courseId],
@@ -160,6 +164,7 @@ function Student() {
     navigate("/login");
   };
 
+  // ✅ Helper to check enrollment
   const isCourseEnrolled = (course) =>
     student?.enrolledCourses?.includes(course._id);
 
@@ -287,17 +292,17 @@ function Student() {
               { key: "myCourses", label: "My Courses" },
               { key: "skills", label: "My Skills" },
               { key: "jobs", label: "Jobs & Internships" },
-
               { key: "applications", label: "My Applications" },
             ].map((tab) => (
               <button
                 key={tab.key}
                 onClick={() => setActiveTab(tab.key)}
-                className={`py-4 px-2 font-medium whitespace-nowrap transition-all duration-200 ${activeTab === tab.key
-                  ? "border-b-3 border-blue-600 text-blue-600"
-                  : "text-gray-600 hover:text-blue-600 border-b-3 border-transparent"
-                  }`}
-                style={{ borderBottomWidth: activeTab === tab.key ? "3px" : "3px" }}
+                className={`py-4 px-2 font-medium whitespace-nowrap transition-all duration-200 ${
+                  activeTab === tab.key
+                    ? "border-b-3 border-blue-600 text-blue-600"
+                    : "text-gray-600 hover:text-blue-600 border-b-3 border-transparent"
+                }`}
+                style={{ borderBottomWidth: "3px" }}
               >
                 {tab.label}
               </button>
@@ -368,17 +373,21 @@ function Student() {
                     </div>
                     <div className="flex gap-2">
                       <button
-                        className={`flex-1 py-2 rounded-lg text-sm font-semibold transition-all duration-200 ${isCourseEnrolled(course)
-                          ? "bg-gray-300 text-gray-600 cursor-not-allowed"
-                          : "bg-green-600 text-white hover:bg-green-700"
-                          }`}
+                        className={`flex-1 py-2 rounded-lg text-sm font-semibold transition-all duration-200 ${
+                          isCourseEnrolled(course)
+                            ? "bg-gray-300 text-gray-600 cursor-not-allowed"
+                            : "bg-green-600 text-white hover:bg-green-700"
+                        }`}
                         disabled={isCourseEnrolled(course)}
                         onClick={() => handleEnroll(course._id)}
                       >
                         {isCourseEnrolled(course) ? "Enrolled" : "Enroll"}
                       </button>
-                      <button className="flex-1 py-2 bg-blue-600 text-white rounded-lg hover:bg-blue-700 text-sm font-semibold transition-all duration-200 onClick={() => navigate(`/courses/${course._id}`)}>">
-                       Know More
+                      <button
+                        className="flex-1 py-2 bg-blue-600 text-white rounded-lg hover:bg-blue-700 text-sm font-semibold transition-all duration-200"
+                        onClick={() => navigate(`/courses/${course._id}`)}
+                      >
+                        Know More
                       </button>
                     </div>
                   </div>
@@ -438,7 +447,6 @@ function Student() {
             )}
           </div>
         )}
-
         {/* My Skills */}
         {activeTab === "skills" && (
           <div className="max-w-4xl mx-auto">
