@@ -7,9 +7,11 @@ import {
   FileText,
   Award,
   Plus,
-    Star,
+  Star,
   X,
   LogOut,
+  Clock,       // ✅ Added
+  Briefcase,   // ✅ Added
 } from "lucide-react";
 import { useNavigate } from "react-router-dom";
 import API from "../api";
@@ -185,7 +187,6 @@ function Student() {
         </button>
       </div>
     );
-
   return (
     <div className="min-h-screen bg-gray-50">
       {/* Navbar */}
