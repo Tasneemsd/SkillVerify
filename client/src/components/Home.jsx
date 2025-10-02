@@ -15,7 +15,7 @@ export default function Home() {
       
       <nav className="bg-white shadow-md sticky top-0 z-50">
         <div className="max-w-7xl mx-auto px-4 sm:px-6 py-4 flex justify-between items-center">
-   <img src="/logos.png" alt="SkillVerify Logo" />
+   <img src="/logos.png" alt="SkillVerify Logo"  className="h-14 w-auto object-contain"/>
 
     
           <div className="hidden md:flex gap-6 lg:gap-8 font-medium text-gray-700 text-sm lg:text-base">
