@@ -17,7 +17,7 @@ export default function Home() {
         <div className="max-w-7xl mx-auto px-4 sm:px-6 flex justify-between items-center">
           <Link to="/" className="flex items-center gap-2 text-blue-600 font-bold text-xl hover:opacity-80 transition-opacity">
 
-            <img src="/logos.png" alt="Logo" className="h-28 w-auto" />
+            <img src="/logos.png" alt="Logo" className="h-22 w-auto" />
           </Link>
 
 
