@@ -3,14 +3,8 @@ import {
   GraduationCap,
   Menu,
   X,
-  
 } from "lucide-react";
 import { useNavigate, Link } from "react-router-dom";
-import { getUserInitials } from "../utils/helpers";
-
-
-
-const User = localStorage.getItem("userEmail");
 
 export default function Home() {
   const navigate = useNavigate();
@@ -19,101 +13,54 @@ export default function Home() {
   return (
     <div className="bg-gradient-to-b from-blue-50 to-white text-gray-800">
 
-      <nav className="bg-white shadow-sm border-b sticky top-0 z-50">
-        <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
-          <div className="flex justify-between items-center h-16">
-            {/* Logo */}
-            <Link
-              to="/"
-              className="flex items-center gap-2 text-blue-600 font-bold text-xl hover:opacity-80 transition-opacity"
-            >
-              <img src="/logos.png" alt="Logo" className="h-48 w-auto" />
-            </Link>
+      <nav className="bg-white shadow-md sticky top-0 z-50">
+        <div className="max-w-7xl mx-auto px-4 sm:px-6 flex justify-between items-center">
+          <Link to="/" className="flex items-center gap-2 text-blue-600 font-bold text-xl hover:opacity-80 transition-opacity">
+
+            <img src="/logos.png" alt="Logo" className="h-28 w-auto" />
+          </Link>
 
 
-            {/* Desktop Menu */}
-            <div className="hidden md:flex gap-6 lg:gap-8 font-medium text-gray-700 text-sm lg:text-base">
-              <a href="#verification" className="hover:text-blue-600">
-                Verification Process
-              </a>
-              <a href="#courses" className="hover:text-blue-600">
-                Courses
-              </a>
-              <a href="#about" className="hover:text-blue-600">
-                About Us
-              </a>
-              <a href="#recruiters" className="hover:text-blue-600">
-                For Recruiters
-              </a>
-            </div>
-
-            {/* User / Auth Buttons */}
-            <div className="hidden md:flex items-center gap-3">
-              {/* Login/Register if user not logged in */}
-              {!User ? (
-                <>
-                  <button
-                    className="px-4 py-2 border border-blue-600 text-blue-600 rounded-lg hover:bg-blue-50 transition"
-                    onClick={() => navigate("/login")}
-                  >
-                    Login
-                  </button>
-                  <button
-                    className="px-4 py-2 bg-blue-600 text-white rounded-lg hover:bg-blue-700 transition"
-                    onClick={() => navigate("/register")}
-                  >
-                    Register
-                  </button>
-                </>
-              ) : (
-                // User Dropdown
-                <div className="relative">
-                  <button
-                    onClick={() => setShowDropdown(!showDropdown)}
-                    className="w-10 h-10 rounded-full bg-blue-600 text-white flex items-center justify-center font-semibold text-sm hover:bg-blue-700 transition"
-                  >
-                    {getUserInitials()}
-                  </button>
-
-                  {showDropdown && (
-                    <div className="absolute right-0 mt-2 w-48 bg-white rounded-lg shadow-lg py-2 z-50 border">
-                      <button
-                        onClick={() => navigate("/profile")}
-                        className="block w-full text-left px-4 py-2 text-sm text-gray-700 hover:bg-gray-100"
-                      >
-                        Profile
-                      </button>
-                      <button
-                        onClick={() => navigate("/my-courses")}
-                        className="block w-full text-left px-4 py-2 text-sm text-gray-700 hover:bg-gray-100"
-                      >
-                        My Courses
-                      </button>
-                      <button
-                        onClick={handleLogout}
-                        className="block w-full text-left px-4 py-2 text-sm text-red-600 hover:bg-gray-100"
-                      >
-                        Logout
-                      </button>
-                    </div>
-                  )}
-                </div>
-              )}
-            </div>
-
-            {/* Mobile Menu Toggle */}
-            <div className="md:hidden flex items-center">
-              <button
-                className="text-blue-600"
-                onClick={() => setMenuOpen(!menuOpen)}
-              >
-                {menuOpen ? <X size={26} /> : <Menu size={26} />}
-              </button>
-            </div>
+          <div className="hidden md:flex gap-6 lg:gap-8 font-medium text-gray-700 text-sm lg:text-base">
+            <a href="#verification" className="hover:text-blue-600">
+              Verification Process
+            </a>
+            <a href="#courses" className="hover:text-blue-600">
+              Courses
+            </a>
+            <a href="#about" className="hover:text-blue-600">
+              About Us
+            </a>
+            <a href="#recruiters" className="hover:text-blue-600">
+              For Recruiters
+            </a>
           </div>
+
+
+          <div className="hidden sm:flex gap-2 sm:gap-4 text-sm sm:text-base">
+            <button
+              className="px-3 sm:px-4 py-2 border border-blue-600 text-blue-600 rounded-lg hover:bg-blue-50"
+              onClick={() => navigate("/login")}
+            >
+              Login
+            </button>
+            <button
+              className="px-3 sm:px-4 py-2 bg-blue-600 text-white rounded-lg hover:bg-blue-700"
+              onClick={() => navigate("/register")}
+            >
+              Register
+            </button>
+          </div>
+
+          <button
+            className="md:hidden flex items-center text-blue-600"
+            onClick={() => setMenuOpen(!menuOpen)}
+          >
+            {menuOpen ? <X size={26} /> : <Menu size={26} />}
+          </button>
         </div>
 
-        {/* Mobile Menu */}
+
         <div
           className={`md:hidden bg-white shadow-lg border-t overflow-hidden transition-all duration-300 ${menuOpen ? "max-h-96 opacity-100" : "max-h-0 opacity-0"
             }`}
@@ -147,62 +94,29 @@ export default function Home() {
             >
               For Recruiters
             </a>
-
             <div className="flex flex-col gap-2 pt-4 border-t">
-              {!user ? (
-                <>
-                  <button
-                    className="px-4 py-2 border border-blue-600 text-blue-600 rounded-lg hover:bg-blue-50"
-                    onClick={() => {
-                      setMenuOpen(false);
-                      navigate("/login");
-                    }}
-                  >
-                    Login
-                  </button>
-                  <button
-                    className="px-4 py-2 bg-blue-600 text-white rounded-lg hover:bg-blue-700"
-                    onClick={() => {
-                      setMenuOpen(false);
-                      navigate("/register");
-                    }}
-                  >
-                    Register
-                  </button>
-                </>
-              ) : (
-                <>
-                  <button
-                    className="px-4 py-2 text-left text-gray-700 hover:bg-gray-100"
-                    onClick={() => {
-                      setMenuOpen(false);
-                      navigate("/profile");
-                    }}
-                  >
-                    Profile
-                  </button>
-                  <button
-                    className="px-4 py-2 text-left text-gray-700 hover:bg-gray-100"
-                    onClick={() => {
-                      setMenuOpen(false);
-                      navigate("/my-courses");
-                    }}
-                  >
-                    My Courses
-                  </button>
-                  <button
-                    className="px-4 py-2 text-left text-red-600 hover:bg-gray-100"
-                    onClick={handleLogout}
-                  >
-                    Logout
-                  </button>
-                </>
-              )}
+              <button
+                className="px-4 py-2 border border-blue-600 text-blue-600 rounded-lg hover:bg-blue-50"
+                onClick={() => {
+                  setMenuOpen(false);
+                  navigate("/login");
+                }}
+              >
+                Login
+              </button>
+              <button
+                className="px-4 py-2 bg-blue-600 text-white rounded-lg hover:bg-blue-700"
+                onClick={() => {
+                  setMenuOpen(false);
+                  navigate("/register");
+                }}
+              >
+                Register
+              </button>
             </div>
           </div>
         </div>
       </nav>
-
 
       <section className="text-center px-4 sm:px-6 py-16 sm:py-20 max-w-5xl mx-auto">
         <h1 className="text-3xl sm:text-4xl md:text-5xl font-bold mb-6 leading-snug">
