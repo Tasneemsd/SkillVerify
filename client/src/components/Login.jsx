@@ -1,197 +1,60 @@
-import { useState, useEffect } from "react";
-import {
-  GraduationCap,
-  MapPin,
-  DollarSign,
-  Clock,
-  Star,
-  Briefcase,
-  FileText,
-  User,
-  LogOut,
-  Award,
-  Plus,
-  X,
-} from "lucide-react";
-import { useNavigate } from "react-router-dom";
-import API from "../api";
-import { getUserInitials } from "../utils/helpers";
+import React, { useState } from "react";
+import { Link, useNavigate } from "react-router-dom";
+import API, { setAuthToken, setUserData } from "../api"; // updated import
 
-function Student() {
-  const [student, setStudent] = useState(null);
-  const [activeTab, setActiveTab] = useState("courses");
-  const [showDropdown, setShowDropdown] = useState(false);
-  const [courses, setCourses] = useState([]);
-  const [jobs, setJobs] = useState([]);
-  const [applications, setApplications] = useState([]);
-  const [loading, setLoading] = useState(true);
+export default function Login() {
+  const [form, setForm] = useState({
+    email: "",
+    password: "",
+    role: "student",
+  });
 
-  const [newSkillName, setNewSkillName] = useState("");
-  const [newSkillLevel, setNewSkillLevel] = useState("Basic");
-
+  const [loading, setLoading] = useState(false);
+  const [error, setError] = useState("");
+  const [success, setSuccess] = useState("");
   const navigate = useNavigate();
 
-  // Load initial data
-  useEffect(() => {
-    const token = localStorage.getItem("token");
-    const userEmail = localStorage.getItem("userEmail");
+  const handleChange = (e) => {
+    const { name, value } = e.target;
+    setForm((prev) => ({ ...prev, [name]: value }));
+  };
 
-    if (!token || !userEmail) return navigate("/login");
+  const handleSubmit = async (e) => {
+    e.preventDefault();
+    setLoading(true);
+    setError("");
+    setSuccess("");
 
-    fetchStudentDetails(userEmail, token);
-    fetchCourses();
-    fetchJobs();
-  }, []);
-
-  // Fetch student by email
-  const fetchStudentDetails = async (email, token) => {
     try {
-      const res = await API.get(`/student/email/${encodeURIComponent(email)}`, {
-        headers: { Authorization: `Bearer ${token}` },
+      const res = await API.post("/login", {
+        email: form.email,
+        password: form.password,
+        role: form.role,
       });
 
-      setStudent(res.data);
-      fetchApplications(res.data._id);
+      // ✅ store token and user in localStorage
+      const { token, user } = res.data;
+      localStorage.setItem("token", token);
+      localStorage.setItem("userEmail", user.email);
+      localStorage.setItem("userName", user.name);
+      localStorage.setItem("userRole", user.role);
+
+      // Also set in axios defaults if using
+      setAuthToken(token);
+      setUserData(user);
+
+      setSuccess(`✅ Logged in as ${user.email}`);
+
+      // redirect based on role
+      if (user.role === "student") navigate("/student");
+      else if (user.role === "recruiter") navigate("/recruiter");
+      else if (user.role === "admin") navigate("/admin");
     } catch (err) {
-      console.error("Error fetching student:", err);
-      alert(err.response?.data?.message || err.message || "Failed to fetch student");
-      setLoading(false);
-      setStudent(null);
-      navigate("/login");
+      setError(err.response?.data?.message || "Invalid email or password!");
     } finally {
       setLoading(false);
     }
   };
-
-  // Fetch courses
-  const fetchCourses = async () => {
-    try {
-      const res = await API.get("/courses");
-      setCourses(res.data);
-    } catch (err) {
-      console.error("Error fetching courses:", err);
-      alert(err.response?.data?.message || "Failed to fetch courses");
-      setCourses([]);
-    }
-  };
-
-  // Fetch jobs
-  const fetchJobs = async () => {
-    try {
-      const res = await API.get("/jobs");
-      setJobs(res.data);
-    } catch (err) {
-      console.error("Error fetching jobs:", err);
-      alert(err.response?.data?.message || "Failed to fetch jobs");
-      setJobs([]);
-    }
-  };
-
-  // Fetch student applications
-  const fetchApplications = async (studentId) => {
-    try {
-      const token = localStorage.getItem("token");
-      const res = await API.get(`/applications/${studentId}`, {
-        headers: { Authorization: `Bearer ${token}` },
-      });
-      setApplications(res.data);
-    } catch (err) {
-      console.error("Error fetching applications:", err);
-      alert(err.response?.data?.message || "Failed to fetch applications");
-      setApplications([]);
-    }
-  };
-
-  // Enroll in course
-  const handleEnroll = async (courseId) => {
-    try {
-      if (!student?._id) throw new Error("Student not loaded");
-
-      const token = localStorage.getItem("token");
-      const res = await API.post(
-        `/student/enroll`,
-        { courseId },
-        { headers: { Authorization: `Bearer ${token}` } }
-      );
-
-      if (res.data.success) {
-        alert("Enrolled successfully!");
-        setStudent((prev) => ({
-          ...prev,
-          enrolledCourses: [...prev.enrolledCourses, courseId],
-        }));
-      }
-    } catch (err) {
-      console.error("Enrollment error:", err);
-      alert(err.response?.data?.message || err.message || "Enrollment failed");
-    }
-  };
-
-  // Skill management
-  const handleAddSkill = () => {
-    if (!newSkillName.trim()) return alert("Please enter a skill name");
-    if (student) {
-      const updatedSkills = [...student.skills, { name: newSkillName.trim(), level: newSkillLevel }];
-      setStudent({ ...student, skills: updatedSkills });
-      setNewSkillName("");
-      setNewSkillLevel("Basic");
-    }
-  };
-
-  const handleRemoveSkill = (index) => {
-    if (student) {
-      const updatedSkills = student.skills.filter((_, i) => i !== index);
-      setStudent({ ...student, skills: updatedSkills });
-    }
-  };
-
-  const getSkillColor = (level) => {
-    switch (level) {
-      case "Basic": return "bg-red-100 text-red-700 border-red-300";
-      case "Intermediate": return "bg-yellow-100 text-yellow-700 border-yellow-300";
-      case "Advanced": return "bg-green-100 text-green-700 border-green-300";
-      default: return "bg-gray-100 text-gray-700 border-gray-300";
-    }
-  };
-
-  const handleLogout = () => {
-    localStorage.removeItem("token");
-    localStorage.removeItem("userName");
-    localStorage.removeItem("userEmail");
-    localStorage.removeItem("userRole");
-    navigate("/login");
-  };
-
-  const isCourseEnrolled = (course) =>
-    student?.enrolledCourses?.includes(course._id);
-
-  const enrolledCourses = student?.enrolledCourses?.length || 0;
-  const totalCourses = courses.length;
-  const progress = totalCourses ? Math.round((enrolledCourses / totalCourses) * 100) : 0;
-
-  if (loading) {
-    return (
-      <div className="min-h-screen flex items-center justify-center bg-gray-50">
-        <GraduationCap className="w-16 h-16 text-blue-600 animate-pulse" />
-        <p className="text-gray-600 mt-2">Loading...</p>
-      </div>
-    );
-  }
-
-  if (!student) {
-    return (
-      <div className="min-h-screen flex flex-col items-center justify-center bg-gray-50">
-        <p className="text-red-600 text-lg mb-4">Failed to load student profile.</p>
-        <button
-          onClick={() => navigate("/login")}
-          className="px-6 py-2 bg-blue-600 text-white rounded-lg hover:bg-blue-700"
-        >
-          Go to Login
-        </button>
-      </div>
-    );
-  }
-
 
   return (
     <div className="min-h-screen flex items-center justify-center bg-gradient-to-b from-indigo-100 to-white px-4">

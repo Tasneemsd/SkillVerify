@@ -33,20 +33,19 @@ function Student() {
 
   // Load initial data
   useEffect(() => {
+    const token = localStorage.getItem("token");
     const userEmail = localStorage.getItem("userEmail");
-    if (!userEmail) return navigate("/login");
 
-    fetchStudentDetails(userEmail);
+    if (!token || !userEmail) return navigate("/login");
+
+    fetchStudentDetails(userEmail, token);
     fetchCourses();
     fetchJobs();
   }, []);
 
   // Fetch student by email
-  const fetchStudentDetails = async (email) => {
+  const fetchStudentDetails = async (email, token) => {
     try {
-      const token = localStorage.getItem("token");
-      if (!token) throw new Error("No token found");
-
       const res = await API.get(`/student/email/${encodeURIComponent(email)}`, {
         headers: { Authorization: `Bearer ${token}` },
       });
@@ -58,6 +57,7 @@ function Student() {
       alert(err.response?.data?.message || err.message || "Failed to fetch student");
       setLoading(false);
       setStudent(null);
+      navigate("/login");
     } finally {
       setLoading(false);
     }
@@ -91,8 +91,6 @@ function Student() {
   const fetchApplications = async (studentId) => {
     try {
       const token = localStorage.getItem("token");
-      if (!token) throw new Error("No token found");
-
       const res = await API.get(`/applications/${studentId}`, {
         headers: { Authorization: `Bearer ${token}` },
       });
@@ -160,6 +158,7 @@ function Student() {
     localStorage.removeItem("token");
     localStorage.removeItem("userName");
     localStorage.removeItem("userEmail");
+    localStorage.removeItem("userRole");
     navigate("/login");
   };
 
@@ -192,7 +191,6 @@ function Student() {
       </div>
     );
   }
-
 
   return (
     <div className="min-h-screen bg-gray-50">
