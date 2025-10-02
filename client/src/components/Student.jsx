@@ -4,9 +4,6 @@ import {
   GraduationCap,
   MapPin,
   DollarSign,
-  Clock,
-  Star,
-  Briefcase,
   FileText,
   Award,
   Plus,
@@ -41,6 +38,7 @@ function Student() {
     fetchJobs();
   }, []);
 
+  // Fetch student
   const fetchStudentByEmail = async (email) => {
     try {
       const res = await API.get(`/student/email/${encodeURIComponent(email)}`);
@@ -52,7 +50,8 @@ function Student() {
       setStudent(studentData);
       fetchApplications();
     } catch (err) {
-      console.error(err);
+      console.error("Error fetching student:", err);
+      alert(err.response?.data?.message || err.message || "Failed to fetch student");
       setStudent(null);
       navigate("/login");
     } finally {
@@ -60,26 +59,29 @@ function Student() {
     }
   };
 
+  // Fetch courses
   const fetchCourses = async () => {
     try {
       const res = await API.get("/courses");
       setCourses(res.data);
     } catch (err) {
-      console.error(err);
+      console.error("Error fetching courses:", err);
       setCourses([]);
     }
   };
 
+  // Fetch jobs
   const fetchJobs = async () => {
     try {
       const res = await API.get("/jobs");
       setJobs(res.data);
     } catch (err) {
-      console.error(err);
+      console.error("Error fetching jobs:", err);
       setJobs([]);
     }
   };
 
+  // Fetch applications
   const fetchApplications = async () => {
     try {
       const token = localStorage.getItem("token");
@@ -88,11 +90,12 @@ function Student() {
       });
       setApplications(res.data);
     } catch (err) {
-      console.error(err);
+      console.error("Error fetching applications:", err);
       setApplications([]);
     }
   };
 
+  // Enroll
   const handleEnroll = async (courseId) => {
     try {
       if (!student?._id) throw new Error("Student not loaded");
@@ -113,12 +116,12 @@ function Student() {
         }));
       }
     } catch (err) {
-      console.error(err);
+      console.error("Enrollment error:", err);
       alert(err.response?.data?.message || err.message || "Enrollment failed");
     }
   };
 
-  // Skill management
+  // Skills
   const handleAddSkill = () => {
     if (!newSkillName.trim()) return alert("Please enter a skill name");
     const updatedSkills = [
@@ -154,14 +157,13 @@ function Student() {
   };
 
   const isCourseEnrolled = (course) =>
-    student?.enrolledCourses?.includes(course._id) ?? false;
+    student?.enrolledCourses?.includes(course._id);
 
   const enrolledCourses = student?.enrolledCourses?.length || 0;
   const totalCourses = courses.length;
-  const progress = totalCourses
-    ? Math.round((enrolledCourses / totalCourses) * 100)
-    : 0;
+  const progress = totalCourses ? Math.round((enrolledCourses / totalCourses) * 100) : 0;
 
+  // Loading
   if (loading)
     return (
       <div className="min-h-screen flex items-center justify-center bg-gray-50">
@@ -226,24 +228,28 @@ function Student() {
 
       {/* Hero Section */}
       <div className="bg-gradient-to-r from-blue-600 via-blue-700 to-blue-800 text-white">
-        <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-12 flex flex-col md:flex-row justify-between items-center">
-          <div className="z-10 text-center md:text-left">
-            <h1 className="text-4xl md:text-5xl font-bold mb-2">
-              Welcome, {student?.name?.split(" ")[0] || "Student"}!
-            </h1>
-            <p className="text-xl md:text-2xl font-medium mb-3">Ready to kickstart your career?</p>
-            <p className="text-lg opacity-95 mb-6">Explore courses, enhance your skills, and land your dream job.</p>
-            <button
-              onClick={() => setActiveTab("courses")}
-              className="bg-yellow-400 text-gray-900 font-bold px-8 py-3 rounded-lg hover:bg-yellow-500 transition-all duration-200 shadow-lg"
-            >
-              Explore Courses
-            </button>
-          </div>
-          <div className="hidden md:block mt-6 md:mt-0">
-            <div className="bg-white/10 backdrop-blur-sm p-8 rounded-2xl">
-              <div className="w-64 h-64 bg-gradient-to-br from-blue-400 to-blue-600 rounded-full flex items-center justify-center">
-                <FileText className="w-32 h-32 text-white" />
+        <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-12">
+          <div className="flex flex-col md:flex-row justify-between items-center">
+            <div className="z-10 text-center md:text-left">
+              <h1 className="text-4xl md:text-5xl font-bold mb-2">
+                Welcome, {student?.name ? student.name.split(" ")[0] : "Student"}!
+              </h1>
+              <p className="text-xl md:text-2xl font-medium mb-3">Ready to kickstart your career?</p>
+              <p className="text-lg opacity-95 mb-6">
+                Explore courses, enhance your skills, and land your dream job.
+              </p>
+              <button
+                onClick={() => setActiveTab("courses")}
+                className="bg-yellow-400 text-gray-900 font-bold px-8 py-3 rounded-lg hover:bg-yellow-500 transition-all duration-200 shadow-lg"
+              >
+                Explore Courses
+              </button>
+            </div>
+            <div className="hidden md:block mt-6 md:mt-0">
+              <div className="bg-white/10 backdrop-blur-sm p-8 rounded-2xl">
+                <div className="w-64 h-64 bg-gradient-to-br from-blue-400 to-blue-600 rounded-full flex items-center justify-center">
+                  <FileText className="w-32 h-32 text-white" />
+                </div>
               </div>
             </div>
           </div>
@@ -278,45 +284,95 @@ function Student() {
         </div>
       </div>
 
+
       {/* Tab Content */}
       <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
         {/* Available Courses */}
         {activeTab === "courses" && (
-          <div className="grid md:grid-cols-2 lg:grid-cols-4 gap-6">
-            {courses.map((course) => (
-              <div key={course._id} className="bg-white rounded-xl shadow-md hover:shadow-xl transition-all duration-300 overflow-hidden border border-gray-200">
-                <div className="p-6">
-                  <h3 className="font-bold text-lg mb-2">{course.courseName}</h3>
-                  <p className="text-sm text-gray-600">{course.courseDuration}</p>
+          <div>
+            <h2 className="text-2xl font-bold text-gray-800 mb-6">
+              Placement Guarantee Courses we offer
+            </h2>
+            <div className="grid md:grid-cols-2 lg:grid-cols-4 gap-6">
+              {courses.map((course) => (
+                <div
+                  key={course._id}
+                  className="bg-white rounded-xl shadow-md hover:shadow-xl transition-all duration-300 overflow-hidden border border-gray-200"
+                >
+                  <div className="relative">
+                    <div className="absolute top-3 left-0 bg-yellow-400 text-gray-900 text-xs px-3 py-1 font-bold rounded-r-lg shadow z-10">
+                      New
+                    </div>
+                    <div className="bg-gradient-to-br from-purple-200 via-blue-200 to-indigo-200 p-6 pt-12 relative h-40 flex items-center justify-center">
+                      <div className="text-center">
+                        <GraduationCap className="w-16 h-16 text-blue-600 mx-auto mb-2" />
+                      </div>
+                      <div className="absolute top-3 right-3 bg-yellow-500 text-white text-xs px-2 py-1 rounded-full font-bold flex items-center gap-1">
+                        <Star className="w-3 h-3 fill-white" />
+                        {course.rating}
+                      </div>
+                    </div>
+                  </div>
+
+                  <div className="p-4 space-y-3">
+                    <h3 className="text-lg font-bold text-gray-800 line-clamp-2 min-h-[3.5rem]">
+                      {course.courseName}
+                    </h3>
+
+                    <div className="text-xs text-gray-600 bg-green-50 px-2 py-1 rounded inline-block">
+                      with guaranteed job
+                    </div>
+
+                    <div className="space-y-2 text-sm text-gray-600">
+                      <div className="flex items-center gap-2">
+                        <Clock className="w-4 h-4 text-gray-400" />
+                        <span>{course.courseDuration} course</span>
+                      </div>
+                      <div className="flex items-center gap-2">
+                        <DollarSign className="w-4 h-4 text-gray-400" />
+                        <span>Get confirmed {course.highestSalary} salary</span>
+                      </div>
+                      <div className="flex items-center gap-2">
+                        <Briefcase className="w-4 h-4 text-gray-400" />
+                        <span>1.08 Lac+ jobs/internships posted on Internshala</span>
+                      </div>
+                    </div>
+                  </div>
+
+                  <div className="border-t p-4 bg-gray-50">
+                    <div className="flex justify-between items-center mb-3">
+                      <span className="text-sm text-red-600 font-semibold">
+                        Application closes today!
+                      </span>
+                    </div>
+                    <div className="flex gap-2">
+                      <button
+                        className={`flex-1 py-2 rounded-lg text-sm font-semibold transition-all duration-200 ${isCourseEnrolled(course)
+                          ? "bg-gray-300 text-gray-600 cursor-not-allowed"
+                          : "bg-green-600 text-white hover:bg-green-700"
+                          }`}
+                        disabled={isCourseEnrolled(course)}
+                        onClick={() => handleEnroll(course._id)}
+                      >
+                        {isCourseEnrolled(course) ? "Enrolled" : "Enroll"}
+                      </button>
+                      <button className="flex-1 py-2 bg-blue-600 text-white rounded-lg hover:bg-blue-700 text-sm font-semibold transition-all duration-200 onClick={() => navigate(`/courses/${course._id}`)}>">
+                       Know More
+                      </button>
+                    </div>
+                  </div>
                 </div>
-                <div className="flex gap-2 p-4">
-                  <button
-                    onClick={() => handleEnroll(course._id)}
-                    disabled={isCourseEnrolled(course)}
-                    className={`flex-1 py-2 rounded-lg text-sm font-semibold transition-all duration-200 ${
-                      isCourseEnrolled(course)
-                        ? "bg-gray-300 text-gray-600 cursor-not-allowed"
-                        : "bg-green-600 text-white hover:bg-green-700"
-                    }`}
-                  >
-                    {isCourseEnrolled(course) ? "Enrolled" : "Enroll"}
-                  </button>
-                  <button
-                    onClick={() => navigate(`/courses/${course._id}`)}
-                    className="flex-1 py-2 bg-blue-600 text-white rounded-lg hover:bg-blue-700 text-sm font-semibold"
-                  >
-                    Know More
-                  </button>
-                </div>
-              </div>
-            ))}
+              ))}
+            </div>
           </div>
         )}
 
         {/* My Courses */}
         {activeTab === "myCourses" && (
           <div>
-            <h2 className="text-2xl font-bold mb-6">My Enrolled Courses</h2>
+            <h2 className="text-2xl font-bold text-gray-800 mb-6">
+              My Enrolled Courses
+            </h2>
             {enrolledCourses === 0 ? (
               <div className="text-center py-16 bg-white rounded-lg shadow">
                 <GraduationCap className="w-16 h-16 text-gray-300 mx-auto mb-4" />
@@ -330,20 +386,33 @@ function Student() {
               </div>
             ) : (
               <div className="space-y-4">
-                {courses.filter(isCourseEnrolled).map((course) => (
-                  <div key={course._id} className="bg-white shadow-md rounded-lg p-6 flex justify-between items-center border border-gray-200">
-                    <div>
-                      <h3 className="font-bold text-lg">{course.courseName}</h3>
-                      <p className="text-sm text-gray-600">{course.courseDuration}</p>
-                    </div>
-                    <button
-                      onClick={() => navigate(`/courses/${course._id}`)}
-                      className="px-6 py-2 bg-blue-600 text-white rounded-lg hover:bg-blue-700 font-semibold"
+                {courses
+                  .filter((c) => isCourseEnrolled(c))
+                  .map((course) => (
+                    <div
+                      key={course._id}
+                      className="bg-white shadow-md rounded-lg p-6 hover:shadow-lg transition-all duration-200 border border-gray-200 flex justify-between items-center"
                     >
-                      View
-                    </button>
-                  </div>
-                ))}
+                      <div className="flex-1">
+                        <h3 className="text-lg font-bold text-gray-800 mb-2">
+                          {course.courseName}
+                        </h3>
+                        <div className="flex items-center gap-4 text-sm text-gray-600">
+                          <div className="flex items-center gap-1">
+                            <Clock className="w-4 h-4" />
+                            <span>{course.courseDuration}</span>
+                          </div>
+                          <div className="flex items-center gap-1">
+                            <Star className="w-4 h-4 text-yellow-500 fill-yellow-500" />
+                            <span>{course.rating}</span>
+                          </div>
+                        </div>
+                      </div>
+                      <button className="px-6 py-2 bg-blue-600 text-white rounded-lg hover:bg-blue-700 font-semibold transition-all duration-200">
+                        View
+                      </button>
+                    </div>
+                  ))}
               </div>
             )}
           </div>
