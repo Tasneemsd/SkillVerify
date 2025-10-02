@@ -235,123 +235,123 @@ function Student() {
     );
   return (
     <div className="min-h-screen bg-gray-50">
-      
-    <nav className="bg-white shadow-sm border-b sticky top-0 z-50">
-      <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
-        <div className="flex justify-between items-center h-16">
-          
-          {/* Logo / SVG */}
-          <div className="flex items-center">
-            <svg
-              xmlns="http://www.w3.org/2000/svg"
-              viewBox="0 0 1000 500"
-              className="h-16 w-auto"
-            >
-              <path
-                d="M100 50 L220 450 L340 50"
-                stroke="url(#grad1)"
-                strokeWidth="30"
-                fill="none"
-                strokeLinecap="round"
-                strokeLinejoin="round"
-              />
-              <circle cx="100" cy="50" r="12" fill="red" />
-              <circle cx="160" cy="250" r="12" fill="blue" />
-              <circle cx="220" cy="450" r="12" fill="green" />
 
-              <defs>
-                <linearGradient id="grad1" x1="0%" y1="0%" x2="100%" y2="0%">
-                  <stop offset="0%" stopColor="#e63946" />
-                  <stop offset="50%" stopColor="#1d4ed8" />
-                  <stop offset="100%" stopColor="#22c55e" />
-                </linearGradient>
-              </defs>
+      <nav className="bg-white shadow-sm border-b sticky top-0 z-50">
+        <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+          <div className="flex justify-between items-center h-16">
 
-              <text
-                x="370"
-                y="250"
-                fontSize="100"
-                fontWeight="bold"
-                fill="#1d4ed8"
-                fontFamily="Arial, sans-serif"
+            {/* Logo / SVG */}
+            <div className="flex items-center">
+              <svg
+                xmlns="http://www.w3.org/2000/svg"
+                viewBox="0 0 1000 500"
+                className="h-16 w-auto"
               >
-                HIRE
-              </text>
-              <text
-                x="650"
-                y="250"
-                fontSize="100"
-                fontWeight="bold"
-                fill="#22c55e"
-                fontFamily="Arial, sans-serif"
-              >
-                TODAY
-              </text>
+                <path
+                  d="M100 50 L220 450 L340 50"
+                  stroke="url(#grad1)"
+                  strokeWidth="30"
+                  fill="none"
+                  strokeLinecap="round"
+                  strokeLinejoin="round"
+                />
+                <circle cx="100" cy="50" r="12" fill="red" />
+                <circle cx="160" cy="250" r="12" fill="blue" />
+                <circle cx="220" cy="450" r="12" fill="green" />
 
-              <line
-                x1="370"
-                y1="280"
-                x2="900"
-                y2="280"
-                stroke="#22c55e"
-                strokeWidth="8"
-              />
-              <circle cx="370" cy="280" r="8" fill="red" />
-              <circle cx="900" cy="280" r="8" fill="green" />
-            </svg>
-          </div>
+                <defs>
+                  <linearGradient id="grad1" x1="0%" y1="0%" x2="100%" y2="0%">
+                    <stop offset="0%" stopColor="#e63946" />
+                    <stop offset="50%" stopColor="#1d4ed8" />
+                    <stop offset="100%" stopColor="#22c55e" />
+                  </linearGradient>
+                </defs>
 
-          {/* Profile Section */}
-          <div className="relative flex items-center gap-3">
-            {/* Welcome Text */}
-            <div className="hidden sm:block">
-              <p className="text-gray-700 font-medium">
-                Welcome,{" "}
-                <span className="font-bold">{student?.name || "Student"}</span>
-              </p>
+                <text
+                  x="370"
+                  y="250"
+                  fontSize="100"
+                  fontWeight="bold"
+                  fill="#1d4ed8"
+                  fontFamily="Arial, sans-serif"
+                >
+                  HIRE
+                </text>
+                <text
+                  x="650"
+                  y="250"
+                  fontSize="100"
+                  fontWeight="bold"
+                  fill="#22c55e"
+                  fontFamily="Arial, sans-serif"
+                >
+                  TODAY
+                </text>
+
+                <line
+                  x1="370"
+                  y1="280"
+                  x2="900"
+                  y2="280"
+                  stroke="#22c55e"
+                  strokeWidth="8"
+                />
+                <circle cx="370" cy="280" r="8" fill="red" />
+                <circle cx="900" cy="280" r="8" fill="green" />
+              </svg>
             </div>
 
-            {/* Initials Button */}
-            <button
-              onClick={() => setShowDropdown(!showDropdown)}
-              className="w-10 h-10 rounded-full bg-blue-600 text-white flex items-center justify-center font-semibold text-sm hover:bg-blue-700 transition-all duration-200"
-            >
-              {getUserInitials(student?.name)}
-            </button>
-
-            {/* Dropdown */}
-            {showDropdown && (
-              <div className="absolute right-0 mt-2 w-56 bg-white rounded-lg shadow-xl py-2 z-50 border border-gray-200">
-                <div className="px-4 py-3 border-b">
-                  <p className="font-semibold text-gray-800">
-                    {student?.name || "Student"}
-                  </p>
-                  <p className="text-xs text-gray-500">
-                    {student?.branch || "CSE"}
-                  </p>
-                </div>
-                <button
-                  onClick={() => {
-                    navigate("/student/profile");
-                    setShowDropdown(false);
-                  }}
-                  className="flex items-center gap-2 w-full text-left px-4 py-2 text-sm text-gray-700 hover:bg-gray-50 transition-colors"
-                >
-                  <Award className="w-4 h-4" /> Profile
-                </button>
-
-                <button
-                  onClick={handleLogout}
-                  className="flex items-center gap-2 w-full text-left px-4 py-2 text-sm text-red-600 hover:bg-red-50 transition-colors"
-                >
-                  <LogOut className="w-4 h-4" /> Logout
-                </button>
+            {/* Profile Section */}
+            <div className="relative flex items-center gap-3">
+              {/* Welcome Text */}
+              <div className="hidden sm:block">
+                <p className="text-gray-700 font-medium">
+                  Welcome,{" "}
+                  <span className="font-bold">{student?.name || "Student"}</span>
+                </p>
               </div>
-            )}
+
+              {/* Initials Button */}
+              <button
+                onClick={() => setShowDropdown(!showDropdown)}
+                className="w-10 h-10 rounded-full bg-blue-600 text-white flex items-center justify-center font-semibold text-sm hover:bg-blue-700 transition-all duration-200"
+              >
+                {getUserInitials(student?.name)}
+              </button>
+
+              {/* Dropdown */}
+              {showDropdown && (
+                <div className="absolute right-0 top-full mt-2 w-56 bg-white rounded-lg shadow-xl py-2 z-50 border border-gray-200">
+                  <div className="px-4 py-3 border-b">
+                    <p className="font-semibold text-gray-800">
+                      {student?.name || "Student"}
+                    </p>
+                    <p className="text-xs text-gray-500">
+                      {student?.branch || "CSE"}
+                    </p>
+                  </div>
+                  <button
+                    onClick={() => {
+                      navigate("/student/profile");
+                      setShowDropdown(false);
+                    }}
+                    className="flex items-center gap-2 w-full text-left px-4 py-2 text-sm text-gray-700 hover:bg-gray-50 transition-colors"
+                  >
+                    <Award className="w-4 h-4" /> Profile
+                  </button>
+
+                  <button
+                    onClick={handleLogout}
+                    className="flex items-center gap-2 w-full text-left px-4 py-2 text-sm text-red-600 hover:bg-red-50 transition-colors"
+                  >
+                    <LogOut className="w-4 h-4" /> Logout
+                  </button>
+                </div>
+              )}
+            </div>
           </div>
         </div>
-      </div>
-    </nav>
+      </nav>
       {/* Hero Section */}
       <div className="bg-gradient-to-r from-blue-600 via-blue-700 to-blue-800 text-white">
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-12">
@@ -376,7 +376,7 @@ function Student() {
                 <div className="bg-white/10 backdrop-blur-sm p-8 rounded-2xl shadow-lg">
                   <div className="w-64 h-64 bg-gradient-to-br from-blue-400 to-blue-600 rounded-full flex items-center justify-center">
                     <img
-                      src="https://encrypted-tbn0.gstatic.com/images?q=tbn:ANd9GcQ4v_yrmx5GdQbfbvNyDEODvRXohkMnGz8pptYly0MvreTwACjFbIkd31rteWn1DBHqZuk&usqp=CAU"
+                      src="https://unblast.com/wp-content/uploads/2020/05/Job-Hunting-Illustration.jpg"
                       alt="Student Illustration"
                       className="w-56 h-56 object-cover rounded-full drop-shadow-lg"
                     />
