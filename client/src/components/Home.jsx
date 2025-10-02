@@ -45,7 +45,7 @@ export default function Home() {
             {/* User / Auth Buttons */}
             <div className="hidden md:flex items-center gap-3">
               {/* Login/Register if user not logged in */}
-              {!user ? (
+              {!User ? (
                 <>
                   <button
                     className="px-4 py-2 border border-blue-600 text-blue-600 rounded-lg hover:bg-blue-50 transition"
