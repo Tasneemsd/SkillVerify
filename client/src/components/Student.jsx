@@ -1,3 +1,4 @@
+// src/components/Student.jsx
 import { useState, useEffect } from "react";
 import {
   GraduationCap,
@@ -121,7 +122,10 @@ function Student() {
   const handleAddSkill = () => {
     if (!newSkillName.trim()) return alert("Please enter a skill name");
     if (student) {
-      const updatedSkills = [...student.skills, { name: newSkillName.trim(), level: newSkillLevel }];
+      const updatedSkills = [
+        ...student.skills,
+        { name: newSkillName.trim(), level: newSkillLevel },
+      ];
       setStudent({ ...student, skills: updatedSkills });
       setNewSkillName("");
       setNewSkillLevel("Basic");
@@ -137,10 +141,14 @@ function Student() {
 
   const getSkillColor = (level) => {
     switch (level) {
-      case "Basic": return "bg-red-100 text-red-700 border-red-300";
-      case "Intermediate": return "bg-yellow-100 text-yellow-700 border-yellow-300";
-      case "Advanced": return "bg-green-100 text-green-700 border-green-300";
-      default: return "bg-gray-100 text-gray-700 border-gray-300";
+      case "Basic":
+        return "bg-red-100 text-red-700 border-red-300";
+      case "Intermediate":
+        return "bg-yellow-100 text-yellow-700 border-yellow-300";
+      case "Advanced":
+        return "bg-green-100 text-green-700 border-green-300";
+      default:
+        return "bg-gray-100 text-gray-700 border-gray-300";
     }
   };
 
@@ -157,7 +165,9 @@ function Student() {
 
   const enrolledCourses = student?.enrolledCourses?.length || 0;
   const totalCourses = courses.length;
-  const progress = totalCourses ? Math.round((enrolledCourses / totalCourses) * 100) : 0;
+  const progress = totalCourses
+    ? Math.round((enrolledCourses / totalCourses) * 100)
+    : 0;
 
   if (loading) {
     return (
@@ -205,8 +215,12 @@ function Student() {
               {showDropdown && (
                 <div className="absolute right-0 mt-2 w-56 bg-white rounded-lg shadow-xl py-2 z-50 border border-gray-200">
                   <div className="px-4 py-3 border-b">
-                    <p className="font-semibold text-gray-800">{student?.name || "Student"}</p>
-                    <p className="text-xs text-gray-500">{student?.branch || "CSE"}</p>
+                    <p className="font-semibold text-gray-800">
+                      {student?.name || "Student"}
+                    </p>
+                    <p className="text-xs text-gray-500">
+                      {student?.branch || "CSE"}
+                    </p>
                   </div>
                   <button
                     onClick={() => {
@@ -363,8 +377,8 @@ function Student() {
                       >
                         {isCourseEnrolled(course) ? "Enrolled" : "Enroll"}
                       </button>
-                      <button className="flex-1 py-2 bg-blue-600 text-white rounded-lg hover:bg-blue-700 text-sm font-semibold transition-all duration-200">
-                        Know More
+                      <button className="flex-1 py-2 bg-blue-600 text-white rounded-lg hover:bg-blue-700 text-sm font-semibold transition-all duration-200 onClick={() => navigate(`/courses/${course._id}`)}>">
+                       Know More
                       </button>
                     </div>
                   </div>
