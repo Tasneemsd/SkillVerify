@@ -4,111 +4,41 @@ const Recruiter = require("../models/Recruiter");
 const jwt = require("jsonwebtoken");
 const router = express.Router();
 
-// PUT /api/jobs/:id - recruiter updates their own job (partial update)
-router.put("/:id", async (req, res) => {
+// Middleware to verify recruiter token
+const verifyRecruiter = async (req, res, next) => {
   try {
     const token = req.headers.authorization?.split(" ")[1];
     if (!token) return res.status(401).json({ message: "No token provided" });
 
     const decoded = jwt.verify(token, process.env.JWT_SECRET);
     if (decoded.role !== "recruiter")
-      return res.status(403).json({ message: "Only recruiters can update jobs" });
+      return res.status(403).json({ message: "Only recruiters can perform this action" });
 
-    const recruiter = await Recruiter.findOne({ email: decoded.email });
-    if (!recruiter) return res.status(404).json({ message: "Recruiter not found" });
+    req.recruiter = await Recruiter.findOne({ email: decoded.email });
+    if (!req.recruiter) return res.status(404).json({ message: "Recruiter not found" });
 
-    const job = await Job.findById(req.params.id);
-    if (!job) return res.status(404).json({ message: "Job not found" });
-
-    if (String(job.postedBy) !== String(recruiter._id)) {
-      return res.status(403).json({ message: "You can only update your own jobs" });
-    }
-
-    // Only update provided fields
-    Object.keys(req.body).forEach((key) => {
-      if (req.body[key] !== undefined) job[key] = req.body[key];
-    });
-
-    await job.save();
-    res.json({ message: "Job updated successfully", job });
+    next();
   } catch (err) {
-    res.status(500).json({ message: "Failed to update job", error: err.message });
+    res.status(401).json({ message: "Invalid token", error: err.message });
   }
-});
-
-// DELETE /api/jobs/:id - recruiter deletes their own job
-router.delete("/:id", async (req, res) => {
-  try {
-    const token = req.headers.authorization?.split(" ")[1];
-    if (!token) return res.status(401).json({ message: "No token provided" });
-
-    const decoded = jwt.verify(token, process.env.JWT_SECRET);
-    if (decoded.role !== "recruiter")
-      return res.status(403).json({ message: "Only recruiters can delete jobs" });
-
-    const recruiter = await Recruiter.findOne({ email: decoded.email });
-    if (!recruiter) return res.status(404).json({ message: "Recruiter not found" });
-
-    const job = await Job.findById(req.params.id);
-    if (!job) return res.status(404).json({ message: "Job not found" });
-
-    if (String(job.postedBy) !== String(recruiter._id)) {
-      return res.status(403).json({ message: "You can only delete your own jobs" });
-    }
-
-    await job.deleteOne();
-    res.json({ message: "Job deleted successfully" });
-  } catch (err) {
-    res.status(500).json({ message: "Failed to delete job", error: err.message });
-  }
-});
-
-// GET /api/jobs/mine - list jobs posted by the logged-in recruiter
-router.get("/mine", async (req, res) => {
-  try {
-    const token = req.headers.authorization?.split(" ")[1];
-    if (!token) return res.status(401).json({ message: "No token provided" });
-
-    const decoded = jwt.verify(token, process.env.JWT_SECRET);
-    if (decoded.role !== "recruiter")
-      return res.status(403).json({ message: "Only recruiters can view their jobs" });
-
-    const recruiter = await Recruiter.findOne({ email: decoded.email });
-    if (!recruiter) return res.status(404).json({ message: "Recruiter not found" });
-
-    const jobs = await Job.find({ postedBy: recruiter._id }).sort({ postedAt: -1 });
-    res.json(jobs);
-  } catch (err) {
-    res.status(500).json({ message: "Failed to fetch your jobs", error: err.message });
-  }
-});
+};
 
 // POST /api/jobs - recruiter posts a job/internship
-router.post("/", async (req, res) => {
+router.post("/", verifyRecruiter, async (req, res) => {
   try {
-    const token = req.headers.authorization?.split(" ")[1];
-    if (!token) return res.status(401).json({ message: "No token provided" });
-
-    const decoded = jwt.verify(token, process.env.JWT_SECRET);
-    if (decoded.role !== "recruiter")
-      return res.status(403).json({ message: "Only recruiters can post jobs" });
-
-    const recruiter = await Recruiter.findOne({ email: decoded.email });
-    if (!recruiter) return res.status(404).json({ message: "Recruiter not found" });
-
-    // Ensure salary is numeric
-    const salary = Number(req.body.salary) || 0;
+    const { salary, stipend, type } = req.body;
 
     // Internship salary validation
-    if (req.body.type === "Internship" && salary < 10000) {
+    const finalSalary = Number(salary) || Number(stipend) || 0;
+    if (type === "Internship" && finalSalary < 10000) {
       return res.status(400).json({ message: "Internship salary must be at least 10000" });
     }
 
     const job = new Job({
       ...req.body,
-      salary,
-      postedBy: recruiter._id,
-      postedByEmail: recruiter.email,
+      salary: finalSalary,
+      postedBy: req.recruiter._id,
+      postedByEmail: req.recruiter.email,
     });
 
     await job.save();
@@ -123,17 +53,80 @@ router.get("/", async (req, res) => {
   try {
     let jobs = await Job.find().populate("postedBy", "name email");
 
-    // Ensure internships < 10000 are excluded
-    jobs = jobs.filter((job) => {
-      if (job.type === "Internship") {
-        return job.salary >= 10000;
-      }
-      return true;
-    });
+    // Filter and map for frontend
+    jobs = jobs
+      .filter((job) => job.isActive) // only active jobs
+      .map((job) => ({
+        _id: job._id,
+        title: job.title,
+        description: job.description,
+        type: job.type,
+        company: job.postedBy.name || "Company",
+        location: job.location,
+        salary: job.salary || 0,
+        skills: job.skillsRequired,
+        postedBy: job.postedBy._id,
+        postedByEmail: job.postedByEmail,
+        postedAt: job.postedAt,
+        isActive: job.isActive,
+      }));
 
     res.json(jobs);
   } catch (err) {
-    res.status(500).json({ message: "Failed to fetch jobs" });
+    res.status(500).json({ message: "Failed to fetch jobs", error: err.message });
+  }
+});
+
+// GET /api/jobs/mine - list jobs posted by logged-in recruiter
+router.get("/mine", verifyRecruiter, async (req, res) => {
+  try {
+    const jobs = await Job.find({ postedBy: req.recruiter._id }).sort({ postedAt: -1 });
+    res.json(jobs);
+  } catch (err) {
+    res.status(500).json({ message: "Failed to fetch your jobs", error: err.message });
+  }
+});
+
+// PUT /api/jobs/:id - recruiter updates their own job
+router.put("/:id", verifyRecruiter, async (req, res) => {
+  try {
+    const job = await Job.findById(req.params.id);
+    if (!job) return res.status(404).json({ message: "Job not found" });
+
+    if (String(job.postedBy) !== String(req.recruiter._id)) {
+      return res.status(403).json({ message: "You can only update your own jobs" });
+    }
+
+    Object.keys(req.body).forEach((key) => {
+      if (req.body[key] !== undefined) job[key] = req.body[key];
+    });
+
+    // Validate internship salary
+    if (job.type === "Internship" && job.salary < 10000) {
+      return res.status(400).json({ message: "Internship salary must be at least 10000" });
+    }
+
+    await job.save();
+    res.json({ message: "Job updated successfully", job });
+  } catch (err) {
+    res.status(500).json({ message: "Failed to update job", error: err.message });
+  }
+});
+
+// DELETE /api/jobs/:id - recruiter deletes their own job
+router.delete("/:id", verifyRecruiter, async (req, res) => {
+  try {
+    const job = await Job.findById(req.params.id);
+    if (!job) return res.status(404).json({ message: "Job not found" });
+
+    if (String(job.postedBy) !== String(req.recruiter._id)) {
+      return res.status(403).json({ message: "You can only delete your own jobs" });
+    }
+
+    await job.deleteOne();
+    res.json({ message: "Job deleted successfully" });
+  } catch (err) {
+    res.status(500).json({ message: "Failed to delete job", error: err.message });
   }
 });
 

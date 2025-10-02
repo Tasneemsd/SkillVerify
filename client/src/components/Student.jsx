@@ -608,24 +608,26 @@ function Student() {
                   >
                     <div className="flex items-start justify-between mb-4">
                       <h3 className="text-lg font-bold text-gray-800 flex-1">
-                        {job.title}
+                        {job.title || "Untitled Job"}
                       </h3>
                       <span className="text-xs bg-blue-100 text-blue-700 px-2 py-1 rounded-full font-semibold">
-                        {job.type}
+                        {job.type || "N/A"}
                       </span>
                     </div>
 
-                    <p className="text-gray-700 font-semibold mb-3">{job.company}</p>
+                    <p className="text-gray-700 font-semibold mb-3">
+                      {job.company || "Unknown Company"}
+                    </p>
 
                     <div className="space-y-2 mb-4 text-sm text-gray-600">
                       <div className="flex items-center gap-2">
                         <MapPin className="w-4 h-4 text-gray-400" />
-                        <span>{job.location}</span>
+                        <span>{job.location || "Location not specified"}</span>
                       </div>
                       <div className="flex items-center gap-2">
                         <DollarSign className="w-4 h-4 text-gray-400" />
                         <span className="font-semibold text-green-600">
-                          {job.salary}
+                          {job.salary || job.stipend || "Not specified"}
                         </span>
                       </div>
                     </div>

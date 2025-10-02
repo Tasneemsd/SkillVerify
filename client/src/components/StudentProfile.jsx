@@ -1,10 +1,9 @@
 // src/components/StudentProfile.jsx
 import { useState, useEffect } from "react";
 import { useNavigate, Link } from "react-router-dom";
-import { 
+import {
   FileText, Github, Linkedin, Globe, Upload, Edit, Save, X,
-  GraduationCap, MapPin, DollarSign, Clock, Star, Briefcase,
-  User, LogOut 
+  GraduationCap, Briefcase, User, LogOut, Star
 } from "lucide-react";
 import API from "../api";
 
@@ -82,13 +81,13 @@ function StudentProfile() {
   return (
     <div>
       {/* Navbar */}
-      <nav className="bg-white shadow-sm border-b sticky top-0 z-50 overflow-visible">
+      <nav className="bg-white shadow-sm border-b sticky top-0 z-50">
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
           <div className="flex justify-between h-16 items-center">
             {/* Logo */}
             <Link to="/" className="flex items-center gap-2 text-blue-600 font-bold text-xl">
               <GraduationCap className="w-6 h-6" />
-             <img src="/logos.png" alt="Logo" className="h-8" />
+              <img src="/logos.png" alt="Logo" className="h-8 w-auto" />
             </Link>
 
             {/* Menu */}
@@ -191,32 +190,34 @@ function StudentProfile() {
 
             {/* Social Links */}
             <div className="flex gap-3 mt-4">
-              <input
-                type="text"
-                name="github"
-                placeholder="GitHub URL"
-                value={formData.github || ""}
-                onChange={handleChange}
-                className={`${isEditing ? "border px-2 py-1 rounded-lg" : "hidden"}`}
-              />
-              <input
-                type="text"
-                name="linkedin"
-                placeholder="LinkedIn URL"
-                value={formData.linkedin || ""}
-                onChange={handleChange}
-                className={`${isEditing ? "border px-2 py-1 rounded-lg" : "hidden"}`}
-              />
-              <input
-                type="text"
-                name="leetcode"
-                placeholder="LeetCode URL"
-                value={formData.leetcode || ""}
-                onChange={handleChange}
-                className={`${isEditing ? "border px-2 py-1 rounded-lg" : "hidden"}`}
-              />
-
-              {!isEditing && (
+              {isEditing ? (
+                <>
+                  <input
+                    type="text"
+                    name="github"
+                    placeholder="GitHub URL"
+                    value={formData.github || ""}
+                    onChange={handleChange}
+                    className="border px-2 py-1 rounded-lg"
+                  />
+                  <input
+                    type="text"
+                    name="linkedin"
+                    placeholder="LinkedIn URL"
+                    value={formData.linkedin || ""}
+                    onChange={handleChange}
+                    className="border px-2 py-1 rounded-lg"
+                  />
+                  <input
+                    type="text"
+                    name="leetcode"
+                    placeholder="LeetCode URL"
+                    value={formData.leetcode || ""}
+                    onChange={handleChange}
+                    className="border px-2 py-1 rounded-lg"
+                  />
+                </>
+              ) : (
                 <>
                   {student.github && (
                     <a href={student.github} target="_blank" rel="noreferrer">
@@ -269,8 +270,7 @@ function StudentProfile() {
 
             <div className="grid md:grid-cols-2 gap-4 text-sm">
               <p>
-                <span className="font-semibold">Email:</span>{" "}
-                {student.email}
+                <span className="font-semibold">Email:</span> {student.email}
               </p>
               <p>
                 <span className="font-semibold">Graduation:</span>{" "}
@@ -303,19 +303,22 @@ function StudentProfile() {
               ) : (
                 <p className="text-gray-500">No resume uploaded</p>
               )}
-              <div className="flex gap-2 mt-3">
-                <input
-                  type="file"
-                  accept=".pdf,.doc,.docx"
-                  onChange={(e) => setResumeFile(e.target.files[0])}
-                />
-                <button
-                  onClick={handleResumeUpload}
-                  className="px-4 py-2 bg-green-600 text-white rounded-lg hover:bg-green-700 flex items-center gap-2"
-                >
-                  <Upload className="w-4 h-4" /> Upload
-                </button>
-              </div>
+
+              {isEditing && (
+                <div className="flex gap-2 mt-3">
+                  <input
+                    type="file"
+                    accept=".pdf,.doc,.docx"
+                    onChange={(e) => setResumeFile(e.target.files[0])}
+                  />
+                  <button
+                    onClick={handleResumeUpload}
+                    className="px-4 py-2 bg-green-600 text-white rounded-lg hover:bg-green-700 flex items-center gap-2"
+                  >
+                    <Upload className="w-4 h-4" /> Upload
+                  </button>
+                </div>
+              )}
             </div>
           </div>
         </div>
@@ -323,19 +326,95 @@ function StudentProfile() {
         {/* Skills */}
         <div className="bg-white shadow rounded-xl p-6 mt-6">
           <h3 className="text-xl font-semibold mb-4">Skills</h3>
-          {student.skills?.length > 0 ? (
-            <div className="flex flex-wrap gap-2">
-              {student.skills.map((s, i) => (
-                <span
-                  key={i}
-                  className="px-3 py-1 text-sm rounded-full bg-blue-100 text-blue-700"
+
+          {isEditing ? (
+            <div className="space-y-3">
+              {/* Current skills */}
+              <div className="flex flex-wrap gap-2">
+                {formData.skills?.map((s, i) => (
+                  <span
+                    key={i}
+                    className="px-3 py-1 text-sm rounded-full bg-blue-100 text-blue-700 flex items-center gap-2"
+                  >
+                    {s.name} ({s.level})
+                    <button
+                      onClick={() =>
+                        setFormData({
+                          ...formData,
+                          skills: formData.skills.filter((_, idx) => idx !== i),
+                        })
+                      }
+                      className="text-red-500 hover:text-red-700 text-xs"
+                    >
+                      ❌
+                    </button>
+                  </span>
+                ))}
+              </div>
+
+              {/* Add new skill */}
+              <div className="flex flex-col sm:flex-row gap-2">
+                <input
+                  type="text"
+                  placeholder="Skill name"
+                  className="border px-2 py-1 rounded-lg flex-1"
+                  value={formData.newSkillName || ""}
+                  onChange={(e) =>
+                    setFormData({ ...formData, newSkillName: e.target.value })
+                  }
+                />
+                <select
+                  className="border px-2 py-1 rounded-lg"
+                  value={formData.newSkillLevel || ""}
+                  onChange={(e) =>
+                    setFormData({ ...formData, newSkillLevel: e.target.value })
+                  }
                 >
-                  {s.name} ({s.level})
-                </span>
-              ))}
+                  <option value="">Select level</option>
+                  <option value="Beginner">Beginner</option>
+                  <option value="Intermediate">Intermediate</option>
+                  <option value="Advanced">Advanced</option>
+                </select>
+                <button
+                  type="button"
+                  onClick={() => {
+                    if (!formData.newSkillName || !formData.newSkillLevel) return;
+                    setFormData({
+                      ...formData,
+                      skills: [
+                        ...(formData.skills || []),
+                        {
+                          name: formData.newSkillName,
+                          level: formData.newSkillLevel,
+                        },
+                      ],
+                      newSkillName: "",
+                      newSkillLevel: "",
+                    });
+                  }}
+                  className="px-3 py-1 bg-green-600 text-white rounded-lg hover:bg-green-700"
+                >
+                  ➕ Add
+                </button>
+              </div>
             </div>
           ) : (
-            <p className="text-gray-500">No skills added yet.</p>
+            <>
+              {student.skills?.length > 0 ? (
+                <div className="flex flex-wrap gap-2">
+                  {student.skills.map((s, i) => (
+                    <span
+                      key={i}
+                      className="px-3 py-1 text-sm rounded-full bg-blue-100 text-blue-700"
+                    >
+                      {s.name} ({s.level})
+                    </span>
+                  ))}
+                </div>
+              ) : (
+                <p className="text-gray-500">No skills added yet.</p>
+              )}
+            </>
           )}
         </div>
       </div>
