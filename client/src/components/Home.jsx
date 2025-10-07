@@ -18,7 +18,8 @@ export default function Home() {
       {/* Navbar */}
       <header className="flex justify-between items-center px-8 py-4 shadow-sm sticky top-0 bg-white z-50">
         <div className="flex items-center space-x-2">
-          <img src="/logos.png" alt="VHireToday Logo" className="h-10 w-auto " />
+          <img src="/logos.png" alt="VHireToday Logo" className="h-14 md:h-16 w-auto" />
+
 
         </div>
         <nav className="hidden md:flex space-x-6 text-gray-700 font-medium ">
@@ -60,17 +61,14 @@ export default function Home() {
       </section>
 
       {/* Trusted Companies */}
-      {/* Trusted Companies with smooth scrolling */}
       <section className="py-12 bg-white text-center">
         <p className="text-gray-500 font-medium mb-8 text-lg">Trusted by 1000+ companies</p>
 
         <div className="overflow-hidden relative">
           <div className="flex animate-scroll whitespace-nowrap gap-12">
-
-            {/* Company Logos */}
             {[
-              "https://res.cloudinary.com/dm94ctges/image/upload/v1753619889/logo_bzvwmg.jpg", // Koderspark
-              "https://play-lh.googleusercontent.com/FPtxFPnbUNmOPvggNFaTUGPUr4DAb-djW6uWgG8lST76KTmZYko679Oh5g15gr4KAUZH", // BookMyShow
+              "https://res.cloudinary.com/dm94ctges/image/upload/v1753619889/logo_bzvwmg.jpg",
+              "https://play-lh.googleusercontent.com/FPtxFPnbUNmOPvggNFaTUGPUr4DAb-djW6uWgG8lST76KTmZYko679Oh5g15gr4KAUZH",
               "https://upload.wikimedia.org/wikipedia/commons/4/44/Microsoft_logo.svg",
               "https://upload.wikimedia.org/wikipedia/commons/a/a9/Amazon_logo.svg",
               "https://upload.wikimedia.org/wikipedia/commons/0/08/Netflix_2015_logo.svg",
@@ -82,27 +80,9 @@ export default function Home() {
                 <img src={logo} className="h-20 md:h-24 object-contain" alt={`Company ${index}`} />
               </div>
             ))}
-
-            {/* Repeat for smooth looping */}
-            {[
-              "https://res.cloudinary.com/dm94ctges/image/upload/v1753619889/logo_bzvwmg.jpg",
-              "https://play-lh.googleusercontent.com/FPtxFPnbUNmOPvggNFaTUGPUr4DAb-djW6uWgG8lST76KTmZYko679Oh5g15gr4KAUZH",
-              "https://upload.wikimedia.org/wikipedia/commons/4/44/Microsoft_logo.svg",
-              "https://upload.wikimedia.org/wikipedia/commons/a/a9/Amazon_logo.svg",
-              "https://upload.wikimedia.org/wikipedia/commons/0/08/Netflix_2015_logo.svg",
-              "https://upload.wikimedia.org/wikipedia/commons/2/2f/Google_2015_logo.svg",
-              "https://upload.wikimedia.org/wikipedia/commons/0/05/Facebook_Logo_%282019%29.png",
-              "https://upload.wikimedia.org/wikipedia/commons/c/ca/LinkedIn_logo_initials.png"
-            ].map((logo, index) => (
-              <div key={index + 100} className="inline-block p-4 bg-gray-50 rounded-xl shadow-md">
-                <img src={logo} className="h-20 md:h-24 object-contain" alt={`Company ${index}`} />
-              </div>
-            ))}
-
           </div>
         </div>
 
-        {/* Custom CSS for smooth scrolling */}
         <style jsx>{`
     @keyframes scroll {
       0% { transform: translateX(0); }
@@ -111,10 +91,11 @@ export default function Home() {
     .animate-scroll {
       display: flex;
       gap: 3rem;
-      animation: scroll 30s linear infinite;
+      animation: scroll 25s linear infinite;
     }
   `}</style>
       </section>
+
 
       {/* Trending Now */}
       <section id="trending" className="py-12 bg-gray-50 px-6 md:px-20">
