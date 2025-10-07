@@ -1,7 +1,25 @@
-import React from "react";
-import { FaGoogle, FaEnvelope } from "react-icons/fa";
+import React, { useState, useEffect } from "react";
+import { FaGoogle, FaEnvelope, FaArrowUp } from "react-icons/fa";
 
 export default function Home() {
+  const [showButton, setShowButton] = useState(false);
+
+  useEffect(() => {
+    const handleScroll = () => {
+      if (window.scrollY > 300) {
+        setShowButton(true);
+      } else {
+        setShowButton(false);
+      }
+    };
+    window.addEventListener("scroll", handleScroll);
+    return () => window.removeEventListener("scroll", handleScroll);
+  }, []);
+
+  const scrollToTop = () => {
+    window.scrollTo({ top: 0, behavior: "smooth" });
+  };
+
   return (
     <div className="font-sans bg-white text-gray-800">
       {/* Navbar */}
@@ -82,6 +100,97 @@ export default function Home() {
         </div>
       </section>
 
+      {/* 💼 Popular Categories */}
+      <section className="py-12 px-6 md:px-20 bg-white">
+        <h2 className="text-2xl font-bold mb-6">Popular Categories 💼</h2>
+        <div className="grid grid-cols-2 md:grid-cols-4 gap-6">
+          {["Web Development", "Data Science", "UI/UX Design", "Marketing", "Finance", "Human Resources", "AI & ML", "Content Writing"].map((cat) => (
+            <div key={cat} className="bg-gray-100 text-center p-6 rounded-xl hover:shadow-md transition">
+              <p className="font-semibold text-gray-700">{cat}</p>
+            </div>
+          ))}
+        </div>
+      </section>
+
+      {/* ⭐ Why Choose VHireToday */}
+      <section className="bg-blue-50 py-16 px-6 md:px-20 text-center">
+        <h2 className="text-2xl font-bold mb-8">Why Choose VHireToday ⭐</h2>
+        <div className="grid md:grid-cols-3 gap-8">
+          <div className="bg-white p-6 rounded-2xl shadow-sm hover:shadow-md transition">
+            <h3 className="font-semibold text-blue-700 mb-2">AI-Powered Job Match</h3>
+            <p className="text-gray-600 text-sm">We connect you to the most relevant jobs using smart algorithms.</p>
+          </div>
+          <div className="bg-white p-6 rounded-2xl shadow-sm hover:shadow-md transition">
+            <h3 className="font-semibold text-blue-700 mb-2">Trusted by Recruiters</h3>
+            <p className="text-gray-600 text-sm">Top brands rely on us to hire the best freshers and interns.</p>
+          </div>
+          <div className="bg-white p-6 rounded-2xl shadow-sm hover:shadow-md transition">
+            <h3 className="font-semibold text-blue-700 mb-2">Career Boosting Courses</h3>
+            <p className="text-gray-600 text-sm">Upskill with industry-recognized certifications and live projects.</p>
+          </div>
+        </div>
+      </section>
+
+      {/* 📊 Stats Section */}
+      <section className="py-16 bg-white text-center px-6 md:px-20">
+        <h2 className="text-2xl font-bold mb-8">Our Impact in Numbers 📊</h2>
+        <div className="grid md:grid-cols-4 gap-8">
+          {[
+            { num: "5L+", label: "Active Students" },
+            { num: "50K+", label: "Companies" },
+            { num: "1L+", label: "Successful Placements" },
+            { num: "200+", label: "Online Courses" },
+          ].map((stat) => (
+            <div key={stat.label} className="bg-gray-50 py-8 rounded-2xl shadow-sm hover:shadow-md transition">
+              <h3 className="text-3xl font-bold text-blue-600">{stat.num}</h3>
+              <p className="text-gray-600 font-medium">{stat.label}</p>
+            </div>
+          ))}
+        </div>
+      </section>
+
+      {/* 🎓 Testimonials */}
+      <section className="bg-gray-50 py-16 px-6 md:px-20 text-center">
+        <h2 className="text-2xl font-bold mb-8">What Our Users Say 🎓</h2>
+        <div className="grid md:grid-cols-3 gap-8">
+          {[
+            {
+              name: "Aarav Mehta",
+              text: "VHireToday helped me land my first internship in web development! The process was super smooth.",
+            },
+            {
+              name: "Priya Sharma",
+              text: "I loved the AI-based recommendations. It made finding relevant roles so easy!",
+            },
+            {
+              name: "Rohit Verma",
+              text: "Thanks to VHireToday, I got a full-time job offer from a top startup. Highly recommend!",
+            },
+          ].map((t) => (
+            <div key={t.name} className="bg-white p-6 rounded-2xl shadow-sm hover:shadow-md transition">
+              <p className="text-gray-700 text-sm italic mb-3">“{t.text}”</p>
+              <h4 className="font-semibold text-blue-700">{t.name}</h4>
+            </div>
+          ))}
+        </div>
+      </section>
+
+      {/* ✉️ Newsletter Signup */}
+      <section className="bg-blue-600 text-white text-center py-16 px-6 md:px-20">
+        <h2 className="text-2xl font-bold mb-4">Stay Updated with VHireToday ✉️</h2>
+        <p className="mb-6 text-blue-100">Get the latest internships, job alerts, and career tips directly in your inbox.</p>
+        <div className="flex flex-col sm:flex-row justify-center items-center gap-3">
+          <input
+            type="email"
+            placeholder="Enter your email"
+            className="px-4 py-3 rounded-md w-64 text-gray-800 outline-none"
+          />
+          <button className="bg-yellow-400 px-6 py-3 rounded-md font-semibold hover:bg-yellow-500">
+            Subscribe
+          </button>
+        </div>
+      </section>
+
       {/* Employer Section */}
       <section className="py-16 bg-blue-100 px-6 md:px-20 text-center md:text-left flex flex-col md:flex-row items-center justify-between rounded-xl mx-4 md:mx-12 my-10">
         <div className="md:w-2/3 space-y-3">
@@ -107,6 +216,16 @@ export default function Home() {
       <footer className="bg-blue-600 text-white text-center py-6">
         <p className="text-sm">© 2025 VHireToday. All rights reserved.</p>
       </footer>
+
+      {/* 🔝 Floating Back-to-Top Button */}
+      {showButton && (
+        <button
+          onClick={scrollToTop}
+          className="fixed bottom-6 right-6 bg-blue-600 text-white p-3 rounded-full shadow-lg hover:bg-blue-700 transition-all duration-300 animate-bounce"
+        >
+          <FaArrowUp size={20} />
+        </button>
+      )}
     </div>
   );
 }
