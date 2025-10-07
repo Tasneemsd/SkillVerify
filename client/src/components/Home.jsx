@@ -14,21 +14,36 @@ export default function Home() {
 
   return (
     <div className="font-sans bg-white text-gray-800">
-      {/* Navbar */}
-      <header className="flex justify-between items-center px-8 py-4 shadow-sm sticky top-0 bg-white z-50">
-        <div className="flex items-center space-x-2">
-          <img src="/logos.png" alt="VHireToday Logo" className="h-48 w-auto " />
 
+      {/* Navbar */}
+      <header className="flex justify-between items-center px-6 md:px-8 py-4 shadow-sm sticky top-0 bg-white z-50 h-20">
+        {/* Logo */}
+        <div className="flex items-center h-full">
+          <img 
+            src="/logos.png" 
+            alt="VHireToday Logo" 
+            className="h-48 max-h-full object-contain" 
+          />
         </div>
-        <nav className="hidden md:flex space-x-6 text-gray-700 font-medium shadow-sm border-b sticky top-0 z-50">
+
+        {/* Navigation */}
+        <nav className="hidden md:flex space-x-6 text-gray-700 font-medium">
           <a href="#trending" className="hover:text-blue-600">Trending</a>
           <a href="#categories" className="hover:text-blue-600">Categories</a>
           <a href="#why-choose" className="hover:text-blue-600">Why Choose Us</a>
           <a href="#employers" className="hover:text-blue-600">Employers</a>
         </nav>
-        <div className="flex items-center space-x-3">
+
+        {/* Auth Buttons */}
+        <div className="hidden md:flex items-center space-x-3">
           <button className="border border-blue-500 text-blue-500 px-4 py-1.5 rounded hover:bg-blue-50">Login</button>
           <button className="bg-blue-600 text-white px-4 py-1.5 rounded hover:bg-blue-700">Register</button>
+        </div>
+
+        {/* Mobile Menu Placeholder */}
+        <div className="md:hidden flex items-center space-x-3">
+          <button className="border border-blue-500 text-blue-500 px-3 py-1 rounded hover:bg-blue-50">Login</button>
+          <button className="bg-blue-600 text-white px-3 py-1 rounded hover:bg-blue-700">Register</button>
         </div>
       </header>
 
@@ -54,7 +69,7 @@ export default function Home() {
           </p>
         </div>
         <div className="md:w-1/2 mt-8 md:mt-0">
-          <img src="https://cdn.pixabay.com/photo/2017/01/31/13/14/business-2029319_1280.png" alt="Hero People" className="rounded-lg shadow-lg" />
+          <img src="https://cdn.pixabay.com/photo/2017/01/31/13/14/business-2029319_1280.png" alt="Hero People" className="rounded-lg shadow-lg w-full h-auto" />
         </div>
       </section>
 
@@ -72,9 +87,9 @@ export default function Home() {
 
       {/* Trending Now */}
       <section id="trending" className="py-12 bg-gray-50 px-6 md:px-20">
-        <h2 className="text-2xl font-bold mb-6">Trending Now </h2>
+        <h2 className="text-2xl font-bold mb-6">Trending Now</h2>
         <div className="grid md:grid-cols-3 gap-6">
-          {[
+          {[ 
             { title: "AI-Powered Resume Builder", desc: "Boost your profile visibility and get hired faster.", color: "teal" },
             { title: "Get Discovered by Recruiters", desc: "Showcase your verified skills and get matched instantly.", color: "blue" },
             { title: "Free Placement Courses", desc: "Upskill yourself with certified career programs.", color: "purple" }
@@ -90,7 +105,7 @@ export default function Home() {
 
       {/* Popular Categories */}
       <section id="categories" className="py-12 px-6 md:px-20 text-center">
-        <h2 className="text-2xl font-bold mb-6">Popular Categories </h2>
+        <h2 className="text-2xl font-bold mb-6">Popular Categories</h2>
         <div className="grid sm:grid-cols-2 md:grid-cols-4 gap-6">
           {[
             { name: "Web Development", icon: <FaLaptopCode className="text-blue-600 text-2xl mb-2" /> },
@@ -111,9 +126,9 @@ export default function Home() {
 
       {/* Why Choose VHireToday */}
       <section id="why-choose" className="py-12 bg-blue-50 px-6 md:px-20 text-center">
-        <h2 className="text-2xl font-bold mb-6">Why Choose VHireToday? </h2>
+        <h2 className="text-2xl font-bold mb-6">Why Choose VHireToday?</h2>
         <div className="grid md:grid-cols-3 gap-6">
-          {[
+          {[ 
             { title: "Verified Talent", desc: "Profiles verified to save time for employers." },
             { title: "AI Matching", desc: "Get matched with the right job opportunities." },
             { title: "Free Courses", desc: "Upskill yourself to boost employability." }
@@ -155,7 +170,7 @@ export default function Home() {
 
       {/* Employers Section */}
       <section id="employers" className="py-12 px-6 md:px-20 text-center">
-        <h2 className="text-2xl font-bold mb-6">Top Employers </h2>
+        <h2 className="text-2xl font-bold mb-6">Top Employers</h2>
         <div className="flex justify-center flex-wrap gap-6">
           <img src="https://upload.wikimedia.org/wikipedia/commons/5/53/Paytm_logo.png" className="h-6" />
           <img src="https://upload.wikimedia.org/wikipedia/commons/0/02/Nestle_textlogo_blue.svg" className="h-6" />
@@ -169,11 +184,11 @@ export default function Home() {
       <section className="py-16 bg-blue-100 text-center">
         <h2 className="text-2xl font-bold mb-4">Stay Updated 📩</h2>
         <p className="text-gray-600 mb-6">Get weekly job & internship updates right to your inbox!</p>
-        <div className="flex justify-center">
+        <div className="flex justify-center flex-col sm:flex-row gap-2 sm:gap-0">
           <input
             type="email"
             placeholder="Enter your email"
-            className="px-4 py-2 rounded-l-md w-64 border border-gray-300 focus:outline-none"
+            className="px-4 py-2 rounded-l-md w-full sm:w-64 border border-gray-300 focus:outline-none"
           />
           <button className="bg-blue-600 text-white px-4 py-2 rounded-r-md hover:bg-blue-700">Subscribe</button>
         </div>
