@@ -1,5 +1,6 @@
 import React, { useState, useEffect } from "react";
 import { FaGoogle, FaEnvelope, FaArrowUp, FaLaptopCode, FaChartLine, FaPaintBrush, FaBullhorn } from "react-icons/fa";
+import { FaAmazon, FaMicrosoft, FaNetflix } from "react-icons/fa";
 
 export default function Home() {
   const [showTopBtn, setShowTopBtn] = useState(false);
@@ -62,11 +63,20 @@ export default function Home() {
       <section className="py-10 bg-white text-center">
         <p className="text-gray-500 font-medium">Trusted by 1000+ companies</p>
         <div className="flex justify-center items-center flex-wrap mt-4 gap-6">
-          <img src="https://www.google.com/imgres?q=koderspark%0D%0A&imgurl=https%3A%2F%2Fres.cloudinary.com%2Fdm94ctges%2Fimage%2Fupload%2Fv1753619889%2Flogo_bzvwmg.jpg&imgrefurl=https%3A%2F%2Fkoderspark.in%2F&docid=0nfZC2rhaooKFM&tbnid=mBgixbJKqQagkM&vet=12ahUKEwj5yMuPzZKQAxXpwjgGHUjtACQQM3oECBYQAA..i&w=864&h=864&hcb=2&ved=2ahUKEwj5yMuPzZKQAxXpwjgGHUjtACQQM3oECBYQAA" className="h-6" />
-          <img src="https://www.google.com/imgres?q=bookmyshow&imgurl=https%3A%2F%2Fplay-lh.googleusercontent.com%2FFPtxFPnbUNmOPvggNFaTUGPUr4DAb-djW6uWgG8lST76KTmZYko679Oh5g15gr4KAUZH&imgrefurl=https%3A%2F%2Fplay.google.com%2Fstore%2Fapps%2Fdetails%3Fid%3Dcom.bt.bms.lk&docid=4g5mRJjtM2kuzM&tbnid=uRDcsm_BEJYb9M&vet=12ahUKEwiCzPKvzpKQAxV2wzgGHcZlOvkQM3oECBsQAA..i&w=512&h=512&hcb=2&ved=2ahUKEwiCzPKvzpKQAxV2wzgGHcZlOvkQM3oECBsQAA" className="h-6" />
-          <img src="https://www.google.com/imgres?q=microsoft%20logo&imgurl=https%3A%2F%2Fstatic.vecteezy.com%2Fsystem%2Fresources%2Fpreviews%2F027%2F127%2F473%2Fnon_2x%2Fmicrosoft-logo-microsoft-icon-transparent-free-png.png&imgrefurl=https%3A%2F%2Fwww.vecteezy.com%2Fpng%2F27127473-microsoft-logo-png-microsoft-icon-transparent-png&docid=kC9tnJHrPY9Q1M&tbnid=FzIjUQIIKNIfuM&vet=12ahUKEwj-xtjczpKQAxUV2TgGHd6jJTMQM3oECB0QAA..i&w=980&h=980&hcb=2&ved=2ahUKEwj-xtjczpKQAxUV2TgGHd6jJTMQM3oECB0QAA" className="h-6" />
-          <img src="https://www.google.com/imgres?q=amazon%20logo&imgurl=https%3A%2F%2F1000logos.net%2Fwp-content%2Fuploads%2F2016%2F10%2FAmazon-logo-meaning.jpg&imgrefurl=https%3A%2F%2F1000logos.net%2Famazon-logo%2F&docid=tYKmnnTGVIoyUM&tbnid=Lv3lQ384NkyDyM&vet=12ahUKEwjcksPrzpKQAxVF3TgGHVj-B3gQM3oECBoQAA..i&w=800&h=400&hcb=2&ved=2ahUKEwjcksPrzpKQAxVF3TgGHVj-B3gQM3oECBoQAA" className="h-6" />
-          <img src="https://www.google.com/imgres?q=netflix%20logo&imgurl=https%3A%2F%2Fimages.ctfassets.net%2F4cd45et68cgf%2FRx83JoRDMkYNlMC9MKzcB%2F2b14d5a59fc3937afd3f03191e19502d%2FNetflix-Symbol.png%3Fw%3D700%26h%3D456&imgrefurl=https%3A%2F%2Fabout.netflix.com%2Fcompany-assets&docid=ys7ItDop7bjU6M&tbnid=Q1savkBlfn1m_M&vet=12ahUKEwi8n9T8zpKQAxXqxzgGHQHSFt8QM3oECBcQAA..i&w=456&h=456&hcb=2&ved=2ahUKEwi8n9T8zpKQAxXqxzgGHQHSFt8QM3oECBcQAA" className="h-6" />
+          {/* Koderspark logo (direct image link) */}
+          <img src="https://res.cloudinary.com/dm94ctges/image/upload/v1753619889/logo_bzvwmg.jpg" className="h-8" alt="Koderspark" />
+
+          {/* BookMyShow logo (direct image link) */}
+          <img src="https://play-lh.googleusercontent.com/FPtxFPnbUNmOPvggNFaTUGPUr4DAb-djW6uWgG8lST76KTmZYko679Oh5g15gr4KAUZH" className="h-8" alt="BookMyShow" />
+
+          {/* Microsoft logo using react-icons */}
+          <FaMicrosoft className="text-4xl text-blue-500" />
+
+          {/* Amazon logo using react-icons */}
+          <FaAmazon className="text-4xl text-yellow-500" />
+
+          {/* Netflix logo using react-icons */}
+          <FaNetflix className="text-4xl text-red-600" />
         </div>
       </section>
 
@@ -141,9 +151,9 @@ export default function Home() {
       <section className="py-16 bg-gray-50 px-8 md:px-20 text-center">
         <h2 className="text-2xl font-bold mb-10">What Our Users Say </h2>
         <div className="grid md:grid-cols-3 gap-6">
-          {[{name:"Aarav Mehta", text:"VHireToday helped me find my first internship in just 3 days!"},
-            {name:"Priya Sharma", text:"Their skill verification helped me stand out and land a great job."},
-            {name:"Rohit Verma", text:"A seamless platform with trusted employers and real opportunities."}]
+          {[{ name: "Aarav Mehta", text: "VHireToday helped me find my first internship in just 3 days!" },
+          { name: "Priya Sharma", text: "Their skill verification helped me stand out and land a great job." },
+          { name: "Rohit Verma", text: "A seamless platform with trusted employers and real opportunities." }]
             .map((t, i) => (
               <div key={i} className="bg-white p-6 rounded-xl shadow hover:shadow-lg transition">
                 <p className="text-gray-700 italic mb-4">“{t.text}”</p>
