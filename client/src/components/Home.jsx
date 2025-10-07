@@ -1,15 +1,11 @@
 import React, { useState, useEffect } from "react";
-import { FaGoogle, FaEnvelope, FaArrowUp } from "react-icons/fa";
+import { FaGoogle, FaEnvelope, FaArrowUp, FaLaptopCode, FaChartLine, FaPaintBrush, FaBullhorn } from "react-icons/fa";
 
 export default function Home() {
   const [showTopBtn, setShowTopBtn] = useState(false);
 
-  // Show Back to Top button on scroll
   useEffect(() => {
-    const handleScroll = () => {
-      if (window.scrollY > 400) setShowTopBtn(true);
-      else setShowTopBtn(false);
-    };
+    const handleScroll = () => setShowTopBtn(window.scrollY > 400);
     window.addEventListener("scroll", handleScroll);
     return () => window.removeEventListener("scroll", handleScroll);
   }, []);
@@ -25,10 +21,10 @@ export default function Home() {
           <span className="text-2xl font-bold text-blue-600">VHireToday</span>
         </div>
         <nav className="hidden md:flex space-x-6 text-gray-700 font-medium">
-          <a href="#" className="hover:text-blue-600">Hire</a>
-          <a href="#" className="hover:text-blue-600">Internships</a>
-          <a href="#" className="hover:text-blue-600">Verify Skills</a>
-          <span className="bg-yellow-400 text-sm px-2 py-0.5 rounded-md text-white font-semibold">OFFER</span>
+          <a href="#trending" className="hover:text-blue-600">Trending</a>
+          <a href="#categories" className="hover:text-blue-600">Categories</a>
+          <a href="#why-choose" className="hover:text-blue-600">Why Choose Us</a>
+          <a href="#employers" className="hover:text-blue-600">Employers</a>
         </nav>
         <div className="flex items-center space-x-3">
           <button className="border border-blue-500 text-blue-500 px-4 py-1.5 rounded hover:bg-blue-50">Login</button>
@@ -75,24 +71,58 @@ export default function Home() {
       </section>
 
       {/* Trending Now */}
-      <section className="py-12 bg-gray-50 px-6 md:px-20">
+      <section id="trending" className="py-12 bg-gray-50 px-6 md:px-20">
         <h2 className="text-2xl font-bold mb-6">Trending Now 🔥</h2>
         <div className="grid md:grid-cols-3 gap-6">
-          <div className="bg-teal-50 p-6 rounded-2xl hover:shadow-lg transition">
-            <h3 className="text-lg font-semibold text-teal-700 mb-3">AI-Powered Resume Builder</h3>
-            <p className="text-gray-700 text-sm mb-4">Boost your profile visibility and get hired faster.</p>
-            <button className="bg-teal-600 text-white px-4 py-2 rounded hover:bg-teal-700">Try Now</button>
-          </div>
-          <div className="bg-blue-50 p-6 rounded-2xl hover:shadow-lg transition">
-            <h3 className="text-lg font-semibold text-blue-700 mb-3">Get Discovered by Recruiters</h3>
-            <p className="text-gray-700 text-sm mb-4">Showcase your verified skills and get matched instantly.</p>
-            <button className="bg-blue-600 text-white px-4 py-2 rounded hover:bg-blue-700">Know More</button>
-          </div>
-          <div className="bg-purple-50 p-6 rounded-2xl hover:shadow-lg transition">
-            <h3 className="text-lg font-semibold text-purple-700 mb-3">Free Placement Courses</h3>
-            <p className="text-gray-700 text-sm mb-4">Upskill yourself with certified career programs.</p>
-            <button className="bg-purple-600 text-white px-4 py-2 rounded hover:bg-purple-700">Explore</button>
-          </div>
+          {[
+            { title: "AI-Powered Resume Builder", desc: "Boost your profile visibility and get hired faster.", color: "teal" },
+            { title: "Get Discovered by Recruiters", desc: "Showcase your verified skills and get matched instantly.", color: "blue" },
+            { title: "Free Placement Courses", desc: "Upskill yourself with certified career programs.", color: "purple" }
+          ].map((t, i) => (
+            <div key={i} className={`bg-${t.color}-50 p-6 rounded-2xl hover:shadow-lg transition`}>
+              <h3 className={`text-lg font-semibold text-${t.color}-700 mb-3`}>{t.title}</h3>
+              <p className="text-gray-700 text-sm mb-4">{t.desc}</p>
+              <button className={`bg-${t.color}-600 text-white px-4 py-2 rounded hover:bg-${t.color}-700`}>Explore</button>
+            </div>
+          ))}
+        </div>
+      </section>
+
+      {/* Popular Categories */}
+      <section id="categories" className="py-12 px-6 md:px-20 text-center">
+        <h2 className="text-2xl font-bold mb-6">Popular Categories 📂</h2>
+        <div className="grid sm:grid-cols-2 md:grid-cols-4 gap-6">
+          {[
+            { name: "Web Development", icon: <FaLaptopCode className="text-blue-600 text-2xl mb-2" /> },
+            { name: "Data Science", icon: <FaChartLine className="text-green-600 text-2xl mb-2" /> },
+            { name: "Design", icon: <FaPaintBrush className="text-purple-600 text-2xl mb-2" /> },
+            { name: "Marketing", icon: <FaBullhorn className="text-yellow-600 text-2xl mb-2" /> },
+          ].map((cat, i) => (
+            <div key={i} className="bg-white p-6 rounded-xl shadow hover:shadow-lg transition">
+              <div className="flex flex-col items-center justify-center">
+                {cat.icon}
+                <p className="text-lg font-semibold">{cat.name}</p>
+                <p className="text-gray-500 text-sm">Top internships & jobs</p>
+              </div>
+            </div>
+          ))}
+        </div>
+      </section>
+
+      {/* Why Choose VHireToday */}
+      <section id="why-choose" className="py-12 bg-blue-50 px-6 md:px-20 text-center">
+        <h2 className="text-2xl font-bold mb-6">Why Choose VHireToday? 🤔</h2>
+        <div className="grid md:grid-cols-3 gap-6">
+          {[
+            { title: "Verified Talent", desc: "Profiles verified to save time for employers." },
+            { title: "AI Matching", desc: "Get matched with the right job opportunities." },
+            { title: "Free Courses", desc: "Upskill yourself to boost employability." }
+          ].map((item, i) => (
+            <div key={i} className="bg-white p-6 rounded-xl shadow hover:shadow-lg transition">
+              <h3 className="font-semibold text-blue-700 mb-2">{item.title}</h3>
+              <p className="text-gray-700 text-sm">{item.desc}</p>
+            </div>
+          ))}
         </div>
       </section>
 
@@ -111,26 +141,28 @@ export default function Home() {
       <section className="py-16 bg-gray-50 px-8 md:px-20 text-center">
         <h2 className="text-2xl font-bold mb-10">What Our Users Say 💬</h2>
         <div className="grid md:grid-cols-3 gap-6">
-          {[
-            {
-              name: "Aarav Mehta",
-              text: "VHireToday helped me find my first internship in just 3 days!",
-            },
-            {
-              name: "Priya Sharma",
-              text: "Their skill verification helped me stand out and land a great job.",
-            },
-            {
-              name: "Rohit Verma",
-              text: "A seamless platform with trusted employers and real opportunities.",
-            },
-          ].map((t, i) => (
-            <div key={i} className="bg-white p-6 rounded-xl shadow hover:shadow-lg transition">
-              <p className="text-gray-700 italic mb-4">“{t.text}”</p>
-              <h4 className="font-semibold text-blue-700">{t.name}</h4>
-            </div>
-          ))}
+          {[{name:"Aarav Mehta", text:"VHireToday helped me find my first internship in just 3 days!"},
+            {name:"Priya Sharma", text:"Their skill verification helped me stand out and land a great job."},
+            {name:"Rohit Verma", text:"A seamless platform with trusted employers and real opportunities."}]
+            .map((t, i) => (
+              <div key={i} className="bg-white p-6 rounded-xl shadow hover:shadow-lg transition">
+                <p className="text-gray-700 italic mb-4">“{t.text}”</p>
+                <h4 className="font-semibold text-blue-700">{t.name}</h4>
+              </div>
+            ))}
         </div>
+      </section>
+
+      {/* Employers Section */}
+      <section id="employers" className="py-12 px-6 md:px-20 text-center">
+        <h2 className="text-2xl font-bold mb-6">Top Employers 💼</h2>
+        <div className="flex justify-center flex-wrap gap-6">
+          <img src="https://upload.wikimedia.org/wikipedia/commons/5/53/Paytm_logo.png" className="h-6" />
+          <img src="https://upload.wikimedia.org/wikipedia/commons/0/02/Nestle_textlogo_blue.svg" className="h-6" />
+          <img src="https://upload.wikimedia.org/wikipedia/commons/1/1a/HCL_Technologies_Logo.svg" className="h-6" />
+          <img src="https://upload.wikimedia.org/wikipedia/commons/2/24/BookMyShow_logo.svg" className="h-6" />
+        </div>
+        <button className="mt-6 bg-blue-600 text-white px-6 py-2 rounded hover:bg-blue-700">Hire Talent</button>
       </section>
 
       {/* Newsletter Signup */}
@@ -182,7 +214,7 @@ export default function Home() {
         <p className="text-center text-xs text-gray-500 mt-8">© 2025 VHireToday. All rights reserved.</p>
       </footer>
 
-      {/* Floating Back to Top Button */}
+      {/* Scroll Up Button */}
       {showTopBtn && (
         <button
           onClick={scrollToTop}
