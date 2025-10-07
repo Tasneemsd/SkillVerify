@@ -17,7 +17,7 @@ export default function Home() {
       {/* Navbar */}
       <header className="flex justify-between items-center px-8 py-4 shadow-sm sticky top-0 bg-white z-50">
         <div className="flex items-center space-x-2">
-          <img src="/logos.png" alt="VHireToday Logo" className="h-16 w-auto " />
+          <img src="/logos.png" alt="VHireToday Logo" className="h-10 w-auto " />
 
         </div>
         <nav className="hidden md:flex space-x-6 text-gray-700 font-medium ">
@@ -62,7 +62,7 @@ export default function Home() {
       <section className="py-10 bg-white text-center">
         <p className="text-gray-500 font-medium">Trusted by 1000+ companies</p>
         <div className="flex justify-center items-center flex-wrap mt-4 gap-6">
-          <img src="https://upload.wikimedia.org/wikipedia/commons/5/53/Paytm_logo.png" className="h-6" />
+          <img src="https://www.google.com/imgres?q=koderspark%0D%0A&imgurl=https%3A%2F%2Fmedia.licdn.com%2Fdms%2Fimage%2Fv2%2FD4D0BAQGRYOLJ-Ie4KA%2Fcompany-logo_200_200%2Fcompany-logo_200_200%2F0%2F1734631679455%2Fkoder_spark_logo%3Fe%3D2147483647%26v%3Dbeta%26t%3Dgo8Ha743USwSsp6ZznJ9diss0bsiM_mxtTxoASdbXnA&imgrefurl=https%3A%2F%2Fwww.linkedin.com%2Fcompany%2Fkoder-spark&docid=gV1HV7ckx663gM&tbnid=NE1o4XukGSg_IM&vet=12ahUKEwj5yMuPzZKQAxXpwjgGHUjtACQQM3oECBcQAA..i&w=200&h=200&hcb=2&ved=2ahUKEwj5yMuPzZKQAxXpwjgGHUjtACQQM3oECBcQAA" className="h-6" />
           <img src="https://upload.wikimedia.org/wikipedia/commons/0/02/Nestle_textlogo_blue.svg" className="h-6" />
           <img src="https://upload.wikimedia.org/wikipedia/commons/1/1a/HCL_Technologies_Logo.svg" className="h-6" />
           <img src="https://upload.wikimedia.org/wikipedia/commons/2/24/BookMyShow_logo.svg" className="h-6" />
@@ -116,7 +116,7 @@ export default function Home() {
           {[
             { title: "Verified Talent", desc: "Profiles verified to save time for employers." },
             { title: "AI Matching", desc: "Get matched with the right job opportunities." },
-            { title: "Free Courses", desc: "Upskill yourself to boost employability." }
+            { title: "Paid Courses", desc: "Upskill yourself to boost employability." }
           ].map((item, i) => (
             <div key={i} className="bg-white p-6 rounded-xl shadow hover:shadow-lg transition">
               <h3 className="font-semibold text-blue-700 mb-2">{item.title}</h3>
@@ -139,7 +139,7 @@ export default function Home() {
 
       {/* Testimonials */}
       <section className="py-16 bg-gray-50 px-8 md:px-20 text-center">
-        <h2 className="text-2xl font-bold mb-10">What Our Users Say 💬</h2>
+        <h2 className="text-2xl font-bold mb-10">What Our Users Say </h2>
         <div className="grid md:grid-cols-3 gap-6">
           {[{name:"Aarav Mehta", text:"VHireToday helped me find my first internship in just 3 days!"},
             {name:"Priya Sharma", text:"Their skill verification helped me stand out and land a great job."},
