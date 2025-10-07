@@ -20,7 +20,7 @@ export default function Home() {
           <img src="/logos.png" alt="VHireToday Logo" className="h-48 w-auto " />
 
         </div>
-        <nav className="hidden md:flex space-x-6 text-gray-700 font-medium">
+        <nav className="hidden md:flex space-x-6 text-gray-700 font-medium shadow-sm border-b sticky top-0 z-50">
           <a href="#trending" className="hover:text-blue-600">Trending</a>
           <a href="#categories" className="hover:text-blue-600">Categories</a>
           <a href="#why-choose" className="hover:text-blue-600">Why Choose Us</a>
