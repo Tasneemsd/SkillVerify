@@ -1,5 +1,5 @@
 import React, { useState, useEffect } from "react";
-import { FaGoogle, FaEnvelope, FaArrowUp, FaLaptopCode, FaChartLine, FaPaintBrush, FaBullhorn,  FaAmazon, FaMicrosoft, FaNetflix  } from "react-icons/fa";
+import { FaGoogle, FaEnvelope, FaArrowUp, FaLaptopCode, FaChartLine, FaPaintBrush, FaBullhorn, FaAmazon, FaMicrosoft, FaNetflix } from "react-icons/fa";
 
 
 export default function Home() {
@@ -60,22 +60,82 @@ export default function Home() {
       </section>
 
       {/* Trusted Companies */}
-      <section className="py-10 bg-white text-center">
-        <p className="text-gray-500 font-medium">Trusted by 1000+ companies</p>
-        <div className="flex justify-center items-center flex-wrap mt-4 gap-6">
-          {/* Koderspark logo (direct image link) */}
-          <img src="https://res.cloudinary.com/dm94ctges/image/upload/v1753619889/logo_bzvwmg.jpg" className="h-8" alt="Koderspark" />
+      <section className="py-12 bg-white text-center">
+        <p className="text-gray-500 font-medium mb-8 text-lg">Trusted by 1000+ companies</p>
+        <div className="flex justify-center items-center flex-wrap mt-4 gap-8">
 
-          {/* BookMyShow logo (direct image link) */}
-          <img src="https://play-lh.googleusercontent.com/FPtxFPnbUNmOPvggNFaTUGPUr4DAb-djW6uWgG8lST76KTmZYko679Oh5g15gr4KAUZH" className="h-8" alt="BookMyShow" />
+          {/* Koderspark */}
+          <div className="p-4 bg-gray-50 rounded-xl shadow hover:shadow-lg transition">
+            <img
+              src="https://res.cloudinary.com/dm94ctges/image/upload/v1753619889/logo_bzvwmg.jpg"
+              className="h-16 md:h-20 object-contain"
+              alt="Koderspark"
+            />
+          </div>
 
-          {/* Microsoft logo using react-icons */}
-          <FaMicrosoft className="text-4xl text-blue-500" />
+          {/* BookMyShow */}
+          <div className="p-4 bg-gray-50 rounded-xl shadow hover:shadow-lg transition">
+            <img
+              src="https://play-lh.googleusercontent.com/FPtxFPnbUNmOPvggNFaTUGPUr4DAb-djW6uWgG8lST76KTmZYko679Oh5g15gr4KAUZH"
+              className="h-16 md:h-20 object-contain"
+              alt="BookMyShow"
+            />
+          </div>
 
-          {/* Amazon logo using react-icons */}
-          <FaAmazon className="text-4xl text-yellow-500" />
+          {/* Microsoft */}
+          <div className="p-4 bg-gray-50 rounded-xl shadow hover:shadow-lg transition">
+            <img
+              src="https://upload.wikimedia.org/wikipedia/commons/4/44/Microsoft_logo.svg"
+              className="h-16 md:h-20 object-contain"
+              alt="Microsoft"
+            />
+          </div>
 
-         
+          {/* Amazon */}
+          <div className="p-4 bg-gray-50 rounded-xl shadow hover:shadow-lg transition">
+            <img
+              src="https://upload.wikimedia.org/wikipedia/commons/a/a9/Amazon_logo.svg"
+              className="h-16 md:h-20 object-contain"
+              alt="Amazon"
+            />
+          </div>
+
+          {/* Netflix */}
+          <div className="p-4 bg-gray-50 rounded-xl shadow hover:shadow-lg transition">
+            <img
+              src="https://upload.wikimedia.org/wikipedia/commons/0/08/Netflix_2015_logo.svg"
+              className="h-16 md:h-20 object-contain"
+              alt="Netflix"
+            />
+          </div>
+
+          {/* Google */}
+          <div className="p-4 bg-gray-50 rounded-xl shadow hover:shadow-lg transition">
+            <img
+              src="https://upload.wikimedia.org/wikipedia/commons/2/2f/Google_2015_logo.svg"
+              className="h-16 md:h-20 object-contain"
+              alt="Google"
+            />
+          </div>
+
+          {/* Facebook */}
+          <div className="p-4 bg-gray-50 rounded-xl shadow hover:shadow-lg transition">
+            <img
+              src="https://upload.wikimedia.org/wikipedia/commons/0/05/Facebook_Logo_%282019%29.png"
+              className="h-16 md:h-20 object-contain"
+              alt="Facebook"
+            />
+          </div>
+
+          {/* LinkedIn */}
+          <div className="p-4 bg-gray-50 rounded-xl shadow hover:shadow-lg transition">
+            <img
+              src="https://upload.wikimedia.org/wikipedia/commons/c/ca/LinkedIn_logo_initials.png"
+              className="h-16 md:h-20 object-contain"
+              alt="LinkedIn"
+            />
+          </div>
+
         </div>
       </section>
 
