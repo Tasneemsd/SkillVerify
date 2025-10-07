@@ -75,8 +75,7 @@ export default function Home() {
           {/* Amazon logo using react-icons */}
           <FaAmazon className="text-4xl text-yellow-500" />
 
-          {/* Netflix logo using react-icons */}
-          <FaNetflix className="text-4xl text-red-600" />
+         
         </div>
       </section>
 
