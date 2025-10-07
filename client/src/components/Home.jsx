@@ -17,8 +17,8 @@ export default function Home() {
       {/* Navbar */}
       <header className="flex justify-between items-center px-8 py-4 shadow-sm sticky top-0 bg-white z-50">
         <div className="flex items-center space-x-2">
-          <img src="/logo.png" alt="VHireToday Logo" className="h-8" />
-          <span className="text-2xl font-bold text-blue-600">VHireToday</span>
+          <img src="/logos.png" alt="VHireToday Logo" className="h-8" />
+
         </div>
         <nav className="hidden md:flex space-x-6 text-gray-700 font-medium">
           <a href="#trending" className="hover:text-blue-600">Trending</a>
@@ -72,7 +72,7 @@ export default function Home() {
 
       {/* Trending Now */}
       <section id="trending" className="py-12 bg-gray-50 px-6 md:px-20">
-        <h2 className="text-2xl font-bold mb-6">Trending Now 🔥</h2>
+        <h2 className="text-2xl font-bold mb-6">Trending Now </h2>
         <div className="grid md:grid-cols-3 gap-6">
           {[
             { title: "AI-Powered Resume Builder", desc: "Boost your profile visibility and get hired faster.", color: "teal" },
@@ -90,7 +90,7 @@ export default function Home() {
 
       {/* Popular Categories */}
       <section id="categories" className="py-12 px-6 md:px-20 text-center">
-        <h2 className="text-2xl font-bold mb-6">Popular Categories 📂</h2>
+        <h2 className="text-2xl font-bold mb-6">Popular Categories </h2>
         <div className="grid sm:grid-cols-2 md:grid-cols-4 gap-6">
           {[
             { name: "Web Development", icon: <FaLaptopCode className="text-blue-600 text-2xl mb-2" /> },
@@ -111,7 +111,7 @@ export default function Home() {
 
       {/* Why Choose VHireToday */}
       <section id="why-choose" className="py-12 bg-blue-50 px-6 md:px-20 text-center">
-        <h2 className="text-2xl font-bold mb-6">Why Choose VHireToday? 🤔</h2>
+        <h2 className="text-2xl font-bold mb-6">Why Choose VHireToday? </h2>
         <div className="grid md:grid-cols-3 gap-6">
           {[
             { title: "Verified Talent", desc: "Profiles verified to save time for employers." },
@@ -155,7 +155,7 @@ export default function Home() {
 
       {/* Employers Section */}
       <section id="employers" className="py-12 px-6 md:px-20 text-center">
-        <h2 className="text-2xl font-bold mb-6">Top Employers 💼</h2>
+        <h2 className="text-2xl font-bold mb-6">Top Employers </h2>
         <div className="flex justify-center flex-wrap gap-6">
           <img src="https://upload.wikimedia.org/wikipedia/commons/5/53/Paytm_logo.png" className="h-6" />
           <img src="https://upload.wikimedia.org/wikipedia/commons/0/02/Nestle_textlogo_blue.svg" className="h-6" />
