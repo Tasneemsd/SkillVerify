@@ -15,46 +15,22 @@ export default function Home() {
   return (
     <div className="font-sans bg-white text-gray-800">
       {/* Navbar */}
-     <nav className="bg-white shadow-sm border-b sticky top-0 z-50">
-        <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
-          <div className="flex justify-between items-center h-16">
-            <Link to="/" className="flex items-center gap-2 text-blue-600 font-bold text-xl hover:opacity-80 transition-opacity">
-              
-              <img src="/logos.png" alt="Logo" className="h-48 w-auto" />
-            </Link>
-            <div className="relative">
-              <button
-                onClick={() => setShowDropdown(!showDropdown)}
-                className="w-10 h-10 rounded-full bg-blue-600 text-white flex items-center justify-center font-semibold text-sm hover:bg-blue-700 transition"
-              >
-                {getUserInitials()}
-              </button>
-              {showDropdown && (
-                <div className="absolute right-0 mt-2 w-48 bg-white rounded-lg shadow-lg py-2 z-50 border">
-                  <button
-                    onClick={() => navigate('/profile')}
-                    className="block w-full text-left px-4 py-2 text-sm text-gray-700 hover:bg-gray-100"
-                  >
-                    Profile
-                  </button>
-                  <button
-                    onClick={() => navigate('/my-courses')}
-                    className="block w-full text-left px-4 py-2 text-sm text-gray-700 hover:bg-gray-100"
-                  >
-                    My Courses
-                  </button>
-                  <button
-                    onClick={handleLogout}
-                    className="block w-full text-left px-4 py-2 text-sm text-red-600 hover:bg-gray-100"
-                  >
-                    Logout
-                  </button>
-                </div>
-              )}
-            </div>
-          </div>
+      <header className="flex justify-between items-center px-8 py-4 shadow-sm sticky top-0 bg-white z-50">
+        <div className="flex items-center space-x-2">
+          <img src="/logos.png" alt="VHireToday Logo" className="h-48 w-auto " />
+
         </div>
-      </nav>
+        <nav className="hidden md:flex space-x-6 text-gray-700 font-medium ">
+          <a href="#trending" className="hover:text-blue-600">Trending</a>
+          <a href="#categories" className="hover:text-blue-600">Categories</a>
+          <a href="#why-choose" className="hover:text-blue-600">Why Choose Us</a>
+          <a href="#employers" className="hover:text-blue-600">Employers</a>
+        </nav>
+        <div className="flex items-center space-x-3">
+          <button className="border border-blue-500 text-blue-500 px-4 py-1.5 rounded hover:bg-blue-50">Login</button>
+          <button className="bg-blue-600 text-white px-4 py-1.5 rounded hover:bg-blue-700">Register</button>
+        </div>
+      </header>
 
       {/* Hero Section */}
       <section className="bg-gradient-to-r from-blue-700 to-blue-500 text-white py-16 px-6 md:px-20 flex flex-col md:flex-row items-center justify-between">
