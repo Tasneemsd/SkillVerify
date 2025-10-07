@@ -54,7 +54,7 @@ export default function Home() {
           </p>
         </div>
         <div className="md:w-1/2 mt-8 md:mt-0">
-          <img src="https://cdn.pixabay.com/photo/2017/01/31/13/14/business-2029319_1280.png" alt="Hero People" className="rounded-lg shadow-lg" />
+          <img src="https://training-comp-uploads.internshala.com/data-structures-algorithms/signup_page_media/illustration-images/why-learn.png" alt="Hero People" className="rounded-lg shadow-lg" />
         </div>
       </section>
 
