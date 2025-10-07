@@ -1,6 +1,6 @@
 import React, { useState, useEffect } from "react";
-import { FaGoogle, FaEnvelope, FaArrowUp, FaLaptopCode, FaChartLine, FaPaintBrush, FaBullhorn } from "react-icons/fa";
-import { FaAmazon, FaMicrosoft, FaNetflix } from "react-icons/fa";
+import { FaGoogle, FaEnvelope, FaArrowUp, FaLaptopCode, FaChartLine, FaPaintBrush, FaBullhorn,  FaAmazon, FaMicrosoft, FaNetflix  } from "react-icons/fa";
+
 
 export default function Home() {
   const [showTopBtn, setShowTopBtn] = useState(false);
