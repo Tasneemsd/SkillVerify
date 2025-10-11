@@ -146,20 +146,65 @@ export default function Home() {
 
 
       {/* Trending Now */}
-      <section id="trending" className="py-12 bg-gray-50 px-6 md:px-20">
-        <h2 className="text-2xl font-bold mb-6">Trending Now </h2>
-        <div className="grid md:grid-cols-3 gap-6">
-          {[
-            { title: "AI-Powered Resume Builder", desc: "Boost your profile visibility and get hired faster.", color: "teal" },
-            { title: "Get Discovered by Recruiters", desc: "Showcase your verified skills and get matched instantly.", color: "blue" },
-            { title: "Free Placement Courses", desc: "Upskill yourself with certified career programs.", color: "purple" }
-          ].map((t, i) => (
-            <div key={i} className={`bg-${t.color}-50 p-6 rounded-2xl hover:shadow-lg transition`}>
-              <h3 className={`text-lg font-semibold text-${t.color}-700 mb-3`}>{t.title}</h3>
-              <p className="text-gray-700 text-sm mb-4">{t.desc}</p>
-              <button className={`bg-${t.color}-600 text-white px-4 py-2 rounded hover:bg-${t.color}-700`}>Explore</button>
-            </div>
-          ))}
+      <section id="trending" className="py-16 bg-white px-4 md:px-16">
+        {/* Heading */}
+        <div className="flex items-center gap-2 mb-8">
+          <h2 className="text-2xl font-bold text-gray-900">Trending now</h2>
+          <span className="text-blue-500 text-xl">📈</span>
+        </div>
+
+        {/* Cards Container */}
+        <div className="flex md:grid md:grid-cols-3 gap-6 overflow-x-auto scrollbar-hide snap-x snap-mandatory scroll-smooth pb-4">
+          {/* Card 1 */}
+          <div className="min-w-[280px] md:min-w-0 bg-gradient-to-br from-teal-400 to-teal-600 text-white rounded-2xl p-8 shadow-md hover:shadow-xl transition relative overflow-hidden snap-start flex-shrink-0">
+            <span className="bg-white/20 text-white text-sm px-3 py-1 rounded-md">
+              Placement courses
+            </span>
+            <h3 className="text-xl font-bold mt-4 mb-3">
+              Placement Courses with AI
+            </h3>
+            <p className="text-sm mb-6">
+              Our learners get placed at Amazon, Flipkart, Samsung & more!
+            </p>
+            <button className="bg-white text-teal-700 font-semibold px-5 py-2 rounded-md hover:bg-gray-100">
+              Know more
+            </button>
+            <div className="absolute bottom-4 right-4 opacity-20 text-7xl font-bold">AI</div>
+          </div>
+
+          {/* Card 2 */}
+          <div className="min-w-[280px] md:min-w-0 bg-gradient-to-br from-sky-300 to-blue-500 text-white rounded-2xl p-8 shadow-md hover:shadow-xl transition relative overflow-hidden snap-start flex-shrink-0">
+            <span className="bg-white/20 text-white text-sm px-3 py-1 rounded-md">
+              Certification courses
+            </span>
+            <h3 className="text-xl font-bold mt-4 mb-3">
+              Special offer for students pursuing your degree!
+            </h3>
+            <p className="text-sm mb-6">
+              Get 55% + 10% OFF on online trainings. Hurry up — Final hours!
+            </p>
+            <button className="bg-white text-blue-700 font-semibold px-5 py-2 rounded-md hover:bg-gray-100">
+              Know more
+            </button>
+            <div className="absolute bottom-4 right-4 opacity-20 text-7xl font-bold">🎓</div>
+          </div>
+
+          {/* Card 3 */}
+          <div className="min-w-[280px] md:min-w-0 bg-gradient-to-br from-purple-400 to-fuchsia-600 text-white rounded-2xl p-8 shadow-md hover:shadow-xl transition relative overflow-hidden snap-start flex-shrink-0">
+            <span className="bg-white/20 text-white text-sm px-3 py-1 rounded-md">
+              Campus competition
+            </span>
+            <h3 className="text-xl font-bold mt-4 mb-3">
+              TATA Crucible – The Campus Quiz
+            </h3>
+            <p className="text-sm mb-6">
+              Dream internships at the Tata Group + ₹2.5L Grand Prize!
+            </p>
+            <button className="bg-lime-400 text-black font-semibold px-5 py-2 rounded-md hover:bg-lime-500">
+              Register now
+            </button>
+            <div className="absolute bottom-4 right-4 opacity-20 text-7xl font-bold">🏆</div>
+          </div>
         </div>
       </section>
 
