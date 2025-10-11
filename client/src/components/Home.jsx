@@ -1,12 +1,20 @@
 import React, { useState, useEffect } from "react";
-import { FaGoogle, FaEnvelope, FaArrowUp, FaLaptopCode, FaChartLine, FaPaintBrush, FaBullhorn, FaAmazon, FaMicrosoft, FaNetflix } from "react-icons/fa";
-import { useNavigate } from "react-router-dom";
-
+import {
+  FaGoogle,
+  FaEnvelope,
+  FaArrowUp,
+  FaLaptopCode,
+  FaChartLine,
+  FaPaintBrush,
+  FaBullhorn,
+} from "react-icons/fa";
+import Login from "./Login"; // your existing Login.jsx
+import Register from "./Register"; // your existing Register.jsx
 
 export default function Home() {
   const [showTopBtn, setShowTopBtn] = useState(false);
-  const navigate = useNavigate();
-
+  const [showLoginModal, setShowLoginModal] = useState(false);
+  const [showRegisterModal, setShowRegisterModal] = useState(false);
 
   useEffect(() => {
     const handleScroll = () => setShowTopBtn(window.scrollY > 400);
@@ -17,25 +25,43 @@ export default function Home() {
   const scrollToTop = () => window.scrollTo({ top: 0, behavior: "smooth" });
 
   return (
-    <div className="font-sans bg-white text-gray-800">
+    <div className="font-sans bg-white text-gray-800 relative">
       {/* Navbar */}
       <header className="flex justify-between items-center px-8 py-4 shadow-sm sticky top-0 bg-white z-50">
         <div className="flex items-center space-x-2">
-          <img src="/logos.png" alt="VHireToday Logo" className="h-14 md:h-16 w-auto" />
-
-
+          <img
+            src="/logos.png"
+            alt="VHireToday Logo"
+            className="h-14 md:h-16 w-auto"
+          />
         </div>
-        <nav className="hidden md:flex space-x-6 text-gray-700 font-medium ">
-          <a href="#trending" className="hover:text-blue-600">Trending</a>
-          <a href="#categories" className="hover:text-blue-600">Categories</a>
-          <a href="#why-choose" className="hover:text-blue-600">Why Choose Us</a>
-          <a href="#employers" className="hover:text-blue-600">Employers</a>
+        <nav className="hidden md:flex space-x-6 text-gray-700 font-medium">
+          <a href="#trending" className="hover:text-blue-600">
+            Trending
+          </a>
+          <a href="#categories" className="hover:text-blue-600">
+            Categories
+          </a>
+          <a href="#why-choose" className="hover:text-blue-600">
+            Why Choose Us
+          </a>
+          <a href="#employers" className="hover:text-blue-600">
+            Employers
+          </a>
         </nav>
         <div className="flex items-center space-x-3">
-          <button onClick={() => navigate("/login")} className="border border-blue-500 text-blue-500 px-4 py-1.5 rounded hover:bg-blue-50 cursor-pointer">
+          <button
+            onClick={() => setShowLoginModal(true)}
+            className="border border-blue-500 text-blue-500 px-4 py-1.5 rounded hover:bg-blue-50 cursor-pointer"
+          >
             Login
           </button>
-          <button onClick={() => navigate("/register")} className="bg-blue-600 text-white px-4 py-1.5 rounded hover:bg-blue-700 cursor-pointer">Register</button>
+          <button
+            onClick={() => setShowRegisterModal(true)}
+            className="bg-blue-600 text-white px-4 py-1.5 rounded hover:bg-blue-700 cursor-pointer"
+          >
+            Register
+          </button>
         </div>
       </header>
 
@@ -45,7 +71,10 @@ export default function Home() {
           <h1 className="text-4xl md:text-5xl font-bold leading-tight">
             Hire Smarter with <span className="text-yellow-300">VHireToday</span>
           </h1>
-          <p className="text-lg">India’s trusted platform for hiring interns, freshers, and skilled talent.</p>
+          <p className="text-lg">
+            India’s trusted platform for hiring interns, freshers, and skilled
+            talent.
+          </p>
           <div className="flex flex-col sm:flex-row space-y-3 sm:space-y-0 sm:space-x-4 pt-4">
             <button className="flex items-center justify-center space-x-2 bg-white text-gray-800 font-semibold px-6 py-3 rounded-md hover:bg-gray-100">
               <FaGoogle className="text-red-500" />
@@ -57,14 +86,21 @@ export default function Home() {
             </button>
           </div>
           <p className="text-sm text-gray-200">
-            By continuing, you agree to our <a href="#" className="underline">Terms & Conditions</a>.
+            By continuing, you agree to our{" "}
+            <a href="#" className="underline">
+              Terms & Conditions
+            </a>
+            .
           </p>
         </div>
         <div className="md:w-1/2 mt-8 md:mt-0">
-          <img src="https://training-comp-uploads.internshala.com/data-structures-algorithms/signup_page_media/illustration-images/why-learn.png" alt="Hero People" className="rounded-lg shadow-lg" />
+          <img
+            src="https://training-comp-uploads.internshala.com/data-structures-algorithms/signup_page_media/illustration-images/why-learn.png"
+            alt="Hero People"
+            className="rounded-lg shadow-lg"
+          />
         </div>
       </section>
-
       {/* Trusted Companies */}
       <section className="py-12 bg-white text-center">
         <p className="text-gray-500 font-medium mb-8 text-lg">Trusted by 1000+ companies</p>
@@ -254,6 +290,48 @@ export default function Home() {
         >
           <FaArrowUp />
         </button>
+      )}
+
+      {/* Login Modal */}
+      {showLoginModal && (
+        <div
+          className="fixed inset-0 bg-black/40 backdrop-blur-sm flex items-center justify-center z-50"
+          onClick={() => setShowLoginModal(false)}
+        >
+          <div
+            className="bg-white rounded-2xl shadow-xl w-[90%] max-w-md p-6 relative animate-fadeIn"
+            onClick={(e) => e.stopPropagation()}
+          >
+            <button
+              onClick={() => setShowLoginModal(false)}
+              className="absolute top-3 right-3 text-gray-500 hover:text-gray-800 text-lg font-bold"
+            >
+              ✕
+            </button>
+            <Login />
+          </div>
+        </div>
+      )}
+
+      {/* Register Modal */}
+      {showRegisterModal && (
+        <div
+          className="fixed inset-0 bg-black/40 backdrop-blur-sm flex items-center justify-center z-50"
+          onClick={() => setShowRegisterModal(false)}
+        >
+          <div
+            className="bg-white rounded-2xl shadow-xl w-[90%] max-w-md p-6 relative animate-fadeIn"
+            onClick={(e) => e.stopPropagation()}
+          >
+            <button
+              onClick={() => setShowRegisterModal(false)}
+              className="absolute top-3 right-3 text-gray-500 hover:text-gray-800 text-lg font-bold"
+            >
+              ✕
+            </button>
+            <Register />
+          </div>
+        </div>
       )}
     </div>
   );
