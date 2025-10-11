@@ -8,8 +8,8 @@ import {
   FaPaintBrush,
   FaBullhorn,
 } from "react-icons/fa";
-import Login from "./Login"; // your existing Login.jsx
-import Register from "./Register"; // your existing Register.jsx
+import Login from "./Login";
+import Register from "./Register";
 
 export default function Home() {
   const [showTopBtn, setShowTopBtn] = useState(false);
@@ -22,6 +22,15 @@ export default function Home() {
     return () => window.removeEventListener("scroll", handleScroll);
   }, []);
 
+  // Disable body scroll when modal is open
+  useEffect(() => {
+    if (showLoginModal || showRegisterModal) {
+      document.body.style.overflow = "hidden";
+    } else {
+      document.body.style.overflow = "auto";
+    }
+  }, [showLoginModal, showRegisterModal]);
+
   const scrollToTop = () => window.scrollTo({ top: 0, behavior: "smooth" });
 
   return (
@@ -29,25 +38,13 @@ export default function Home() {
       {/* Navbar */}
       <header className="flex justify-between items-center px-8 py-4 shadow-sm sticky top-0 bg-white z-50">
         <div className="flex items-center space-x-2">
-          <img
-            src="/logos.png"
-            alt="VHireToday Logo"
-            className="h-14 md:h-16 w-auto"
-          />
+          <img src="/logos.png" alt="VHireToday Logo" className="h-14 md:h-16 w-auto" />
         </div>
         <nav className="hidden md:flex space-x-6 text-gray-700 font-medium">
-          <a href="#trending" className="hover:text-blue-600">
-            Trending
-          </a>
-          <a href="#categories" className="hover:text-blue-600">
-            Categories
-          </a>
-          <a href="#why-choose" className="hover:text-blue-600">
-            Why Choose Us
-          </a>
-          <a href="#employers" className="hover:text-blue-600">
-            Employers
-          </a>
+          <a href="#trending" className="hover:text-blue-600">Trending</a>
+          <a href="#categories" className="hover:text-blue-600">Categories</a>
+          <a href="#why-choose" className="hover:text-blue-600">Why Choose Us</a>
+          <a href="#employers" className="hover:text-blue-600">Employers</a>
         </nav>
         <div className="flex items-center space-x-3">
           <button
@@ -72,8 +69,7 @@ export default function Home() {
             Hire Smarter with <span className="text-yellow-300">VHireToday</span>
           </h1>
           <p className="text-lg">
-            India’s trusted platform for hiring interns, freshers, and skilled
-            talent.
+            India’s trusted platform for hiring interns, freshers, and skilled talent.
           </p>
           <div className="flex flex-col sm:flex-row space-y-3 sm:space-y-0 sm:space-x-4 pt-4">
             <button className="flex items-center justify-center space-x-2 bg-white text-gray-800 font-semibold px-6 py-3 rounded-md hover:bg-gray-100">
@@ -87,10 +83,7 @@ export default function Home() {
           </div>
           <p className="text-sm text-gray-200">
             By continuing, you agree to our{" "}
-            <a href="#" className="underline">
-              Terms & Conditions
-            </a>
-            .
+            <a href="#" className="underline">Terms & Conditions</a>.
           </p>
         </div>
         <div className="md:w-1/2 mt-8 md:mt-0">
@@ -295,7 +288,7 @@ export default function Home() {
       {/* Login Modal */}
       {showLoginModal && (
         <div
-          className="fixed inset-0 bg-black/40 backdrop-blur-sm flex items-center justify-center z-50"
+          className="fixed inset-0 bg-black/60 backdrop-blur-sm flex items-center justify-center z-50"
           onClick={() => setShowLoginModal(false)}
         >
           <div
@@ -316,7 +309,7 @@ export default function Home() {
       {/* Register Modal */}
       {showRegisterModal && (
         <div
-          className="fixed inset-0 bg-black/40 backdrop-blur-sm flex items-center justify-center z-50"
+          className="fixed inset-0 bg-black/60 backdrop-blur-sm flex items-center justify-center z-50"
           onClick={() => setShowRegisterModal(false)}
         >
           <div
