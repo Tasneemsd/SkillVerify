@@ -32,8 +32,10 @@ export default function Home() {
           <a href="#employers" className="hover:text-blue-600">Employers</a>
         </nav>
         <div className="flex items-center space-x-3">
-          <button className="border border-blue-500 text-blue-500 px-4 py-1.5 rounded hover:bg-blue-50" onClick={navigate('\login')}>Login</button>
-          <button className="bg-blue-600 text-white px-4 py-1.5 rounded hover:bg-blue-700" onClick={navigate('\register')}>Register</button>
+          <button onClick={() => navigate("/login")} className="border border-blue-500 text-blue-500 px-4 py-1.5 rounded hover:bg-blue-50 cursor-pointer">
+            Login
+          </button>
+          <button onClick={() => navigate("/register")} className="bg-blue-600 text-white px-4 py-1.5 rounded hover:bg-blue-700 cursor-pointer">Register</button>
         </div>
       </header>
 
