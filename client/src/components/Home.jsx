@@ -35,7 +35,7 @@ export default function Home() {
 
   return (
     <div className="font-sans bg-white text-gray-800 relative">
-      {/* Navbar */}
+
       {/* Navbar */}
       <header className="flex justify-between items-center px-8 h-16 shadow-sm sticky top-0 bg-white z-50">
         {/* Logo Section */}
@@ -43,8 +43,9 @@ export default function Home() {
           <img
             src="/logos.png"
             alt="VHireToday Logo"
-            className="max-h-12 w-auto ml-4 drop-shadow-[0_2px_4px_rgba(0,0,0,0.25)] object-contain"
+            className="max-h-12 w-auto ml-4 bg-gray-50 rounded-md p-1 drop-shadow-[0_2px_4px_rgba(0,0,0,0.2)] object-contain"
           />
+
         </div>
 
         {/* Nav Links */}
