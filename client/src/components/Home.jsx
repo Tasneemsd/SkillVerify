@@ -288,14 +288,14 @@ export default function Home() {
       {/* Login Modal */}
       {showLoginModal && (
         <div
-          className="fixed inset-0 bg-black/50 backdrop-blur-sm flex items-center justify-center z-50"
+          className="fixed inset-0 flex items-center justify-center z-50"
           onClick={() => setShowLoginModal(false)}
         >
           <div
-            className="bg-white rounded-2xl shadow-xl w-[90%] max-w-md p-6 relative animate-fadeIn"
+            className="bg-white rounded-xl shadow-xl w-[90%] max-w-sm p-6 relative"
             onClick={(e) => e.stopPropagation()}
           >
-            {/* ✕ Close Button (inside same card) */}
+            {/* Close Button */}
             <button
               onClick={() => setShowLoginModal(false)}
               className="absolute top-3 right-4 text-gray-500 hover:text-gray-800 text-xl font-bold"
@@ -303,7 +303,7 @@ export default function Home() {
               ✕
             </button>
 
-            {/* Your Login Form (no background duplication) */}
+            {/* Login Form (from your Login.jsx) */}
             <div className="mt-6">
               <Login />
             </div>
@@ -314,14 +314,14 @@ export default function Home() {
       {/* Register Modal */}
       {showRegisterModal && (
         <div
-          className="fixed inset-0 bg-black/50 backdrop-blur-sm flex items-center justify-center z-50"
+          className="fixed inset-0 flex items-center justify-center z-50"
           onClick={() => setShowRegisterModal(false)}
         >
           <div
-            className="bg-white rounded-2xl shadow-xl w-[90%] max-w-md p-6 relative animate-fadeIn"
+            className="bg-white rounded-xl shadow-xl w-[90%] max-w-sm p-6 relative"
             onClick={(e) => e.stopPropagation()}
           >
-            {/* ✕ Close Button (inside same card) */}
+            {/* Close Button */}
             <button
               onClick={() => setShowRegisterModal(false)}
               className="absolute top-3 right-4 text-gray-500 hover:text-gray-800 text-xl font-bold"
@@ -329,13 +329,14 @@ export default function Home() {
               ✕
             </button>
 
-            {/* Your Register Form */}
+            {/* Register Form (from your Register.jsx) */}
             <div className="mt-6">
               <Register />
             </div>
           </div>
         </div>
       )}
+
 
     </div>
   );
