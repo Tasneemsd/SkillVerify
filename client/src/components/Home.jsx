@@ -311,33 +311,33 @@ export default function Home() {
         </div>
       )}
 
-      {/* Register Modal */}
-      {showRegisterModal && (
-        <div
-          className="fixed inset-0 z-50 flex items-center justify-center backdrop-blur-md bg-black/40"
+    {/* Register Modal */}
+{showRegisterModal && (
+  <div
+    className="fixed inset-0 z-50 flex items-center justify-center backdrop-blur-md bg-black/40"
+    onClick={() => setShowRegisterModal(false)}
+  >
+    <div
+      className="bg-white rounded-xl shadow-xl w-full max-w-lg p-4 relative overflow-hidden transition-transform transform scale-100"
+      onClick={(e) => e.stopPropagation()}
+    >
+      {/* Register Form with Close Button inside */}
+      <div className="flex justify-end">
+        <button
+          aria-label="Close"
           onClick={() => setShowRegisterModal(false)}
+          className="text-gray-500 hover:text-gray-800 text-xl font-bold"
         >
-          <div
-            className="bg-white rounded-xl shadow-xl w-full max-w-lg p-4 relative overflow-hidden transition-transform transform scale-100"
-            onClick={(e) => e.stopPropagation()}
-          >
-            {/* Close Button */}
-            <button
-              aria-label="Close"
-              onClick={() => setShowRegisterModal(false)}
-              className="absolute top-2 right-3 text-gray-500 hover:text-gray-800 text-xl font-bold"
-            >
-              ✕
-            </button>
+          ✕
+        </button>
+      </div>
 
-            {/* Register Form */}
-            <div className="mt-4">
-              <Register compact />
-            </div>
-          </div>
-        </div>
-      )}
-
+      <div className="mt-2">
+        <Register compact />
+      </div>
+    </div>
+  </div>
+)}
 
 
 
