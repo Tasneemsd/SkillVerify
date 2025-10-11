@@ -37,37 +37,36 @@ export default function Home() {
     <div className="font-sans bg-white text-gray-800 relative">
 
       {/* Navbar */}
-      <header className="flex justify-between items-center px-8 h-16 shadow-sm sticky top-0 bg-white z-50">
-        {/* Logo Section */}
-        <div className="flex items-center space-x-2">
+      {/* Navbar */}
+      <header className="flex items-center justify-between px-4 md:px-8 h-16 shadow-sm sticky top-0 bg-white z-50">
+        {/* Logo */}
+        <div className="flex-shrink-0">
           <img
             src="/logos.png"
             alt="VHireToday Logo"
-            className="h-36 max-h-20 sm:max-h-24 md:max-h-28 lg:max-h-36 w-auto ml-2 sm:ml-4 object-contain"
+            className="h-36 max-h-12 md:max-h-16 lg:max-h-36 w-auto object-contain"
           />
-
-
         </div>
 
         {/* Nav Links */}
-        <nav className="hidden md:flex space-x-6 text-gray-700 font-medium">
+        <nav className="hidden md:flex space-x-6 text-gray-700 font-medium items-center">
           <a href="#trending" className="hover:text-blue-600 transition">Trending</a>
           <a href="#categories" className="hover:text-blue-600 transition">Categories</a>
           <a href="#why-choose" className="hover:text-blue-600 transition">Why Choose Us</a>
           <a href="#employers" className="hover:text-blue-600 transition">Employers</a>
         </nav>
 
-        {/* Buttons */}
+        {/* Action Buttons */}
         <div className="flex items-center space-x-3">
           <button
             onClick={() => setShowLoginModal(true)}
-            className="border border-blue-500 text-blue-500 px-4 py-1.5 rounded hover:bg-blue-50 transition"
+            className="border border-blue-500 text-blue-500 px-4 py-2 rounded hover:bg-blue-50 transition"
           >
             Login
           </button>
           <button
             onClick={() => setShowRegisterModal(true)}
-            className="bg-blue-600 text-white px-4 py-1.5 rounded hover:bg-blue-700 transition"
+            className="bg-blue-600 text-white px-4 py-2 rounded hover:bg-blue-700 transition"
           >
             Register
           </button>
