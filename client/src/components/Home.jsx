@@ -288,11 +288,11 @@ export default function Home() {
       {/* Login Modal */}
       {showLoginModal && (
         <div
-          className="fixed inset-0 bg-black/60 backdrop-blur-sm flex items-center justify-center z-50"
+          className="fixed inset-0  backdrop-blur-sm flex items-center justify-center z-50"
           onClick={() => setShowLoginModal(false)}
         >
           <div
-            className="bg-white rounded-2xl shadow-xl w-[90%] max-w-md p-6 relative animate-fadeIn"
+            className=" rounded-2xl shadow-xl w-[90%] max-w-md p-6 relative animate-fadeIn"
             onClick={(e) => e.stopPropagation()}
           >
             <button
@@ -309,11 +309,11 @@ export default function Home() {
       {/* Register Modal */}
       {showRegisterModal && (
         <div
-          className="fixed inset-0 bg-black/60 backdrop-blur-sm flex items-center justify-center z-50"
+          className="fixed inset-0 backdrop-blur-sm flex items-center justify-center z-50"
           onClick={() => setShowRegisterModal(false)}
         >
           <div
-            className="bg-white rounded-2xl shadow-xl w-[90%] max-w-md p-6 relative animate-fadeIn"
+            className=" rounded-2xl shadow-xl w-[90%] max-w-md p-6 relative animate-fadeIn"
             onClick={(e) => e.stopPropagation()}
           >
             <button
