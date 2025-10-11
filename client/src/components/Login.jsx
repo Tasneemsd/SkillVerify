@@ -1,6 +1,6 @@
 import React, { useState } from "react";
 import { Link, useNavigate } from "react-router-dom";
-import API, { setAuthToken, setUserData } from "../api"; // updated import
+import API, { setAuthToken, setUserData } from "../api";
 
 export default function Login() {
   const [form, setForm] = useState({
@@ -32,20 +32,16 @@ export default function Login() {
         role: form.role,
       });
 
-      // ✅ store token and user in localStorage
       const { token, user } = res.data;
       localStorage.setItem("token", token);
       localStorage.setItem("userEmail", user.email);
       localStorage.setItem("userName", user.name);
       localStorage.setItem("userRole", user.role);
 
-      // Also set in axios defaults if using
       setAuthToken(token);
       setUserData(user);
-
       setSuccess(`✅ Logged in as ${user.email}`);
 
-      // redirect based on role
       if (user.role === "student") navigate("/student");
       else if (user.role === "recruiter") navigate("/recruiter");
       else if (user.role === "admin") navigate("/admin");
@@ -57,10 +53,12 @@ export default function Login() {
   };
 
   return (
-    <div className="min-h-screen flex items-center justify-center bg-gradient-to-b from-indigo-100 to-white px-4">
-      <div className="bg-white w-full max-w-md shadow-2xl rounded-2xl p-8">
+    <div className="flex items-center justify-center px-4">
+      <div className="bg-white w-full max-w-md shadow-xl rounded-2xl p-8">
         <div className="text-center mb-6">
-          <h2 className="text-2xl sm:text-3xl font-bold text-gray-800">Welcome Back</h2>
+          <h2 className="text-2xl sm:text-3xl font-bold text-gray-800">
+            Welcome Back
+          </h2>
           <p className="text-gray-500">
             Login as{" "}
             <span className="font-semibold capitalize">{form.role}</span>

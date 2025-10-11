@@ -1,6 +1,6 @@
 import React, { useState } from "react";
 import { Link } from "react-router-dom";
-import API from "../api"; // your API instance
+import API from "../api";
 
 export default function Register() {
   const [form, setForm] = useState({
@@ -77,13 +77,15 @@ export default function Register() {
   };
 
   return (
-    <div className="min-h-screen flex items-center justify-center bg-gradient-to-b from-indigo-100 to-white px-4">
-      <div className="bg-white w-full max-w-md shadow-2xl rounded-2xl p-8">
+    <div className="flex items-center justify-center px-4">
+      <div className="bg-white w-full max-w-md shadow-xl rounded-2xl p-8">
         {/* Header */}
         <div className="text-center mb-6">
-          <h2 className="text-2xl sm:text-3xl font-bold text-gray-800">Create Your Account</h2>
+          <h2 className="text-2xl sm:text-3xl font-bold text-gray-800">
+            Create Your Account
+          </h2>
           <p className="text-gray-500">
-            Join as a{" "}
+            Join as{" "}
             <span className="font-semibold">
               {form.role.charAt(0).toUpperCase() + form.role.slice(1)}
             </span>
@@ -105,7 +107,10 @@ export default function Register() {
         {/* Role Selection */}
         <div className="flex justify-around mb-6">
           {["student", "recruiter", "admin"].map((roleOption) => (
-            <label key={roleOption} className="flex items-center gap-2 cursor-pointer">
+            <label
+              key={roleOption}
+              className="flex items-center gap-2 cursor-pointer"
+            >
               <input
                 type="radio"
                 name="role"
