@@ -1,9 +1,12 @@
 import React, { useState, useEffect } from "react";
 import { FaGoogle, FaEnvelope, FaArrowUp, FaLaptopCode, FaChartLine, FaPaintBrush, FaBullhorn, FaAmazon, FaMicrosoft, FaNetflix } from "react-icons/fa";
+import { useNavigate } from "react-router-dom";
 
 
 export default function Home() {
   const [showTopBtn, setShowTopBtn] = useState(false);
+  const navigate = useNavigate();
+
 
   useEffect(() => {
     const handleScroll = () => setShowTopBtn(window.scrollY > 400);
@@ -29,8 +32,8 @@ export default function Home() {
           <a href="#employers" className="hover:text-blue-600">Employers</a>
         </nav>
         <div className="flex items-center space-x-3">
-          <button className="border border-blue-500 text-blue-500 px-4 py-1.5 rounded hover:bg-blue-50">Login</button>
-          <button className="bg-blue-600 text-white px-4 py-1.5 rounded hover:bg-blue-700">Register</button>
+          <button className="border border-blue-500 text-blue-500 px-4 py-1.5 rounded hover:bg-blue-50" onClick={navigate('\login')}>Login</button>
+          <button className="bg-blue-600 text-white px-4 py-1.5 rounded hover:bg-blue-700" onClick={navigate('\register')}>Register</button>
         </div>
       </header>
 
