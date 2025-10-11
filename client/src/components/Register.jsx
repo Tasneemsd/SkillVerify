@@ -77,39 +77,37 @@ export default function Register() {
   };
 
   return (
-    <div className="flex items-center justify-center px-4">
-      <div className="bg-white w-full max-w-md shadow-xl rounded-2xl">
+    <div className="flex items-center justify-center min-h-screen px-2">
+      <div className="w-full max-w-sm bg-white shadow-md rounded-xl p-6">
         {/* Header */}
-        <div className="text-center mb-6">
-          <h2 className="text-2xl sm:text-3xl font-bold text-gray-800">
-            Create Your Account
-          </h2>
-          <p className="text-gray-500">
+        <div className="text-center mb-4">
+          <h2 className="text-xl font-semibold text-gray-800">Create Account</h2>
+          <p className="text-sm text-gray-500">
             Join as{" "}
-            <span className="font-semibold">
+            <span className="font-medium">
               {form.role.charAt(0).toUpperCase() + form.role.slice(1)}
             </span>
           </p>
         </div>
 
         {/* Google Register */}
-        <button className="w-full border flex items-center justify-center py-2 rounded-md mb-4 hover:bg-gray-50 transition font-medium">
+        <button className="w-full border flex items-center justify-center py-1.5 rounded-md mb-3 hover:bg-gray-50 transition text-sm">
           <img
             src="https://www.svgrepo.com/show/355037/google.svg"
             alt="Google"
-            className="w-5 h-5 mr-2"
+            className="w-4 h-4 mr-2"
           />
           Register with Google
         </button>
 
-        <div className="text-center text-gray-400 mb-4">OR</div>
+        <div className="text-center text-gray-400 text-xs mb-3">OR</div>
 
         {/* Role Selection */}
-        <div className="flex justify-around mb-6">
+        <div className="flex justify-around mb-3 text-sm">
           {["student", "recruiter", "admin"].map((roleOption) => (
             <label
               key={roleOption}
-              className="flex items-center gap-2 cursor-pointer"
+              className="flex items-center gap-1 cursor-pointer"
             >
               <input
                 type="radio"
@@ -117,7 +115,7 @@ export default function Register() {
                 value={roleOption}
                 checked={form.role === roleOption}
                 onChange={handleChange}
-                className="accent-indigo-500"
+                className="accent-indigo-500 w-3 h-3"
               />
               {roleOption.charAt(0).toUpperCase() + roleOption.slice(1)}
             </label>
@@ -125,8 +123,8 @@ export default function Register() {
         </div>
 
         {/* Form */}
-        <form onSubmit={handleSubmit} className="space-y-4">
-          <div className="grid grid-cols-2 gap-4">
+        <form onSubmit={handleSubmit} className="space-y-2">
+          <div className="grid grid-cols-2 gap-2">
             <input
               type="text"
               name="firstName"
@@ -134,7 +132,7 @@ export default function Register() {
               value={form.firstName}
               onChange={handleChange}
               required
-              className="border px-3 py-2 rounded-md focus:ring-2 focus:ring-indigo-400 focus:outline-none w-full"
+              className="border px-2 py-1.5 rounded-md focus:ring-1 focus:ring-indigo-400 focus:outline-none text-sm"
             />
             <input
               type="text"
@@ -143,7 +141,7 @@ export default function Register() {
               value={form.lastName}
               onChange={handleChange}
               required
-              className="border px-3 py-2 rounded-md focus:ring-2 focus:ring-indigo-400 focus:outline-none w-full"
+              className="border px-2 py-1.5 rounded-md focus:ring-1 focus:ring-indigo-400 focus:outline-none text-sm"
             />
           </div>
 
@@ -154,26 +152,26 @@ export default function Register() {
             value={form.email}
             onChange={handleChange}
             required
-            className="w-full border px-3 py-2 rounded-md focus:ring-2 focus:ring-indigo-400 focus:outline-none"
+            className="w-full border px-2 py-1.5 rounded-md focus:ring-1 focus:ring-indigo-400 focus:outline-none text-sm"
           />
 
-          <div className="flex gap-2">
+          <div className="flex gap-1.5">
             <input
               type="tel"
               name="phone"
-              placeholder="Phone Number"
+              placeholder="Phone"
               value={form.phone}
               onChange={handleChange}
               required
-              className="flex-1 border px-3 py-2 rounded-md focus:ring-2 focus:ring-indigo-400 focus:outline-none"
+              className="flex-1 border px-2 py-1.5 rounded-md focus:ring-1 focus:ring-indigo-400 focus:outline-none text-sm"
             />
             <button
               type="button"
               onClick={sendOtp}
               disabled={!form.phone || otpSent}
-              className="px-4 py-2 bg-indigo-500 text-white rounded-md hover:bg-indigo-600 disabled:opacity-50 font-medium"
+              className="px-3 py-1.5 bg-indigo-500 text-white rounded-md hover:bg-indigo-600 disabled:opacity-50 text-sm"
             >
-              {otpSent ? "OTP Sent" : "Send OTP"}
+              {otpSent ? "Sent" : "Send OTP"}
             </button>
           </div>
 
@@ -185,7 +183,7 @@ export default function Register() {
               value={form.otp}
               onChange={handleChange}
               required
-              className="w-full border px-3 py-2 rounded-md focus:ring-2 focus:ring-indigo-400 focus:outline-none"
+              className="w-full border px-2 py-1.5 rounded-md focus:ring-1 focus:ring-indigo-400 focus:outline-none text-sm"
             />
           )}
 
@@ -196,7 +194,7 @@ export default function Register() {
             value={form.password}
             onChange={handleChange}
             required
-            className="w-full border px-3 py-2 rounded-md focus:ring-2 focus:ring-indigo-400 focus:outline-none"
+            className="w-full border px-2 py-1.5 rounded-md focus:ring-1 focus:ring-indigo-400 focus:outline-none text-sm"
           />
           <input
             type="password"
@@ -205,22 +203,24 @@ export default function Register() {
             value={form.confirmPassword}
             onChange={handleChange}
             required
-            className="w-full border px-3 py-2 rounded-md focus:ring-2 focus:ring-indigo-400 focus:outline-none"
+            className="w-full border px-2 py-1.5 rounded-md focus:ring-1 focus:ring-indigo-400 focus:outline-none text-sm"
           />
 
           <button
             type="submit"
             disabled={loading}
-            className="w-full bg-indigo-500 hover:bg-indigo-600 text-white py-2 rounded-md font-semibold transition"
+            className="w-full bg-indigo-500 hover:bg-indigo-600 text-white py-1.5 rounded-md font-medium text-sm"
           >
             {loading ? "Registering..." : "Create Account"}
           </button>
         </form>
 
-        {error && <p className="text-red-500 text-center mt-3">{error}</p>}
-        {success && <p className="text-green-600 text-center mt-3">{success}</p>}
+        {error && <p className="text-red-500 text-center text-xs mt-2">{error}</p>}
+        {success && (
+          <p className="text-green-600 text-center text-xs mt-2">{success}</p>
+        )}
 
-        <p className="text-center text-sm text-gray-500 mt-6">
+        <p className="text-center text-xs text-gray-500 mt-3">
           Already have an account?{" "}
           <Link to="/login" className="text-indigo-600 font-medium hover:underline">
             Login
