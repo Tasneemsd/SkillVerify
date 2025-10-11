@@ -80,7 +80,7 @@ export default function Register() {
     <div className="flex items-center justify-center px-4">
       <div className="bg-white w-full max-w-md shadow-xl rounded-2xl p-8">
         {/* Header */}
-        <div className="text-center mb-6">
+        <div className="text-center">
           <h2 className="text-2xl sm:text-3xl font-bold text-gray-800">
             Create Your Account
           </h2>
