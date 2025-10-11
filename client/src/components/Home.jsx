@@ -43,7 +43,8 @@ export default function Home() {
           <img
             src="/logos.png"
             alt="VHireToday Logo"
-            className="max-h-12 w-auto ml-4 bg-gray-50 rounded-md p-1 drop-shadow-[0_2px_4px_rgba(0,0,0,0.2)] object-contain"
+            className="h-14 w-auto ml-4 drop-shadow-[0_2px_4px_rgba(0,0,0,0.25)] object-contain"
+            style={{ transform: "scale(1.15)", transformOrigin: "left center" }}
           />
 
         </div>
