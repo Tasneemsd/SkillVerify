@@ -230,48 +230,112 @@ export default function Home() {
       </section>
 
       {/* Why Choose VHireToday */}
-      <section id="why-choose" className="py-12 bg-blue-50 px-6 md:px-20 text-center">
-        <h2 className="text-2xl font-bold mb-6">Why Choose VHireToday? </h2>
-        <div className="grid md:grid-cols-3 gap-6">
+      {/* Why Choose VHireToday */}
+      <section id="why-choose" className="py-20 bg-blue-50 px-6 md:px-20 text-center">
+        <h2 className="text-3xl font-bold mb-12 text-gray-900">
+          Why Choose <span className="text-blue-600">VHireToday?</span>
+        </h2>
+
+        <div className="grid md:grid-cols-3 gap-8">
           {[
-            { title: "Verified Talent", desc: "Profiles verified to save time for employers." },
-            { title: "AI Matching", desc: "Get matched with the right job opportunities." },
-            { title: "Paid Courses", desc: "Upskill yourself to boost employability." }
+            {
+              title: "Verified Talent",
+              desc: "Profiles verified by our team to ensure trust and save time for employers.",
+              icon: "✅",
+            },
+            {
+              title: "AI Job Matching",
+              desc: "Smart recommendations that connect you with the right opportunities instantly.",
+              icon: "🤖",
+            },
+            {
+              title: "Career Upskilling",
+              desc: "Boost your employability through our industry-focused training programs.",
+              icon: "🚀",
+            },
           ].map((item, i) => (
-            <div key={i} className="bg-white p-6 rounded-xl shadow hover:shadow-lg transition">
-              <h3 className="font-semibold text-blue-700 mb-2">{item.title}</h3>
-              <p className="text-gray-700 text-sm">{item.desc}</p>
+            <div
+              key={i}
+              className="bg-white p-8 rounded-2xl shadow-md hover:shadow-xl transition-all duration-300 flex flex-col items-center"
+            >
+              <div className="text-5xl mb-4">{item.icon}</div>
+              <h3 className="font-semibold text-lg text-blue-700 mb-2">
+                {item.title}
+              </h3>
+              <p className="text-gray-600 text-sm leading-relaxed">{item.desc}</p>
             </div>
           ))}
         </div>
       </section>
 
       {/* Stats Section */}
-      <section className="py-12 text-center bg-blue-600 text-white">
-        <h2 className="text-2xl font-bold mb-6">VHireToday in Numbers</h2>
-        <div className="grid md:grid-cols-4 gap-6">
-          <div><h3 className="text-4xl font-bold">50K+</h3><p>Active Internships</p></div>
-          <div><h3 className="text-4xl font-bold">200K+</h3><p>Registered Students</p></div>
-          <div><h3 className="text-4xl font-bold">10K+</h3><p>Companies Hiring</p></div>
-          <div><h3 className="text-4xl font-bold">100%</h3><p>Verified Profiles</p></div>
+      <section className="py-20 text-center bg-gradient-to-r from-blue-600 to-blue-700 text-white">
+        <h2 className="text-3xl font-bold mb-12">VHireToday in Numbers</h2>
+
+        <div className="grid grid-cols-2 md:grid-cols-4 gap-10">
+          {[
+            { value: "50K+", label: "Active Internships" },
+            { value: "200K+", label: "Registered Students" },
+            { value: "10K+", label: "Companies Hiring" },
+            { value: "100%", label: "Verified Profiles" },
+          ].map((stat, i) => (
+            <div
+              key={i}
+              className="flex flex-col items-center justify-center hover:scale-105 transition-transform"
+            >
+              <h3 className="text-4xl font-extrabold mb-2">{stat.value}</h3>
+              <p className="text-blue-100 text-sm uppercase tracking-wide">
+                {stat.label}
+              </p>
+            </div>
+          ))}
         </div>
       </section>
 
       {/* Testimonials */}
-      <section className="py-16 bg-gray-50 px-8 md:px-20 text-center">
-        <h2 className="text-2xl font-bold mb-10">What Our Users Say </h2>
-        <div className="grid md:grid-cols-3 gap-6">
-          {[{ name: "Aarav Mehta", text: "VHireToday helped me find my first internship in just 3 days!" },
-          { name: "Priya Sharma", text: "Their skill verification helped me stand out and land a great job." },
-          { name: "Rohit Verma", text: "A seamless platform with trusted employers and real opportunities." }]
-            .map((t, i) => (
-              <div key={i} className="bg-white p-6 rounded-xl shadow hover:shadow-lg transition">
-                <p className="text-gray-700 italic mb-4">“{t.text}”</p>
-                <h4 className="font-semibold text-blue-700">{t.name}</h4>
+      <section className="py-20 bg-gray-50 px-6 md:px-20 text-center">
+        <h2 className="text-3xl font-bold mb-12 text-gray-900">
+          What Our <span className="text-blue-600">Users Say</span>
+        </h2>
+
+        <div className="grid md:grid-cols-3 gap-8">
+          {[
+            {
+              name: "Aarav Mehta",
+              text: "VHireToday helped me find my first internship in just 3 days!",
+              img: "https://randomuser.me/api/portraits/men/32.jpg",
+            },
+            {
+              name: "Priya Sharma",
+              text: "Their skill verification helped me stand out and land a great job.",
+              img: "https://randomuser.me/api/portraits/women/44.jpg",
+            },
+            {
+              name: "Rohit Verma",
+              text: "A seamless platform with trusted employers and real opportunities.",
+              img: "https://randomuser.me/api/portraits/men/41.jpg",
+            },
+          ].map((t, i) => (
+            <div
+              key={i}
+              className="bg-white p-8 rounded-2xl shadow-md hover:shadow-xl transition-all duration-300"
+            >
+              <div className="flex flex-col items-center">
+                <img
+                  src={t.img}
+                  alt={t.name}
+                  className="w-20 h-20 rounded-full object-cover mb-4 border-4 border-blue-100"
+                />
+                <p className="text-gray-700 italic mb-4 leading-relaxed">
+                  “{t.text}”
+                </p>
+                <h4 className="font-semibold text-blue-700 text-lg">{t.name}</h4>
               </div>
-            ))}
+            </div>
+          ))}
         </div>
       </section>
+
 
       {/* Employers Section */}
       <section id="employers" className="py-12 px-6 md:px-20 text-center">
