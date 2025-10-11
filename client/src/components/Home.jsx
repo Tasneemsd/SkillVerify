@@ -314,28 +314,31 @@ export default function Home() {
       {/* Register Modal */}
       {showRegisterModal && (
         <div
-          className="fixed inset-0 flex items-center justify-center z-50 backdrop-blur-md bg-black/40"
+          className="fixed inset-0 z-50 flex items-center justify-center backdrop-blur-md bg-black/40"
           onClick={() => setShowRegisterModal(false)}
         >
           <div
-            className="bg-white rounded-2xl shadow-2xl w-[90%] max-w-lg max-h-[90vh] overflow-y-auto p-6 relative"
+            className="bg-white rounded-xl shadow-xl w-full max-w-lg p-4 relative overflow-hidden transition-transform transform scale-100"
             onClick={(e) => e.stopPropagation()}
           >
             {/* Close Button */}
             <button
+              aria-label="Close"
               onClick={() => setShowRegisterModal(false)}
-              className="absolute top-3 right-4 text-gray-500 hover:text-gray-800 text-2xl font-bold"
+              className="absolute top-2 right-3 text-gray-500 hover:text-gray-800 text-xl font-bold"
             >
               ✕
             </button>
 
             {/* Register Form */}
-            <div className="mt-6">
-              <Register />
+            <div className="mt-4">
+              <Register compact />
             </div>
           </div>
         </div>
       )}
+
+
 
 
     </div>
