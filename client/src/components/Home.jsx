@@ -41,8 +41,9 @@ export default function Home() {
           <img
             src="/logos.png"
             alt="VHireToday Logo"
-            className="h-14 w-auto drop-shadow-[0_2px_4px_rgba(0,0,0,0.25)] transition-all"
+            className="h-20 w-auto ml-6 drop-shadow-[0_2px_4px_rgba(0,0,0,0.25)] transition-all"
           />
+
 
         </div>
         <nav className="hidden md:flex space-x-6 text-gray-700 font-medium">
