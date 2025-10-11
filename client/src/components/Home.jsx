@@ -288,20 +288,25 @@ export default function Home() {
       {/* Login Modal */}
       {showLoginModal && (
         <div
-          className="fixed inset-0  backdrop-blur-sm flex items-center justify-center z-50"
+          className="fixed inset-0 bg-black/50 backdrop-blur-sm flex items-center justify-center z-50"
           onClick={() => setShowLoginModal(false)}
         >
           <div
-            className=" rounded-2xl shadow-xl w-[90%] max-w-md p-6 relative animate-fadeIn"
+            className="bg-white rounded-2xl shadow-xl w-[90%] max-w-md p-6 relative animate-fadeIn"
             onClick={(e) => e.stopPropagation()}
           >
+            {/* ✕ Close Button (inside same card) */}
             <button
               onClick={() => setShowLoginModal(false)}
-              className="absolute top-3 right-3 text-gray-500 hover:text-gray-800 text-lg font-bold"
+              className="absolute top-3 right-4 text-gray-500 hover:text-gray-800 text-xl font-bold"
             >
               ✕
             </button>
-            <Login />
+
+            {/* Your Login Form (no background duplication) */}
+            <div className="mt-6">
+              <Login />
+            </div>
           </div>
         </div>
       )}
@@ -309,23 +314,29 @@ export default function Home() {
       {/* Register Modal */}
       {showRegisterModal && (
         <div
-          className="fixed inset-0 backdrop-blur-sm flex items-center justify-center z-50"
+          className="fixed inset-0 bg-black/50 backdrop-blur-sm flex items-center justify-center z-50"
           onClick={() => setShowRegisterModal(false)}
         >
           <div
-            className=" rounded-2xl shadow-xl w-[90%] max-w-md p-6 relative animate-fadeIn"
+            className="bg-white rounded-2xl shadow-xl w-[90%] max-w-md p-6 relative animate-fadeIn"
             onClick={(e) => e.stopPropagation()}
           >
+            {/* ✕ Close Button (inside same card) */}
             <button
               onClick={() => setShowRegisterModal(false)}
-              className="absolute top-3 right-3 text-gray-500 hover:text-gray-800 text-lg font-bold"
+              className="absolute top-3 right-4 text-gray-500 hover:text-gray-800 text-xl font-bold"
             >
               ✕
             </button>
-            <Register />
+
+            {/* Your Register Form */}
+            <div className="mt-6">
+              <Register />
+            </div>
           </div>
         </div>
       )}
+
     </div>
   );
 }
