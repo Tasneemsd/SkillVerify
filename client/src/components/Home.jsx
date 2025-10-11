@@ -38,7 +38,12 @@ export default function Home() {
       {/* Navbar */}
       <header className="flex justify-between items-center px-8 py-4 shadow-sm sticky top-0 bg-white z-50">
         <div className="flex items-center space-x-2">
-          <img src="/logos.png" alt="VHireToday Logo" className="h-14  w-auto" />
+          <img
+            src="/logos.png"
+            alt="VHireToday Logo"
+            className="h-14 w-auto drop-shadow-[0_2px_4px_rgba(0,0,0,0.25)] transition-all"
+          />
+
         </div>
         <nav className="hidden md:flex space-x-6 text-gray-700 font-medium">
           <a href="#trending" className="hover:text-blue-600">Trending</a>
