@@ -36,37 +36,42 @@ export default function Home() {
   return (
     <div className="font-sans bg-white text-gray-800 relative">
       {/* Navbar */}
-      <header className="flex justify-between items-center px-8 py-4 shadow-sm sticky top-0 bg-white z-50">
+      {/* Navbar */}
+      <header className="flex justify-between items-center px-8 h-16 shadow-sm sticky top-0 bg-white z-50">
+        {/* Logo Section */}
         <div className="flex items-center space-x-2">
           <img
             src="/logos.png"
             alt="VHireToday Logo"
-            className="h-20 w-auto ml-6 drop-shadow-[0_2px_4px_rgba(0,0,0,0.25)] transition-all"
+            className="max-h-12 w-auto ml-4 drop-shadow-[0_2px_4px_rgba(0,0,0,0.25)] object-contain"
           />
-
-
         </div>
+
+        {/* Nav Links */}
         <nav className="hidden md:flex space-x-6 text-gray-700 font-medium">
-          <a href="#trending" className="hover:text-blue-600">Trending</a>
-          <a href="#categories" className="hover:text-blue-600">Categories</a>
-          <a href="#why-choose" className="hover:text-blue-600">Why Choose Us</a>
-          <a href="#employers" className="hover:text-blue-600">Employers</a>
+          <a href="#trending" className="hover:text-blue-600 transition">Trending</a>
+          <a href="#categories" className="hover:text-blue-600 transition">Categories</a>
+          <a href="#why-choose" className="hover:text-blue-600 transition">Why Choose Us</a>
+          <a href="#employers" className="hover:text-blue-600 transition">Employers</a>
         </nav>
+
+        {/* Buttons */}
         <div className="flex items-center space-x-3">
           <button
             onClick={() => setShowLoginModal(true)}
-            className="border border-blue-500 text-blue-500 px-4 py-1.5 rounded hover:bg-blue-50 cursor-pointer"
+            className="border border-blue-500 text-blue-500 px-4 py-1.5 rounded hover:bg-blue-50 transition"
           >
             Login
           </button>
           <button
             onClick={() => setShowRegisterModal(true)}
-            className="bg-blue-600 text-white px-4 py-1.5 rounded hover:bg-blue-700 cursor-pointer"
+            className="bg-blue-600 text-white px-4 py-1.5 rounded hover:bg-blue-700 transition"
           >
             Register
           </button>
         </div>
       </header>
+
 
       {/* Hero Section */}
       <section className="bg-gradient-to-r from-blue-700 to-blue-500 text-white py-16 px-6 md:px-20 flex flex-col md:flex-row items-center justify-between">
