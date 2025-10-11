@@ -38,8 +38,9 @@ export default function Home() {
 
       {/* Navbar */}
       {/* Navbar */}
+      {/* Navbar */}
       <header className="flex items-center justify-between px-4 md:px-8 h-16 shadow-sm sticky top-0 bg-white z-50">
-        {/* Logo */}
+        {/* Left: Logo */}
         <div className="flex-shrink-0">
           <img
             src="/logos.png"
@@ -48,15 +49,15 @@ export default function Home() {
           />
         </div>
 
-        {/* Nav Links */}
-        <nav className="hidden md:flex space-x-6 text-gray-700 font-medium items-center">
+        {/* Center: Nav Links */}
+        <nav className="hidden md:flex flex-1 justify-center space-x-8 text-gray-700 font-medium items-center">
           <a href="#trending" className="hover:text-blue-600 transition">Trending</a>
           <a href="#categories" className="hover:text-blue-600 transition">Categories</a>
           <a href="#why-choose" className="hover:text-blue-600 transition">Why Choose Us</a>
           <a href="#employers" className="hover:text-blue-600 transition">Employers</a>
         </nav>
 
-        {/* Action Buttons */}
+        {/* Right: Action Buttons */}
         <div className="flex items-center space-x-3">
           <button
             onClick={() => setShowLoginModal(true)}
@@ -72,6 +73,7 @@ export default function Home() {
           </button>
         </div>
       </header>
+
 
 
       {/* Hero Section */}
