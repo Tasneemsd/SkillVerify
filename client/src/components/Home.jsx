@@ -288,22 +288,22 @@ export default function Home() {
       {/* Login Modal */}
       {showLoginModal && (
         <div
-          className="fixed inset-0 flex items-center justify-center z-50"
+          className="fixed inset-0 flex items-center justify-center z-50 backdrop-blur-md bg-black/40"
           onClick={() => setShowLoginModal(false)}
         >
           <div
-            className="bg-white rounded-xl shadow-xl w-[90%] max-w-sm p-6 relative"
+            className="bg-white rounded-2xl shadow-2xl w-[90%] max-w-md max-h-[90vh] overflow-y-auto p-6 relative"
             onClick={(e) => e.stopPropagation()}
           >
             {/* Close Button */}
             <button
               onClick={() => setShowLoginModal(false)}
-              className="absolute top-3 right-4 text-gray-500 hover:text-gray-800 text-xl font-bold"
+              className="absolute top-3 right-4 text-gray-500 hover:text-gray-800 text-2xl font-bold"
             >
               ✕
             </button>
 
-            {/* Login Form (from your Login.jsx) */}
+            {/* Login Form */}
             <div className="mt-6">
               <Login />
             </div>
@@ -314,22 +314,22 @@ export default function Home() {
       {/* Register Modal */}
       {showRegisterModal && (
         <div
-          className="fixed inset-0 flex items-center justify-center z-50"
+          className="fixed inset-0 flex items-center justify-center z-50 backdrop-blur-md bg-black/40"
           onClick={() => setShowRegisterModal(false)}
         >
           <div
-            className="bg-white rounded-xl shadow-xl w-[90%] max-w-sm p-6 relative"
+            className="bg-white rounded-2xl shadow-2xl w-[90%] max-w-lg max-h-[90vh] overflow-y-auto p-6 relative"
             onClick={(e) => e.stopPropagation()}
           >
             {/* Close Button */}
             <button
               onClick={() => setShowRegisterModal(false)}
-              className="absolute top-3 right-4 text-gray-500 hover:text-gray-800 text-xl font-bold"
+              className="absolute top-3 right-4 text-gray-500 hover:text-gray-800 text-2xl font-bold"
             >
               ✕
             </button>
 
-            {/* Register Form (from your Register.jsx) */}
+            {/* Register Form */}
             <div className="mt-6">
               <Register />
             </div>
