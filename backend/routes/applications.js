@@ -2,44 +2,63 @@ const express = require("express");
 const router = express.Router();
 const jwt = require("jsonwebtoken");
 const Application = require("../models/Application");
+const Job = require("../models/Job"); // Make sure you have a Job model
 
-// POST - apply for job
+// POST - Apply for a job
 router.post("/", async (req, res) => {
   try {
     const token = req.headers.authorization?.split(" ")[1];
     if (!token) return res.status(401).json({ message: "No token provided" });
 
     const decoded = jwt.verify(token, process.env.JWT_SECRET || "supersecret");
-    if (decoded.role !== "student") return res.status(403).json({ message: "Only students can apply" });
+    if (decoded.role !== "student")
+      return res.status(403).json({ message: "Only students can apply" });
 
     const { jobId } = req.body;
     if (!jobId) return res.status(400).json({ message: "Job ID required" });
 
-    const existingApp = await Application.findOne({ studentId: decoded.id, jobId });
-    if (existingApp) return res.status(400).json({ message: "Already applied for this job" });
+    // Check if already applied
+    const existingApp = await Application.findOne({
+      studentId: decoded.id,
+      jobId,
+    });
+    if (existingApp)
+      return res.status(400).json({ message: "Already applied for this job" });
 
+    // Fetch job details
+    const job = await Job.findById(jobId);
+    if (!job) return res.status(404).json({ message: "Job not found" });
+
+    // Create application
     const application = await Application.create({
       studentId: decoded.id,
       jobId,
+      jobTitle: job.title,
+      company: job.company,
       status: "Applied",
       appliedOn: new Date(),
     });
 
-    return res.status(200).json({ success: true, message: "Applied successfully", application });
+    return res.status(200).json({
+      success: true,
+      message: "Applied successfully",
+      application,
+    });
   } catch (err) {
     console.error("Application error:", err);
     return res.status(500).json({ message: "Application failed", error: err.message });
   }
 });
 
-// GET - fetch student applications
+// GET - Fetch student applications
 router.get("/", async (req, res) => {
   try {
     const token = req.headers.authorization?.split(" ")[1];
     if (!token) return res.status(401).json({ message: "No token provided" });
 
     const decoded = jwt.verify(token, process.env.JWT_SECRET || "supersecret");
-    if (decoded.role !== "student") return res.status(403).json({ message: "Only students can fetch applications" });
+    if (decoded.role !== "student")
+      return res.status(403).json({ message: "Only students can fetch applications" });
 
     const applications = await Application.find({ studentId: decoded.id });
     return res.status(200).json(applications);
