@@ -12,7 +12,7 @@ import {
   X,
   LogOut,
 } from "lucide-react";
-import { getUserInitials } from "../utils";
+import { getUserInitials } from "../utils/helpers";
 
 const BASE_URL = "https://skillverify.onrender.com/api";
 
