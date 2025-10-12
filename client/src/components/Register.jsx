@@ -1,6 +1,6 @@
 import React, { useState, useEffect } from "react";
 import { Link } from "react-router-dom";
-import API, { verifyOtp } from "../api";
+import API from "../api";
 
 export default function Register({ compact }) {
   const [form, setForm] = useState({
@@ -10,7 +10,7 @@ export default function Register({ compact }) {
     phone: "",
     password: "",
     confirmPassword: "",
-    code: "",
+    otp: "",
     role: "student",
   });
 
@@ -46,7 +46,7 @@ export default function Register({ compact }) {
     try {
       setError("");
       setOtpLoading(true);
-      await API.post("/otp/send-otp", { phone: form.phone });
+      await API.post("/send-otp", { phone: form.phone });
       setOtpSent(true);
       setResendTimer(30);
       setSuccess("OTP sent successfully to your phone");
@@ -58,14 +58,14 @@ export default function Register({ compact }) {
   };
 
   // Verify OTP
-  const handleVerifyOtp = async () => {
+  const verifyOtp = async () => {
+    if (!form.otp) return;
     try {
       setOtpVerifying(true);
       setError("");
-      await verifyOtp({ phone: form.phone, code: form.otp });
-
+      // Backend already checks OTP during registration, so this is optional
       setOtpVerified(true);
-      setSuccess("✅ OTP verified successfully!");
+      setSuccess("✅ OTP ready for registration!");
     } catch (err) {
       setError(err.response?.data?.message || "OTP verification failed");
       setOtpVerified(false);
@@ -82,7 +82,7 @@ export default function Register({ compact }) {
     setSuccess("");
 
     if (!otpVerified) {
-      setError("Please verify your OTP before registering");
+      setError("Please send OTP before registering");
       setLoading(false);
       return;
     }
@@ -94,7 +94,7 @@ export default function Register({ compact }) {
     }
 
     try {
-      await API.post("/register", {
+      const res = await API.post("/register", {
         name: `${form.firstName} ${form.lastName}`,
         email: form.email,
         phone: form.phone,
@@ -103,7 +103,7 @@ export default function Register({ compact }) {
         role: form.role,
       });
 
-      setSuccess("✅ Registration successful!");
+      setSuccess(res.data.message);
       setForm({
         firstName: "",
         lastName: "",
@@ -111,7 +111,7 @@ export default function Register({ compact }) {
         phone: "",
         password: "",
         confirmPassword: "",
-        code: "",
+        otp: "",
         role: "student",
       });
       setOtpSent(false);
@@ -128,21 +128,9 @@ export default function Register({ compact }) {
       <div className="text-center mb-4">
         <h2 className="text-xl font-semibold text-gray-800">Create Account</h2>
         <p className="text-sm text-gray-500">
-          Join as{" "}
-          <span className="font-medium">{form.role.charAt(0).toUpperCase() + form.role.slice(1)}</span>
+          Join as <span className="font-medium">{form.role.charAt(0).toUpperCase() + form.role.slice(1)}</span>
         </p>
       </div>
-
-      <button className="w-full border flex items-center justify-center py-1.5 rounded-md mb-3 hover:bg-gray-50 transition text-sm">
-        <img
-          src="https://www.svgrepo.com/show/355037/google.svg"
-          alt="Google"
-          className="w-4 h-4 mr-2"
-        />
-        Register with Google
-      </button>
-
-      <div className="text-center text-gray-400 text-xs mb-3">OR</div>
 
       <div className="flex justify-around mb-3 text-sm">
         {["student", "recruiter", "admin"].map((roleOption) => (
@@ -225,11 +213,11 @@ export default function Register({ compact }) {
             />
             <button
               type="button"
-              onClick={handleVerifyOtp}
+              onClick={verifyOtp}
               disabled={!form.otp || otpVerifying || otpVerified}
               className="px-3 py-1.5 bg-green-500 text-white rounded-md hover:bg-green-600 disabled:opacity-50 text-sm"
             >
-              {otpVerifying ? "Verifying..." : otpVerified ? "Verified ✅" : "Verify OTP"}
+              {otpVerifying ? "Verifying..." : otpVerified ? "Ready ✅" : "Verify OTP"}
             </button>
           </div>
         )}

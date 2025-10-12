@@ -5,9 +5,10 @@ const bcrypt = require("bcryptjs");
 const jwt = require("jsonwebtoken");
 const twilio = require("twilio");
 
+// Twilio credentials
 const accountSid = process.env.TWILIO_ACCOUNT_SID;
 const authToken = process.env.TWILIO_AUTH_TOKEN;
-const serviceSid = process.env.TWILIO_SERVICE_SID1;
+const serviceSid = process.env.TWILIO_SERVICE_SID1; // Verify Service SID
 
 const client = twilio(accountSid, authToken);
 
@@ -16,11 +17,12 @@ exports.register = async (req, res) => {
   try {
     const { name, email, phone, password, code, role } = req.body;
 
+    // Validate required fields
     if (!name || !email || !phone || !password || !code || !role) {
-      return res.status(400).json({ message: "All fields required" });
+      return res.status(400).json({ message: "All fields are required" });
     }
 
-    // ===== REAL OTP CHECK =====
+    // ===== VERIFY OTP WITH TWILIO =====
     const verificationCheck = await client.verify.v2
       .services(serviceSid)
       .verificationChecks.create({
@@ -45,7 +47,7 @@ exports.register = async (req, res) => {
     // ===== HASH PASSWORD =====
     const hashedPassword = await bcrypt.hash(password, 10);
 
-    // ===== CREATE USER =====
+    // ===== CREATE USER BASED ON ROLE =====
     let user;
     if (role === "student") {
       user = new Student({ name, email, phone, password: hashedPassword, skills: [] });
@@ -80,6 +82,7 @@ exports.login = async (req, res) => {
     if (!email || !password)
       return res.status(400).json({ message: "Email & password required" });
 
+    // ===== FIND USER IN ANY ROLE =====
     let user = await Student.findOne({ email });
     let role = "student";
 
@@ -91,22 +94,21 @@ exports.login = async (req, res) => {
       user = await Admin.findOne({ email });
       if (user) role = "admin";
     }
+
     if (!user) return res.status(401).json({ message: "Invalid credentials" });
 
-    if (!user.password)
-      return res.status(500).json({ message: "Password not set for this user" });
-
+    // ===== COMPARE PASSWORD =====
     const isMatch = await bcrypt.compare(password, user.password);
-    if (!isMatch)
-      return res.status(401).json({ message: "Invalid credentials" });
+    if (!isMatch) return res.status(401).json({ message: "Invalid credentials" });
 
-    // JWT token
+    // ===== GENERATE JWT =====
     const token = jwt.sign(
       { id: user._id, email: user.email, role },
       process.env.JWT_SECRET || "supersecret",
       { expiresIn: "2h" }
     );
 
+    // ===== RESPONSE USER OBJECT =====
     let userObj = {
       _id: user._id,
       name: user.name,
@@ -128,5 +130,27 @@ exports.login = async (req, res) => {
   } catch (err) {
     console.error("LOGIN ERROR:", err);
     return res.status(500).json({ message: "Server error", error: err.message });
+  }
+};
+
+// ===== SEND OTP =====
+exports.sendOtp = async (req, res) => {
+  try {
+    const { phone } = req.body;
+    if (!phone || phone.length < 10) {
+      return res.status(400).json({ message: "Enter a valid phone number" });
+    }
+
+    const verification = await client.verify.v2
+      .services(serviceSid)
+      .verifications.create({
+        to: phone.startsWith("+") ? phone : `+91${phone}`,
+        channel: "sms",
+      });
+
+    return res.status(200).json({ message: "OTP sent successfully", sid: verification.sid });
+  } catch (err) {
+    console.error("SEND OTP ERROR:", err);
+    return res.status(500).json({ message: "Failed to send OTP", error: err.message });
   }
 };
