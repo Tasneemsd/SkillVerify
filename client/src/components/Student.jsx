@@ -31,12 +31,11 @@ function Student() {
   const [skillLoading, setSkillLoading] = useState(false);
 
   const [mockDate, setMockDate] = useState("");
-  const [mockInterviewStatus, setMockInterviewStatus] = useState(false);
-  const [isVerified, setIsVerified] = useState(false);
+  const [mockInterviewStatus, setMockInterviewStatus] = useState(null);
 
-  const navigate = useNavigate();
+  const [isVerified, setIsVerified] = useState(false); // ✅ already there, keep it
 
-  // ✅ Added: Fetch verification status
+  // ✅ Add this function (below your fetchApplications)
   const refreshVerificationStatus = async () => {
     try {
       const token = localStorage.getItem("token");
@@ -49,26 +48,8 @@ function Student() {
     }
   };
 
-  // ✅ Added: Mock Interview Payment
-  const handleMockPayment = async () => {
-    try {
-      const token = localStorage.getItem("token");
-      const res = await API.post(
-        "/student/mock-interview/pay",
-        {},
-        { headers: { Authorization: `Bearer ${token}` } }
-      );
-      if (res.data.success) {
-        alert("Payment successful! You can now schedule your mock interview.");
-        refreshVerificationStatus();
-      } else {
-        alert("Payment failed. Please try again.");
-      }
-    } catch (err) {
-      console.error("Payment error:", err);
-      alert(err.response?.data?.message || "Payment failed");
-    }
-  };
+
+  const navigate = useNavigate();
 
   // Load initial data
   useEffect(() => {
@@ -78,7 +59,7 @@ function Student() {
     fetchStudentByEmail(email);
     fetchCourses();
     fetchJobs();
-    refreshVerificationStatus(); // ✅ Added
+    refreshVerificationStatus(); // ✅ Call it here to refresh status on component load
   }, []);
 
   // Fetch student
@@ -141,7 +122,7 @@ function Student() {
     }
   };
 
-  // Enroll in course
+  // Enroll
   const handleEnroll = async (course) => {
     try {
       if (!student?._id) throw new Error("Student not loaded");
@@ -171,8 +152,8 @@ function Student() {
           ...(res.data.student
             ? res.data.student
             : {
-                enrolledCourses: [...(prev.enrolledCourses || []), res.data.course || course],
-              }),
+              enrolledCourses: [...(prev.enrolledCourses || []), res.data.course || course],
+            }),
         }));
       }
     } catch (err) {
@@ -181,7 +162,7 @@ function Student() {
     }
   };
 
-  // Add Skill
+  // Skills
   const handleAddSkill = async () => {
     if (!newSkillName.trim()) return alert("Please enter a skill name");
 
@@ -204,17 +185,15 @@ function Student() {
       setSkillLoading(false);
     }
   };
-
-  // Apply to Job
+  // Add this function inside your Student component
   const handleApply = async (job) => {
     try {
       const token = localStorage.getItem("token");
       if (!token) return alert("You must be logged in to apply.");
-
-      // ✅ Restrict unverified users
       if (!isVerified) {
-        return alert("You must be verified to apply for jobs. Please complete your mock interview verification first.");
+        return alert("You must be verified to apply for jobs. Please schedule your mock interview first.");
       }
+
 
       const res = await API.post(
         "/applications",
@@ -232,7 +211,6 @@ function Student() {
     }
   };
 
-  // Remove Skill
   const handleRemoveSkill = async (index) => {
     try {
       const token = localStorage.getItem("token");
@@ -247,7 +225,6 @@ function Student() {
     }
   };
 
-  // Schedule Mock Interview
   const handleScheduleMockInterview = async () => {
     if (!mockDate) return alert("Please select a date and time");
 
@@ -267,10 +244,24 @@ function Student() {
       alert(err.response?.data?.message || "Failed to schedule mock interview");
     }
   };
-
-  const handleLogout = () => {
-    localStorage.clear();
-    navigate("/login");
+  // ✅ Mock Interview Payment
+  const handleMockPayment = async () => {
+    try {
+      const token = localStorage.getItem("token");
+      const res = await API.post(
+        "/student/mock-interview/pay",
+        {},
+        { headers: { Authorization: `Bearer ${token}` } }
+      );
+      if (res.data.success) {
+        alert("Payment successful! You can now schedule your mock interview.");
+      } else {
+        alert("Payment failed. Please try again.");
+      }
+    } catch (err) {
+      console.error("Payment error:", err);
+      alert(err.response?.data?.message || "Payment failed");
+    }
   };
 
   const getSkillColor = (level) => {
@@ -286,12 +277,20 @@ function Student() {
     }
   };
 
+  const handleLogout = () => {
+    localStorage.clear();
+    navigate("/login");
+  };
+
   const isCourseEnrolled = (course) =>
     student?.enrolledCourses?.some(
       (c) => c?._id?.toString() === course._id?.toString() || c?.toString() === course._id?.toString()
     );
 
-  // UI Loading
+  const enrolledCourses = student?.enrolledCourses?.length || 0;
+  const totalCourses = courses.length;
+  const progress = totalCourses ? Math.round((enrolledCourses / totalCourses) * 100) : 0;
+
   if (loading)
     return (
       <div className="min-h-screen flex flex-col items-center justify-center bg-gray-50">
@@ -299,7 +298,6 @@ function Student() {
         <p className="text-gray-600 mt-2">Loading...</p>
       </div>
     );
-
 
   if (!student)
     return (
@@ -331,7 +329,17 @@ function Student() {
                 <p className="text-gray-700 font-medium">
                   Welcome,{" "}
                   <span className="font-bold">{student?.name || "Student"}</span>
+                  {isVerified ? (
+                    <span className="ml-2 px-2 py-1 text-xs bg-green-100 text-green-700 font-semibold rounded-full">
+                      Verified ✅
+                    </span>
+                  ) : (
+                    <span className="ml-2 px-2 py-1 text-xs bg-red-100 text-red-700 font-semibold rounded-full">
+                      Not Verified ❌
+                    </span>
+                  )}
                 </p>
+
               </div>
               <button
                 onClick={() => setShowDropdown(!showDropdown)}
@@ -729,100 +737,121 @@ function Student() {
 
 
         {/* My Applications */}
-         {/* APPLICATIONS TAB */}
         {activeTab === "applications" && (
           <div>
-            {applications.length ? (
-              <div className="overflow-x-auto">
-                <table className="min-w-full bg-white border rounded-lg">
-                  <thead className="bg-gray-100">
-                    <tr>
-                      <th className="text-left px-4 py-2 border-b">Job Title</th>
-                      <th className="text-left px-4 py-2 border-b">Company</th>
-                      <th className="text-left px-4 py-2 border-b">Status</th>
-                    </tr>
-                  </thead>
-                  <tbody>
-                    {applications.map((app) => (
-                      <tr key={app._id} className="hover:bg-gray-50">
-                        <td className="px-4 py-2 border-b">{app.job?.title}</td>
-                        <td className="px-4 py-2 border-b">{app.job?.company}</td>
-                        <td className="px-4 py-2 border-b">
-                          <span
-                            className={`px-3 py-1 text-xs font-semibold rounded-full ${
-                              app.status === "Accepted"
-                                ? "bg-green-100 text-green-700"
-                                : app.status === "Rejected"
-                                ? "bg-red-100 text-red-700"
-                                : "bg-yellow-100 text-yellow-700"
-                            }`}
-                          >
-                            {app.status}
-                          </span>
-                        </td>
-                      </tr>
-                    ))}
-                  </tbody>
-                </table>
+            <h2 className="text-2xl font-bold text-gray-800 mb-6">
+              My Applications
+            </h2>
+            {applications.length === 0 ? (
+              <div className="text-center py-16 bg-white rounded-lg shadow">
+                <FileText className="w-16 h-16 text-gray-300 mx-auto mb-4" />
+                <p className="text-gray-500 text-lg mb-4">You haven't applied yet.</p>
+                <button
+                  onClick={() => setActiveTab("jobs")}
+                  className="px-6 py-2 bg-blue-600 text-white rounded-lg hover:bg-blue-700"
+                >
+                  Browse Jobs
+                </button>
               </div>
             ) : (
-              <p className="text-gray-500 text-center">No applications yet.</p>
+              <div className="space-y-4">
+                {applications.map((app) => (
+                  <div
+                    key={app._id}
+                    className="bg-white shadow-md rounded-lg p-6 hover:shadow-lg transition-all duration-200 border border-gray-200"
+                  >
+                    <div className="flex justify-between items-start">
+                      <div className="flex-1">
+                        <h3 className="text-lg font-bold text-gray-800 mb-2">
+                          {app.jobTitle}
+                        </h3>
+                        <p className="text-sm text-gray-600">
+                          Applied on {new Date(app.appliedOn).toLocaleDateString()}{" "}
+                          at {new Date(app.appliedOn).toLocaleTimeString()}
+                        </p>
+                      </div>
+                      <span
+                        className={`px-3 py-1 rounded-full text-sm font-semibold ${app.status === "Accepted"
+                          ? "bg-green-100 text-green-700"
+                          : app.status === "Rejected"
+                            ? "bg-red-100 text-red-700"
+                            : "bg-yellow-100 text-yellow-700"
+                          }`}
+                      >
+                        {app.status}
+                      </span>
+                    </div>
+                  </div>
+                ))}
+              </div>
             )}
           </div>
         )}
 
 
-
-        {/* MOCK INTERVIEW TAB */}
+        {/* Mock Interview Tab */}
         {activeTab === "mockInterview" && (
-          <div className="bg-white shadow-md rounded-lg p-6 max-w-lg mx-auto">
-            <h2 className="text-xl font-semibold text-gray-800 mb-4 flex items-center gap-2">
-              <Award className="w-5 h-5 text-blue-600" /> Mock Interview Verification
-            </h2>
+          <div className="max-w-4xl mx-auto">
+            <div className="bg-white shadow-lg rounded-xl p-8">
+              <div className="flex items-center gap-3 mb-6">
+                <Clock className="w-8 h-8 text-blue-600" />
+                <h2 className="text-2xl font-bold text-gray-800">Mock Interview</h2>
+              </div>
 
-            {!isVerified ? (
-              <div>
-                <p className="text-gray-600 mb-4">
-                  To become verified and visible to recruiters, you must complete a mock interview.
-                </p>
+              {mockInterviewStatus ? (
+                <div className="space-y-4">
+                  <p className="text-gray-700">
+                    Your mock interview is scheduled on:{" "}
+                    <span className="font-semibold">
+                      {new Date(student.mockInterviewDate).toLocaleString()}
+                    </span>
+                  </p>
+                  <p className="text-gray-700">
+                    Verification Status:{" "}
+                    {isVerified ? (
+                      <span className="text-green-600 font-bold">Verified ✅</span>
+                    ) : (
+                      <span className="text-red-600 font-bold">Not Verified ❌</span>
+                    )}
+                  </p>
+                </div>
+              ) : (
+                <div className="space-y-4">
+                  <p className="text-gray-700">
+                    You have not scheduled a mock interview yet.
+                  </p>
 
-                {!mockInterviewStatus ? (
-                  <>
+                  {/* ✅ Payment Section */}
+                  <div className="space-y-2">
+                    <p className="text-gray-700">
+                      Please complete the ₹499 verification fee to enable scheduling.
+                    </p>
                     <button
                       onClick={handleMockPayment}
-                      className="px-5 py-2 bg-blue-600 text-white rounded-lg hover:bg-blue-700 transition"
+                      className="px-6 py-2 bg-green-600 text-white rounded-lg hover:bg-green-700 font-semibold transition-all duration-200"
                     >
-                      Pay ₹299 to Book Interview
+                      Pay ₹499 to Proceed
                     </button>
-                  </>
-                ) : (
-                  <div className="mt-4">
-                    <p className="text-gray-600 mb-2">Schedule your mock interview date:</p>
+                  </div>
+
+                  <div className="flex flex-col sm:flex-row gap-3">
+
                     <input
                       type="datetime-local"
                       value={mockDate}
                       onChange={(e) => setMockDate(e.target.value)}
-                      className="w-full px-3 py-2 border rounded-lg mb-3"
+                      className="flex-1 px-4 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500"
                     />
                     <button
                       onClick={handleScheduleMockInterview}
-                      className="px-5 py-2 bg-green-600 text-white rounded-lg hover:bg-green-700 transition"
+                      className="px-6 py-2 bg-blue-600 text-white rounded-lg hover:bg-blue-700 font-semibold transition-all duration-200"
                     >
-                      Schedule Interview
+                      Schedule Mock Interview
                     </button>
                   </div>
-                )}
-              </div>
-            ) : (
-              <div className="text-center">
-                <p className="text-green-700 font-semibold text-lg">
-                  🎉 You are already verified!
-                </p>
-                <p className="text-gray-600 mt-2">
-                  You can now apply for verified-only job postings.
-                </p>
-              </div>
-            )}
+                </div>
+              )}
+            </div>
           </div>
         )}
       </div>
