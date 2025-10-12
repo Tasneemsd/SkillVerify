@@ -171,26 +171,25 @@ function Student() {
   };
   // Add this function inside your Student component
   const handleApply = async (job) => {
-    try {
-      const token = localStorage.getItem("token");
-      if (!token) return alert("You must be logged in to apply.");
+  try {
+    const token = localStorage.getItem("token");
+    if (!token) return alert("You must be logged in to apply.");
 
-      const res = await API.post(
-        "/applications",
-        { jobId: job._id },
-        { headers: { Authorization: `Bearer ${token}` } }
-      );
+    const res = await API.post(
+      "/applications",
+      { jobId: job._id },
+      { headers: { Authorization: `Bearer ${token}` } }
+    );
 
-      if (res.data.success) {
-        alert("Applied successfully!");
-        // Add the new application to applications state instantly
-        setApplications((prev) => [...prev, res.data.application]);
-      }
-    } catch (err) {
-      console.error("Application error:", err);
-      alert(err.response?.data?.message || "Failed to apply for job");
+    if (res.data.success) {
+      alert("Applied successfully!");
+      setApplications((prev) => [...prev, res.data.application]);
     }
-  };
+  } catch (err) {
+    console.error("Application error:", err);
+    alert(err.response?.data?.message || "Failed to apply for this job");
+  }
+};
 
   const handleRemoveSkill = async (index) => {
     try {
