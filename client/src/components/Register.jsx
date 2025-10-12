@@ -1,6 +1,6 @@
 import React, { useState, useEffect } from "react";
 import { Link } from "react-router-dom";
-import API from "../api";
+import API, { verifyOtp } from "../api";
 
 export default function Register({ compact }) {
   const [form, setForm] = useState({
@@ -17,6 +17,8 @@ export default function Register({ compact }) {
   const [loading, setLoading] = useState(false);
   const [otpLoading, setOtpLoading] = useState(false);
   const [otpSent, setOtpSent] = useState(false);
+  const [otpVerifying, setOtpVerifying] = useState(false);
+  const [otpVerified, setOtpVerified] = useState(false);
   const [resendTimer, setResendTimer] = useState(30);
   const [error, setError] = useState("");
   const [success, setSuccess] = useState("");
@@ -35,6 +37,7 @@ export default function Register({ compact }) {
     return () => clearTimeout(timer);
   }, [otpSent, resendTimer]);
 
+  // Send OTP
   const sendOtp = async () => {
     if (!form.phone || form.phone.length !== 10) {
       setError("Enter a valid 10-digit phone number");
@@ -54,11 +57,34 @@ export default function Register({ compact }) {
     }
   };
 
+  // Verify OTP
+  const handleVerifyOtp = async () => {
+    try {
+      setOtpVerifying(true);
+      setError("");
+      await verifyOtp({ phone: form.phone, otp: form.otp });
+      setOtpVerified(true);
+      setSuccess("✅ OTP verified successfully!");
+    } catch (err) {
+      setError(err.response?.data?.message || "OTP verification failed");
+      setOtpVerified(false);
+    } finally {
+      setOtpVerifying(false);
+    }
+  };
+
+  // Handle registration
   const handleSubmit = async (e) => {
     e.preventDefault();
     setLoading(true);
     setError("");
     setSuccess("");
+
+    if (!otpVerified) {
+      setError("Please verify your OTP before registering");
+      setLoading(false);
+      return;
+    }
 
     if (form.password !== form.confirmPassword) {
       setError("Passwords do not match");
@@ -88,6 +114,7 @@ export default function Register({ compact }) {
         role: "student",
       });
       setOtpSent(false);
+      setOtpVerified(false);
     } catch (err) {
       setError(err.response?.data?.message || "Registration failed");
     } finally {
@@ -185,15 +212,25 @@ export default function Register({ compact }) {
         </div>
 
         {otpSent && (
-          <input
-            type="text"
-            name="otp"
-            placeholder="Enter OTP"
-            value={form.otp}
-            onChange={handleChange}
-            required
-            className="w-full border px-2 py-1.5 rounded-md focus:ring-1 focus:ring-indigo-400 focus:outline-none text-sm"
-          />
+          <div className="flex gap-2">
+            <input
+              type="text"
+              name="otp"
+              placeholder="Enter OTP"
+              value={form.otp}
+              onChange={handleChange}
+              required
+              className="flex-1 border px-2 py-1.5 rounded-md focus:ring-1 focus:ring-indigo-400 focus:outline-none text-sm"
+            />
+            <button
+              type="button"
+              onClick={handleVerifyOtp}
+              disabled={!form.otp || otpVerifying || otpVerified}
+              className="px-3 py-1.5 bg-green-500 text-white rounded-md hover:bg-green-600 disabled:opacity-50 text-sm"
+            >
+              {otpVerifying ? "Verifying..." : otpVerified ? "Verified ✅" : "Verify OTP"}
+            </button>
+          </div>
         )}
 
         <input
@@ -217,7 +254,7 @@ export default function Register({ compact }) {
 
         <button
           type="submit"
-          disabled={loading}
+          disabled={loading || !otpVerified}
           className="w-full bg-indigo-500 hover:bg-indigo-600 text-white py-1.5 rounded-md font-medium text-sm"
         >
           {loading ? "Registering..." : "Create Account"}
