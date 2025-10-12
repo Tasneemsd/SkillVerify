@@ -1,4 +1,5 @@
 applications.js
+
 const express = require("express");
 const router = express.Router();
 const jwt = require("jsonwebtoken");
@@ -54,6 +55,7 @@ module.exports = router;
 
 
 courses.js
+
 const express = require("express");
 const Course = require("../models/Course");
 const router = express.Router();
@@ -94,6 +96,7 @@ module.exports = router;
 
 
 jobs.js
+
 const express = require("express");
 const Job = require("../models/Job");
 const Recruiter = require("../models/Recruiter");
@@ -196,6 +199,7 @@ router.get("/", async (req, res) => {
 module.exports = router;
 
 studentEnroll.js
+
 const express = require("express");
 const router = express.Router();
 const jwt = require("jsonwebtoken");
@@ -252,7 +256,9 @@ router.post("/", async (req, res) => {
 module.exports = router;
 
 
-index.jsconst express = require("express");
+index.js
+
+const express = require("express");
 const cors = require("cors");
 const dotenv = require("dotenv");
 const connectDB = require("./config/db");
@@ -312,3 +318,20 @@ const PORT = process.env.PORT || 5000;
 app.listen(PORT, () => {
   console.log(`🚀 Server running on port ${PORT}`);
 });
+
+Recruiter.js
+
+const mongoose = require("mongoose");
+
+const recruiterSchema = new mongoose.Schema({
+  name: { type: String, required: true },
+  email: { type: String, required: true, unique: true },
+  password: { type: String, required: true }, // hashed password
+  companyName: { type: String, default: "" },
+  position: { type: String, default: "" },
+  phone: { type: String, default: "" },
+  bio: { type: String, default: "" },
+  createdAt: { type: Date, default: Date.now }
+});
+
+module.exports = mongoose.model("Recruiter", recruiterSchema);

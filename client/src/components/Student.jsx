@@ -10,10 +10,10 @@ import {
   Star,
   X,
   LogOut,
-  Clock,       // ✅ Added
-  Briefcase,   // ✅ Added
+  Clock,
+  Briefcase,
 } from "lucide-react";
-import { useNavigate , Link} from "react-router-dom";
+import { useNavigate, Link } from "react-router-dom";
 import API from "../api";
 import { getUserInitials } from "../utils/helpers";
 
@@ -28,6 +28,10 @@ function Student() {
 
   const [newSkillName, setNewSkillName] = useState("");
   const [newSkillLevel, setNewSkillLevel] = useState("Basic");
+
+  const [mockDate, setMockDate] = useState("");
+  const [mockInterviewStatus, setMockInterviewStatus] = useState(null);
+  const [isVerified, setIsVerified] = useState(false);
 
   const navigate = useNavigate();
 
@@ -51,6 +55,9 @@ function Student() {
       studentData.skills = studentData.skills || [];
 
       setStudent(studentData);
+      setMockInterviewStatus(studentData.mockInterviewScheduled || false);
+      setIsVerified(studentData.isVerified || false);
+
       fetchApplications();
     } catch (err) {
       console.error("Error fetching student:", err);
@@ -99,12 +106,10 @@ function Student() {
   };
 
   // Enroll
-  // ✅ Fixed handleEnroll function
   const handleEnroll = async (course) => {
     try {
       if (!student?._id) throw new Error("Student not loaded");
 
-      // ✅ Prevent duplicate enrollment
       const alreadyEnrolled = student?.enrolledCourses?.some(
         (c) =>
           c?._id?.toString() === course._id?.toString() ||
@@ -119,7 +124,7 @@ function Student() {
       const token = localStorage.getItem("token");
       const res = await API.post(
         `/student/enroll`,
-        { courseId: course._id }, // send courseId only
+        { courseId: course._id },
         { headers: { Authorization: `Bearer ${token}` } }
       );
 
@@ -127,16 +132,11 @@ function Student() {
         alert("Enrolled successfully!");
         setStudent((prev) => ({
           ...prev,
-          // ✅ If backend sends updated student → use it
           ...(res.data.student
             ? res.data.student
             : {
-              // otherwise append course manually
-              enrolledCourses: [
-                ...(prev.enrolledCourses || []),
-                res.data.course || course,
-              ],
-            }),
+                enrolledCourses: [...(prev.enrolledCourses || []), res.data.course || course],
+              }),
         }));
       }
     } catch (err) {
@@ -145,9 +145,7 @@ function Student() {
     }
   };
 
-
   // Skills
-  // Add Skill
   const handleAddSkill = async () => {
     if (!newSkillName.trim()) return alert("Please enter a skill name");
 
@@ -168,7 +166,6 @@ function Student() {
     }
   };
 
-  // Remove Skill
   const handleRemoveSkill = async (index) => {
     try {
       const token = localStorage.getItem("token");
@@ -180,6 +177,26 @@ function Student() {
     } catch (err) {
       console.error("Skill remove error:", err);
       alert(err.response?.data?.message || "Failed to remove skill");
+    }
+  };
+
+  const handleScheduleMockInterview = async () => {
+    if (!mockDate) return alert("Please select a date and time");
+
+    try {
+      const token = localStorage.getItem("token");
+      const res = await API.post(
+        "/student/mock-interview/schedule",
+        { date: mockDate },
+        { headers: { Authorization: `Bearer ${token}` } }
+      );
+
+      setStudent(res.data.student || { ...student, mockInterviewScheduled: true, mockInterviewDate: mockDate });
+      setMockInterviewStatus(true);
+      alert("Mock interview scheduled successfully!");
+    } catch (err) {
+      console.error("Schedule mock interview error:", err);
+      alert(err.response?.data?.message || "Failed to schedule mock interview");
     }
   };
 
@@ -201,18 +218,15 @@ function Student() {
     navigate("/login");
   };
 
-
   const isCourseEnrolled = (course) =>
     student?.enrolledCourses?.some(
       (c) => c?._id?.toString() === course._id?.toString() || c?.toString() === course._id?.toString()
     );
 
-
   const enrolledCourses = student?.enrolledCourses?.length || 0;
   const totalCourses = courses.length;
   const progress = totalCourses ? Math.round((enrolledCourses / totalCourses) * 100) : 0;
 
-  // Loading
   if (loading)
     return (
       <div className="min-h-screen flex items-center justify-center bg-gray-50">
@@ -233,6 +247,7 @@ function Student() {
         </button>
       </div>
     );
+
   return (
     <div className="min-h-screen bg-gray-50">
 
@@ -692,8 +707,60 @@ function Student() {
                     </div>
                   </div>
                 ))}
+                
               </div>
             )}
+          </div>
+        )}
+
+    {/* Mock Interview Tab */}
+        {activeTab === "mockInterview" && (
+          <div className="max-w-4xl mx-auto">
+            <div className="bg-white shadow-lg rounded-xl p-8">
+              <div className="flex items-center gap-3 mb-6">
+                <Clock className="w-8 h-8 text-blue-600" />
+                <h2 className="text-2xl font-bold text-gray-800">Mock Interview</h2>
+              </div>
+
+              {mockInterviewStatus ? (
+                <div className="space-y-4">
+                  <p className="text-gray-700">
+                    Your mock interview is scheduled on:{" "}
+                    <span className="font-semibold">
+                      {new Date(student.mockInterviewDate).toLocaleString()}
+                    </span>
+                  </p>
+                  <p className="text-gray-700">
+                    Verification Status:{" "}
+                    {isVerified ? (
+                      <span className="text-green-600 font-bold">Verified ✅</span>
+                    ) : (
+                      <span className="text-red-600 font-bold">Not Verified ❌</span>
+                    )}
+                  </p>
+                </div>
+              ) : (
+                <div className="space-y-4">
+                  <p className="text-gray-700">
+                    You have not scheduled a mock interview yet.
+                  </p>
+                  <div className="flex flex-col sm:flex-row gap-3">
+                    <input
+                      type="datetime-local"
+                      value={mockDate}
+                      onChange={(e) => setMockDate(e.target.value)}
+                      className="flex-1 px-4 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500"
+                    />
+                    <button
+                      onClick={handleScheduleMockInterview}
+                      className="px-6 py-2 bg-blue-600 text-white rounded-lg hover:bg-blue-700 font-semibold transition-all duration-200"
+                    >
+                      Schedule Mock Interview
+                    </button>
+                  </div>
+                </div>
+              )}
+            </div>
           </div>
         )}
       </div>

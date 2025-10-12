@@ -19,5 +19,9 @@ router.post('/verify-skill', adminController.verifyStudentSkill);
 
 // GET /api/admin/jobs
 router.get('/jobs', adminController.getAllJobs);
+router.post('/schedule-mock', adminController.scheduleMockInterview);
+router.post('/verify-student', adminController.verifyStudent);
+router.get('/verified-students', adminController.getVerifiedStudents);
+
 
 module.exports = router;
