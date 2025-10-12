@@ -1,6 +1,6 @@
 import React, { useState, useEffect } from "react";
 import { Link } from "react-router-dom";
-import API from "../api";
+import API, { sendOtp as apiSendOtp, verifyOtp as apiVerifyOtp } from "../api";
 
 export default function Register({ compact }) {
   const [form, setForm] = useState({
@@ -15,9 +15,9 @@ export default function Register({ compact }) {
   });
 
   const [loading, setLoading] = useState(false);
-  const [otpLoading, setOtpLoading] = useState(false);
-  const [otpSent, setOtpSent] = useState(false);
+  const [otpSending, setOtpSending] = useState(false);
   const [otpVerifying, setOtpVerifying] = useState(false);
+  const [otpSent, setOtpSent] = useState(false);
   const [otpVerified, setOtpVerified] = useState(false);
   const [resendTimer, setResendTimer] = useState(30);
   const [error, setError] = useState("");
@@ -45,27 +45,29 @@ export default function Register({ compact }) {
     }
     try {
       setError("");
-      setOtpLoading(true);
-      await API.post("/send-otp", { phone: form.phone });
+      setOtpSending(true);
+      await apiSendOtp(form.phone);
       setOtpSent(true);
       setResendTimer(30);
       setSuccess("OTP sent successfully to your phone");
     } catch (err) {
       setError(err.response?.data?.message || "Failed to send OTP");
     } finally {
-      setOtpLoading(false);
+      setOtpSending(false);
     }
   };
 
   // Verify OTP
-  const verifyOtp = async () => {
+  const handleVerifyOtp = async () => {
     if (!form.otp) return;
     try {
-      setOtpVerifying(true);
       setError("");
-      // Backend already checks OTP during registration, so this is optional
+      setOtpVerified(false);
+      setSuccess("");
+      setOtpVerifying(true);
+      await apiVerifyOtp({ phone: form.phone, code: form.otp });
       setOtpVerified(true);
-      setSuccess("✅ OTP ready for registration!");
+      setSuccess("✅ OTP verified successfully!");
     } catch (err) {
       setError(err.response?.data?.message || "OTP verification failed");
       setOtpVerified(false);
@@ -82,7 +84,7 @@ export default function Register({ compact }) {
     setSuccess("");
 
     if (!otpVerified) {
-      setError("Please send OTP before registering");
+      setError("Please verify your OTP before registering");
       setLoading(false);
       return;
     }
@@ -193,10 +195,10 @@ export default function Register({ compact }) {
           <button
             type="button"
             onClick={sendOtp}
-            disabled={!form.phone || otpSent || otpLoading}
+            disabled={!form.phone || otpSent || otpSending}
             className="px-3 py-1.5 bg-indigo-500 text-white rounded-md hover:bg-indigo-600 disabled:opacity-50 text-sm"
           >
-            {otpLoading ? "Sending..." : otpSent ? `Resend (${resendTimer}s)` : "Send OTP"}
+            {otpSending ? "Sending..." : otpSent ? `Resend (${resendTimer}s)` : "Send OTP"}
           </button>
         </div>
 
@@ -213,11 +215,11 @@ export default function Register({ compact }) {
             />
             <button
               type="button"
-              onClick={verifyOtp}
-              disabled={!form.otp || otpVerifying || otpVerified}
+              onClick={handleVerifyOtp}
+              disabled={!form.otp || otpVerified || otpVerifying}
               className="px-3 py-1.5 bg-green-500 text-white rounded-md hover:bg-green-600 disabled:opacity-50 text-sm"
             >
-              {otpVerifying ? "Verifying..." : otpVerified ? "Ready ✅" : "Verify OTP"}
+              {otpVerifying ? "Verifying..." : otpVerified ? "Verified ✅" : "Verify OTP"}
             </button>
           </div>
         )}
