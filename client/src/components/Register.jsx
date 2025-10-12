@@ -10,7 +10,7 @@ export default function Register({ compact }) {
     phone: "",
     password: "",
     confirmPassword: "",
-    otp: "",
+    code: "",
     role: "student",
   });
 

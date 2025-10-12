@@ -8,14 +8,14 @@ const jwt = require("jsonwebtoken");
 // ===== REGISTER =====
 exports.register = async (req, res) => {
   try {
-    const { name, email, phone, password, otp, role } = req.body;
+    const { name, email, phone, password, code, role } = req.body;
 
-    if (!name || !email || !phone || !password || !otp || !role) {
+    if (!name || !email || !phone || !password || !code || !role) {
       return res.status(400).json({ message: "All fields required" });
     }
 
     // TODO: replace this with actual OTP verification later
-    if (otp !== "1234") {
+    if (code !== "1234") {
       return res.status(400).json({ message: "Invalid OTP" });
     }
 
