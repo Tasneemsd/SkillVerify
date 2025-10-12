@@ -2,7 +2,7 @@ const express = require("express");
 const router = express.Router();
 const jwt = require("jsonwebtoken");
 const Application = require("../models/Application");
-const Job = require("../models/Job"); // Make sure you have a Job model
+const Job = require("../models/Job"); // Make sure this exists
 
 // POST - Apply for a job
 router.post("/", async (req, res) => {
@@ -17,25 +17,25 @@ router.post("/", async (req, res) => {
     const { jobId } = req.body;
     if (!jobId) return res.status(400).json({ message: "Job ID required" });
 
-    // Check if already applied
-    const existingApp = await Application.findOne({
-      studentId: decoded.id,
-      jobId,
-    });
-    if (existingApp)
-      return res.status(400).json({ message: "Already applied for this job" });
-
     // Fetch job details
     const job = await Job.findById(jobId);
     if (!job) return res.status(404).json({ message: "Job not found" });
 
-    // Create application
-    const application = await Application.create({
-      studentId: decoded.id,
-      jobId,
+    // Check if already applied
+    const existingApp = await Application.findOne({
+      student: decoded.id,
       jobTitle: job.title,
       company: job.company,
-      status: "Applied",
+    });
+    if (existingApp)
+      return res.status(400).json({ message: "Already applied for this job" });
+
+    // Create application
+    const application = await Application.create({
+      student: decoded.id,
+      jobTitle: job.title,
+      company: job.company,
+      status: "applied",
       appliedOn: new Date(),
     });
 
@@ -46,7 +46,9 @@ router.post("/", async (req, res) => {
     });
   } catch (err) {
     console.error("Application error:", err);
-    return res.status(500).json({ message: "Application failed", error: err.message });
+    return res
+      .status(500)
+      .json({ message: "Application failed", error: err.message });
   }
 });
 
@@ -60,11 +62,14 @@ router.get("/", async (req, res) => {
     if (decoded.role !== "student")
       return res.status(403).json({ message: "Only students can fetch applications" });
 
-    const applications = await Application.find({ studentId: decoded.id });
+    // Fetch applications
+    const applications = await Application.find({ student: decoded.id });
     return res.status(200).json(applications);
   } catch (err) {
     console.error("Fetch applications error:", err);
-    return res.status(500).json({ message: "Failed to fetch applications" });
+    return res
+      .status(500)
+      .json({ message: "Failed to fetch applications", error: err.message });
   }
 });
 

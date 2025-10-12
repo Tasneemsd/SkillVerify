@@ -136,8 +136,8 @@ function Student() {
           ...(res.data.student
             ? res.data.student
             : {
-                enrolledCourses: [...(prev.enrolledCourses || []), res.data.course || course],
-              }),
+              enrolledCourses: [...(prev.enrolledCourses || []), res.data.course || course],
+            }),
         }));
       }
     } catch (err) {
@@ -169,28 +169,28 @@ function Student() {
       setSkillLoading(false);
     }
   };
-// Add this function inside your Student component
-const handleApply = async (job) => {
-  try {
-    const token = localStorage.getItem("token");
-    if (!token) return alert("You must be logged in to apply.");
+  // Add this function inside your Student component
+  const handleApply = async (job) => {
+    try {
+      const token = localStorage.getItem("token");
+      if (!token) return alert("You must be logged in to apply.");
 
-    const res = await API.post(
-      "/applications",
-      { jobId: job._id },
-      { headers: { Authorization: `Bearer ${token}` } }
-    );
+      const res = await API.post(
+        "/applications",
+        { jobId: job._id },
+        { headers: { Authorization: `Bearer ${token}` } }
+      );
 
-    if (res.data.success) {
-      alert("Applied successfully!");
-      // Add the new application to applications state instantly
-      setApplications((prev) => [...prev, res.data.application]);
+      if (res.data.success) {
+        alert("Applied successfully!");
+        // Add the new application to applications state instantly
+        setApplications((prev) => [...prev, res.data.application]);
+      }
+    } catch (err) {
+      console.error("Application error:", err);
+      alert(err.response?.data?.message || "Failed to apply for job");
     }
-  } catch (err) {
-    console.error("Application error:", err);
-    alert(err.response?.data?.message || "Failed to apply for job");
-  }
-};
+  };
 
   const handleRemoveSkill = async (index) => {
     try {
@@ -710,15 +710,16 @@ const handleApply = async (job) => {
                           {app.jobTitle}
                         </h3>
                         <p className="text-sm text-gray-600">
-                          Applied on {new Date(app.appliedDate).toLocaleDateString()}
+                          Applied on {new Date(app.appliedOn).toLocaleDateString()}{" "}
+                          at {new Date(app.appliedOn).toLocaleTimeString()}
                         </p>
                       </div>
                       <span
                         className={`px-3 py-1 rounded-full text-sm font-semibold ${app.status === "Accepted"
-                          ? "bg-green-100 text-green-700"
-                          : app.status === "Rejected"
-                            ? "bg-red-100 text-red-700"
-                            : "bg-yellow-100 text-yellow-700"
+                            ? "bg-green-100 text-green-700"
+                            : app.status === "Rejected"
+                              ? "bg-red-100 text-red-700"
+                              : "bg-yellow-100 text-yellow-700"
                           }`}
                       >
                         {app.status}
@@ -726,13 +727,13 @@ const handleApply = async (job) => {
                     </div>
                   </div>
                 ))}
-                
               </div>
             )}
           </div>
         )}
 
-    {/* Mock Interview Tab */}
+
+        {/* Mock Interview Tab */}
         {activeTab === "mockInterview" && (
           <div className="max-w-4xl mx-auto">
             <div className="bg-white shadow-lg rounded-xl p-8">
