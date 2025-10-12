@@ -62,7 +62,8 @@ export default function Register({ compact }) {
     try {
       setOtpVerifying(true);
       setError("");
-      await verifyOtp({ phone: form.phone, otp: form.otp });
+      await verifyOtp({ phone: form.phone, code: form.otp });
+
       setOtpVerified(true);
       setSuccess("✅ OTP verified successfully!");
     } catch (err) {
