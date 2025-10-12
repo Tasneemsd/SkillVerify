@@ -99,7 +99,7 @@ export default function Register({ compact }) {
         email: form.email,
         phone: form.phone,
         password: form.password,
-        otp: form.otp,
+        code: form.otp,
         role: form.role,
       });
 
@@ -111,7 +111,7 @@ export default function Register({ compact }) {
         phone: "",
         password: "",
         confirmPassword: "",
-        otp: "",
+        code: "",
         role: "student",
       });
       setOtpSent(false);
