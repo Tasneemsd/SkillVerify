@@ -171,25 +171,25 @@ function Student() {
   };
   // Add this function inside your Student component
   const handleApply = async (job) => {
-  try {
-    const token = localStorage.getItem("token");
-    if (!token) return alert("You must be logged in to apply.");
+    try {
+      const token = localStorage.getItem("token");
+      if (!token) return alert("You must be logged in to apply.");
 
-    const res = await API.post(
-      "/applications",
-      { jobId: job._id },
-      { headers: { Authorization: `Bearer ${token}` } }
-    );
+      const res = await API.post(
+        "/applications",
+        { jobId: job._id },
+        { headers: { Authorization: `Bearer ${token}` } }
+      );
 
-    if (res.data.success) {
-      alert("Applied successfully!");
-      setApplications((prev) => [...prev, res.data.application]);
+      if (res.data.success) {
+        alert("Applied successfully!");
+        setApplications((prev) => [...prev, res.data.application]);
+      }
+    } catch (err) {
+      console.error("Application error:", err);
+      alert(err.response?.data?.message || "Failed to apply for this job");
     }
-  } catch (err) {
-    console.error("Application error:", err);
-    alert(err.response?.data?.message || "Failed to apply for this job");
-  }
-};
+  };
 
   const handleRemoveSkill = async (index) => {
     try {
@@ -666,9 +666,17 @@ function Student() {
                       </div>
                     </div>
 
-                    <button onClick={() => handleApply(job)} className="w-full py-2 bg-blue-600 text-white rounded-lg hover:bg-blue-700 font-semibold transition-all duration-200">
-                      Apply Now
+                    <button
+                      onClick={() => handleApply(job)}
+                      disabled={applications.some((app) => app.jobId === job._id)}
+                      className={`w-full py-2 rounded-lg font-semibold transition-all duration-200 ${applications.some((app) => app.jobId === job._id)
+                          ? "bg-gray-300 text-gray-600 cursor-not-allowed"
+                          : "bg-blue-600 text-white hover:bg-blue-700"
+                        }`}
+                    >
+                      {applications.some((app) => app.jobId === job._id) ? "Applied" : "Apply Now"}
                     </button>
+
                   </div>
                 ))
               ) : (
@@ -715,10 +723,10 @@ function Student() {
                       </div>
                       <span
                         className={`px-3 py-1 rounded-full text-sm font-semibold ${app.status === "Accepted"
-                            ? "bg-green-100 text-green-700"
-                            : app.status === "Rejected"
-                              ? "bg-red-100 text-red-700"
-                              : "bg-yellow-100 text-yellow-700"
+                          ? "bg-green-100 text-green-700"
+                          : app.status === "Rejected"
+                            ? "bg-red-100 text-red-700"
+                            : "bg-yellow-100 text-yellow-700"
                           }`}
                       >
                         {app.status}
