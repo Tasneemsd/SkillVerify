@@ -28,6 +28,7 @@ function Student() {
 
   const [newSkillName, setNewSkillName] = useState("");
   const [newSkillLevel, setNewSkillLevel] = useState("Basic");
+  const [skillLoading, setSkillLoading] = useState(false);
 
   const [mockDate, setMockDate] = useState("");
   const [mockInterviewStatus, setMockInterviewStatus] = useState(null);
@@ -150,6 +151,7 @@ function Student() {
     if (!newSkillName.trim()) return alert("Please enter a skill name");
 
     try {
+      setSkillLoading(true);
       const token = localStorage.getItem("token");
       const res = await API.post(
         "/student/skills/add",
@@ -163,6 +165,8 @@ function Student() {
     } catch (err) {
       console.error("Skill add error:", err);
       alert(err.response?.data?.message || "Failed to add skill");
+    } finally {
+      setSkillLoading(false);
     }
   };
 
@@ -229,7 +233,7 @@ function Student() {
 
   if (loading)
     return (
-      <div className="min-h-screen flex items-center justify-center bg-gray-50">
+      <div className="min-h-screen flex flex-col items-center justify-center bg-gray-50">
         <GraduationCap className="w-16 h-16 text-blue-600 animate-pulse" />
         <p className="text-gray-600 mt-2">Loading...</p>
       </div>
@@ -251,25 +255,22 @@ function Student() {
   return (
     <div className="min-h-screen bg-gray-50">
 
+      {/* Navigation */}
       <nav className="bg-white shadow-sm border-b sticky top-0 z-50">
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
           <div className="flex justify-between items-center h-16">
             <Link to="/" className="flex items-center gap-2 text-blue-600 font-bold text-xl hover:opacity-80 transition-opacity">
-
               <img src="/logos.png" alt="Logo" className="h-48 w-auto" />
             </Link>
 
             {/* Profile Section */}
             <div className="relative flex items-center gap-3">
-              {/* Welcome Text */}
               <div className="hidden sm:block">
                 <p className="text-gray-700 font-medium">
                   Welcome,{" "}
                   <span className="font-bold">{student?.name || "Student"}</span>
                 </p>
               </div>
-
-              {/* Initials Button */}
               <button
                 onClick={() => setShowDropdown(!showDropdown)}
                 className="w-10 h-10 rounded-full bg-blue-600 text-white flex items-center justify-center font-semibold text-sm hover:bg-blue-700 transition-all duration-200"
@@ -277,7 +278,6 @@ function Student() {
                 {getUserInitials(student?.name)}
               </button>
 
-              {/* Dropdown */}
               {showDropdown && (
                 <div className="absolute right-0 top-full mt-2 w-56 bg-white rounded-lg shadow-xl py-2 z-50 border border-gray-200">
                   <div className="px-4 py-3 border-b">
@@ -310,6 +310,7 @@ function Student() {
           </div>
         </div>
       </nav>
+
       {/* Hero Section */}
       <div className="bg-gradient-to-r from-blue-600 via-blue-700 to-blue-800 text-white">
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-12">
@@ -330,21 +331,16 @@ function Student() {
               </button>
             </div>
             <div className="hidden md:block mt-6 md:mt-0">
-              <div className="hidden md:block mt-6 md:mt-0">
-                <div className="bg-white/10 backdrop-blur-sm p-8 rounded-2xl shadow-lg">
-                  <div className="w-64 h-64 bg-gradient-to-br from-blue-400 to-blue-600 rounded-full flex items-center justify-center">
-                    <img
-                      src="https://unblast.com/wp-content/uploads/2020/05/Job-Hunting-Illustration.jpg"
-                      alt="Student Illustration"
-                      className="w-56 h-56 object-cover rounded-full drop-shadow-lg"
-                    />
-                  </div>
+              <div className="bg-white/10 backdrop-blur-sm p-8 rounded-2xl shadow-lg">
+                <div className="w-64 h-64 bg-gradient-to-br from-blue-400 to-blue-600 rounded-full flex items-center justify-center">
+                  <img
+                    src="https://unblast.com/wp-content/uploads/2020/05/Job-Hunting-Illustration.jpg"
+                    alt="Student Illustration"
+                    className="w-56 h-56 object-cover rounded-full drop-shadow-lg"
+                  />
                 </div>
               </div>
-
-
             </div>
-
           </div>
         </div>
       </div>
@@ -359,6 +355,7 @@ function Student() {
               { key: "skills", label: "My Skills" },
               { key: "jobs", label: "Jobs & Internships" },
               { key: "applications", label: "My Applications" },
+              { key: "mockInterview", label: "Mock Interview" }, // ✅ Added
             ].map((tab) => (
               <button
                 key={tab.key}
