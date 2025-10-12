@@ -1,9 +1,15 @@
 const Student = require("../models/Student");
 const Recruiter = require("../models/Recruiter");
 const Admin = require("../models/Admin");
-
 const bcrypt = require("bcryptjs");
 const jwt = require("jsonwebtoken");
+const twilio = require("twilio");
+
+const accountSid = process.env.TWILIO_ACCOUNT_SID;
+const authToken = process.env.TWILIO_AUTH_TOKEN;
+const serviceSid = process.env.TWILIO_SERVICE_SID1;
+
+const client = twilio(accountSid, authToken);
 
 // ===== REGISTER =====
 exports.register = async (req, res) => {
@@ -14,12 +20,19 @@ exports.register = async (req, res) => {
       return res.status(400).json({ message: "All fields required" });
     }
 
-    // TODO: replace this with actual OTP verification later
-    if (code !== "1234") {
+    // ===== REAL OTP CHECK =====
+    const verificationCheck = await client.verify.v2
+      .services(serviceSid)
+      .verificationChecks.create({
+        to: phone.startsWith("+") ? phone : `+91${phone}`,
+        code,
+      });
+
+    if (verificationCheck.status !== "approved") {
       return res.status(400).json({ message: "Invalid OTP" });
     }
 
-    // Check if email already exists in any role
+    // ===== CHECK EMAIL DUPLICATE =====
     const existingUser =
       (await Student.findOne({ email })) ||
       (await Recruiter.findOne({ email })) ||
@@ -29,37 +42,23 @@ exports.register = async (req, res) => {
       return res.status(409).json({ message: "Email already exists" });
     }
 
+    // ===== HASH PASSWORD =====
     const hashedPassword = await bcrypt.hash(password, 10);
 
+    // ===== CREATE USER =====
     let user;
-
     if (role === "student") {
-      user = new Student({
-        name,
-        email,
-        phone,
-        password: hashedPassword,
-        skills: [],
-      });
+      user = new Student({ name, email, phone, password: hashedPassword, skills: [] });
     } else if (role === "recruiter") {
-      user = new Recruiter({
-        name,
-        email,
-        phone,
-        password: hashedPassword,
-      });
+      user = new Recruiter({ name, email, phone, password: hashedPassword });
     } else if (role === "admin") {
-      user = new Admin({
-        name,
-        email,
-        phone,
-        password: hashedPassword,
-      });
+      user = new Admin({ name, email, phone, password: hashedPassword });
     } else {
       return res.status(400).json({ message: "Invalid role" });
     }
 
     await user.save();
+
     return res.status(201).json({
       message: `${role} registered successfully`,
       user: { _id: user._id, name, email, phone, role },
@@ -79,9 +78,7 @@ exports.login = async (req, res) => {
     const { email, password } = req.body;
 
     if (!email || !password)
-      return res
-        .status(400)
-        .json({ message: "Email & password required" });
+      return res.status(400).json({ message: "Email & password required" });
 
     let user = await Student.findOne({ email });
     let role = "student";
@@ -97,9 +94,7 @@ exports.login = async (req, res) => {
     if (!user) return res.status(401).json({ message: "Invalid credentials" });
 
     if (!user.password)
-      return res
-        .status(500)
-        .json({ message: "Password not set for this user" });
+      return res.status(500).json({ message: "Password not set for this user" });
 
     const isMatch = await bcrypt.compare(password, user.password);
     if (!isMatch)
@@ -112,7 +107,6 @@ exports.login = async (req, res) => {
       { expiresIn: "2h" }
     );
 
-    // Common user object
     let userObj = {
       _id: user._id,
       name: user.name,
@@ -121,7 +115,6 @@ exports.login = async (req, res) => {
       role,
     };
 
-    // Recruiter extra fields
     if (role === "recruiter") {
       userObj = {
         ...userObj,
@@ -131,13 +124,9 @@ exports.login = async (req, res) => {
       };
     }
 
-    return res
-      .status(200)
-      .json({ message: "Login successful", token, user: userObj });
+    return res.status(200).json({ message: "Login successful", token, user: userObj });
   } catch (err) {
     console.error("LOGIN ERROR:", err);
-    return res
-      .status(500)
-      .json({ message: "Server error again", error: err.message });
+    return res.status(500).json({ message: "Server error", error: err.message });
   }
 };
