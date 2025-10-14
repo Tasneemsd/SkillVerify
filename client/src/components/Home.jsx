@@ -105,9 +105,13 @@ export default function Home() {
 
       {/* Trusted Companies */}
       <section className="py-12 bg-white text-center px-4 sm:px-8 lg:px-20">
-        <p className="text-gray-500 font-medium mb-8 text-base sm:text-lg">Trusted by 1000+ companies</p>
-        <div className="overflow-hidden relative">
-          <div className="flex animate-scroll whitespace-nowrap gap-10 sm:gap-12">
+        <p className="text-gray-500 font-medium mb-8 text-base sm:text-lg">
+          Trusted by 1000+ companies
+        </p>
+
+        {/* Scrollable container for small screens */}
+        <div className="relative w-full overflow-x-auto overflow-y-visible scrollbar-hide">
+          <div className="flex gap-8 sm:gap-12 min-w-max animate-scroll-mobile md:animate-scroll-desktop items-center">
             {[
               "https://res.cloudinary.com/dm94ctges/image/upload/v1753619889/logo_bzvwmg.jpg",
               "https://play-lh.googleusercontent.com/FPtxFPnbUNmOPvggNFaTUGPUr4DAb-djW6uWgG8lST76KTmZYko679Oh5g15gr4KAUZH",
@@ -116,26 +120,48 @@ export default function Home() {
               "https://upload.wikimedia.org/wikipedia/commons/0/08/Netflix_2015_logo.svg",
               "https://upload.wikimedia.org/wikipedia/commons/2/2f/Google_2015_logo.svg",
               "https://upload.wikimedia.org/wikipedia/commons/0/05/Facebook_Logo_%282019%29.png",
-              "https://upload.wikimedia.org/wikipedia/commons/c/ca/LinkedIn_logo_initials.png"
+              "https://upload.wikimedia.org/wikipedia/commons/c/ca/LinkedIn_logo_initials.png",
             ].map((logo, index) => (
-              <div key={index} className="inline-block p-3 sm:p-4 bg-gray-50 rounded-xl shadow-md">
-                <img src={logo} className="h-12 sm:h-16 md:h-20 object-contain" alt={`Company ${index}`} />
+              <div
+                key={index}
+                className="inline-block flex-shrink-0 p-3 sm:p-4 bg-gray-50 rounded-xl shadow-md"
+              >
+                <img
+                  src={logo}
+                  className="h-10 sm:h-14 md:h-16 object-contain"
+                  alt={`Company ${index}`}
+                />
               </div>
             ))}
           </div>
         </div>
 
         <style jsx>{`
-          @keyframes scroll {
-            0% { transform: translateX(0); }
-            100% { transform: translateX(-50%); }
-          }
-          .animate-scroll {
-            display: flex;
-            animation: scroll 25s linear infinite;
-          }
-        `}</style>
+    @keyframes scroll-desktop {
+      0% {
+        transform: translateX(0);
+      }
+      100% {
+        transform: translateX(-50%);
+      }
+    }
+    @keyframes scroll-mobile {
+      0% {
+        transform: translateX(0);
+      }
+      100% {
+        transform: translateX(-80%);
+      }
+    }
+    .animate-scroll-desktop {
+      animation: scroll-desktop 25s linear infinite;
+    }
+    .animate-scroll-mobile {
+      animation: scroll-mobile 20s linear infinite;
+    }
+  `}</style>
       </section>
+
 
       {/* Trending */}
       <section id="trending" className="py-16 bg-white px-4 sm:px-8 lg:px-20">
@@ -235,8 +261,8 @@ export default function Home() {
         <h2 className="text-xl sm:text-2xl font-bold mb-10">What Our Users Say</h2>
         <div className="grid sm:grid-cols-2 md:grid-cols-3 gap-6">
           {[{ name: "Aarav Mehta", text: "VHireToday helped me find my first internship in just 3 days!" },
-            { name: "Priya Sharma", text: "Their skill verification helped me stand out and land a great job." },
-            { name: "Rohit Verma", text: "A seamless platform with trusted employers and real opportunities." }]
+          { name: "Priya Sharma", text: "Their skill verification helped me stand out and land a great job." },
+          { name: "Rohit Verma", text: "A seamless platform with trusted employers and real opportunities." }]
             .map((t, i) => (
               <div key={i} className="bg-white p-6 rounded-xl shadow hover:shadow-lg transition">
                 <p className="text-gray-700 italic mb-4 text-sm sm:text-base">“{t.text}”</p>
