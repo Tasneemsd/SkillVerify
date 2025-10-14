@@ -1,7 +1,7 @@
 const express = require("express");
 const router = express.Router();
 const nodemailer = require("nodemailer");
-const { verifiedEmails } = require("../controllers/authController"); // 👈 import shared set
+const { verifiedEmails } = require('../controllers/authController')// 👈 import shared set
 
 const otpStore = new Map();
 
