@@ -346,11 +346,11 @@ export default function Home() {
       {/* Login Modal */}
       {showLoginModal && (
         <div
-          className="fixed inset-0 flex items-center justify-center z-50 backdrop-blur-md bg-black/40"
+          className="fixed inset-0 z-50 flex items-center justify-center bg-black/40 backdrop-blur-md overflow-y-auto"
           onClick={() => setShowLoginModal(false)}
         >
           <div
-            className="bg-white rounded-2xl shadow-2xl w-[90%] max-w-md max-h-[90vh] overflow-y-auto p-6 relative"
+            className="bg-white rounded-2xl shadow-2xl w-[90%] max-w-md max-h-[90vh] p-6 relative overflow-y-auto animate-fadeIn"
             onClick={(e) => e.stopPropagation()}
           >
             {/* Close Button */}
@@ -368,14 +368,15 @@ export default function Home() {
           </div>
         </div>
       )}
+
       {/* Register Modal */}
       {showRegisterModal && (
         <div
-          className="fixed inset-0 flex items-center justify-center z-50 backdrop-blur-md bg-black/40"
+          className="fixed inset-0 z-50 flex items-center justify-center bg-black/40 backdrop-blur-md overflow-y-auto"
           onClick={() => setShowRegisterModal(false)}
         >
           <div
-            className="bg-white rounded-2xl shadow-2xl w-[90%] max-w-md max-h-[90vh] overflow-y-auto p-6 relative"
+            className="bg-white rounded-2xl shadow-2xl w-[90%] max-w-md max-h-[90vh] p-6 relative overflow-y-auto animate-fadeIn"
             onClick={(e) => e.stopPropagation()}
           >
             {/* Close Button */}
