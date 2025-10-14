@@ -22,14 +22,6 @@ export default function Home() {
     return () => window.removeEventListener("scroll", handleScroll);
   }, []);
 
-  useEffect(() => {
-    if (showLoginModal || showRegisterModal) {
-      document.body.style.overflow = "hidden";
-    } else {
-      document.body.style.overflow = "auto";
-    }
-  }, [showLoginModal, showRegisterModal]);
-
   const scrollToTop = () => window.scrollTo({ top: 0, behavior: "smooth" });
 
   return (
@@ -108,8 +100,6 @@ export default function Home() {
         <p className="text-gray-500 font-medium mb-8 text-base sm:text-lg">
           Trusted by 1000+ companies
         </p>
-
-        {/* Scrollable container for small screens */}
         <div className="relative w-full overflow-x-auto overflow-y-visible scrollbar-hide">
           <div className="flex gap-8 sm:gap-12 min-w-max animate-scroll-mobile md:animate-scroll-desktop items-center">
             {[
@@ -137,32 +127,18 @@ export default function Home() {
         </div>
 
         <style jsx>{`
-    @keyframes scroll-desktop {
-      0% {
-        transform: translateX(0);
-      }
-      100% {
-        transform: translateX(-50%);
-      }
-    }
-    @keyframes scroll-mobile {
-      0% {
-        transform: translateX(0);
-      }
-      100% {
-        transform: translateX(-80%);
-      }
-    }
-    .animate-scroll-desktop {
-      animation: scroll-desktop 25s linear infinite;
-    }
-    .animate-scroll-mobile {
-      animation: scroll-mobile 20s linear infinite;
-    }
-  `}</style>
+          @keyframes scroll-desktop {
+            0% { transform: translateX(0); }
+            100% { transform: translateX(-50%); }
+          }
+          @keyframes scroll-mobile {
+            0% { transform: translateX(0); }
+            100% { transform: translateX(-80%); }
+          }
+          .animate-scroll-desktop { animation: scroll-desktop 25s linear infinite; }
+          .animate-scroll-mobile { animation: scroll-mobile 20s linear infinite; }
+        `}</style>
       </section>
-
-
       {/* Trending */}
       <section id="trending" className="py-16 bg-white px-4 sm:px-8 lg:px-20">
         <div className="flex items-center gap-2 mb-8">
@@ -345,52 +321,30 @@ export default function Home() {
 
       {/* Login Modal */}
       {showLoginModal && (
-        <div
-          className="fixed inset-0 z-50 flex items-center justify-center bg-black/40 backdrop-blur-md overflow-y-auto"
-          onClick={() => setShowLoginModal(false)}
-        >
-          <div
-            className="bg-white rounded-2xl shadow-2xl w-[90%] max-w-md max-h-[90vh] p-6 relative overflow-y-auto animate-fadeIn"
-            onClick={(e) => e.stopPropagation()}
-          >
-            {/* Close Button */}
+        <div className="fixed inset-0 z-50 flex items-center justify-center">
+          <div className="bg-white rounded-2xl shadow-xl w-full max-w-md p-6 relative mx-4 sm:mx-0">
             <button
               onClick={() => setShowLoginModal(false)}
               className="absolute top-3 right-4 text-gray-500 hover:text-gray-800 text-2xl font-bold"
             >
               ✕
             </button>
-
-            {/* Login Form */}
-            <div className="mt-6">
-              <Login />
-            </div>
+            <Login />
           </div>
         </div>
       )}
 
       {/* Register Modal */}
       {showRegisterModal && (
-        <div
-          className="fixed inset-0 z-50 flex items-center justify-center bg-black/40 backdrop-blur-md overflow-y-auto"
-          onClick={() => setShowRegisterModal(false)}
-        >
-          <div
-            className="bg-white rounded-2xl shadow-2xl w-[90%] max-w-md max-h-[90vh] p-6 relative overflow-y-auto animate-fadeIn"
-            onClick={(e) => e.stopPropagation()}
-          >
-            {/* Close Button */}
+        <div className="fixed inset-0 z-50 flex items-center justify-center">
+          <div className="bg-white rounded-2xl shadow-xl w-full max-w-md p-6 relative mx-4 sm:mx-0">
             <button
               onClick={() => setShowRegisterModal(false)}
               className="absolute top-3 right-4 text-gray-500 hover:text-gray-800 text-2xl font-bold"
             >
               ✕
             </button>
-
-            {/* Register Form */}
-            <div className="mt-6">
-              <Register />
-            </div>
+            <Register />
           </div>
         </div>
       )}
