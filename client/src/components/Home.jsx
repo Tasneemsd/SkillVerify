@@ -28,10 +28,21 @@ export default function Home() {
   }, [showLoginModal, showRegisterModal]);
 
   const scrollToTop = () => window.scrollTo({ top: 0, behavior: "smooth" });
+  const scrollToSection = (id) => {
+  const section = document.getElementById(id);
+  if (section) {
+    window.scrollTo({
+      top: section.offsetTop - 64, // adjust if header height is 64px
+      behavior: "smooth",
+    });
+  }
+};
+
 
   return (
     <div className="font-sans bg-white text-gray-800 relative">
       {/* Navbar */}
+
       <header className="flex items-center justify-between px-3 sm:px-6 md:px-10 h-14 sm:h-16 shadow-sm sticky top-0 bg-white z-50">
         <div className="flex-shrink-0">
           <img
@@ -43,16 +54,16 @@ export default function Home() {
 
         {/* Nav Links */}
         <nav className="hidden md:flex flex-1 justify-center space-x-8 text-gray-700 font-medium">
-          <a href="#trending" className="hover:text-blue-600 transition">
+          <a onClick={() => scrollToSection("trending")} className="hover:text-blue-600 transition">
             Trending
           </a>
-          <a href="#categories" className="hover:text-blue-600 transition">
+          <a onClick={() => scrollToSection("categories")} className="hover:text-blue-600 transition">
             Categories
           </a>
-          <a href="#why-choose" className="hover:text-blue-600 transition">
+          <a onClick={() => scrollToSection("why-choose")} className="hover:text-blue-600 transition">
             Why Choose Us
           </a>
-          <a href="#employers" className="hover:text-blue-600 transition">
+          <a onClick={() => scrollToSection("employers")} className="hover:text-blue-600 transition">
             Employers
           </a>
         </nav>
@@ -112,63 +123,63 @@ export default function Home() {
         </div>
       </section>
 
-     
 
-     {/* Trusted Companies */}
-<section className="py-10 bg-white text-center overflow-hidden">
-  <p className="text-gray-500 font-medium mb-6 sm:mb-8 text-base sm:text-lg">
-    Trusted by 1000+ companies
-  </p>
 
-  {/* ✅ Marquee container */}
-  <div className="relative w-full overflow-hidden">
-    <div className="flex animate-marquee whitespace-nowrap">
-      {[
-        "https://res.cloudinary.com/dm94ctges/image/upload/v1753619889/logo_bzvwmg.jpg",
-        "https://play-lh.googleusercontent.com/FPtxFPnbUNmOPvggNFaTUGPUr4DAb-djW6uWgG8lST76KTmZYko679Oh5g15gr4KAUZH",
-        "https://upload.wikimedia.org/wikipedia/commons/4/44/Microsoft_logo.svg",
-        "https://upload.wikimedia.org/wikipedia/commons/a/a9/Amazon_logo.svg",
-        "https://upload.wikimedia.org/wikipedia/commons/0/08/Netflix_2015_logo.svg",
-        "https://upload.wikimedia.org/wikipedia/commons/2/2f/Google_2015_logo.svg",
-        "https://upload.wikimedia.org/wikipedia/commons/0/05/Facebook_Logo_%282019%29.png",
-        "https://upload.wikimedia.org/wikipedia/commons/c/ca/LinkedIn_logo_initials.png",
-      ].map((logo, i) => (
-        <div
-          key={i}
-          className="flex justify-center items-center bg-gray-50 rounded-lg shadow-sm mx-4 p-3 sm:p-4 w-[100px] sm:w-[140px] md:w-[160px] flex-shrink-0"
-        >
-          <img
-            src={logo}
-            alt={`Company ${i}`}
-            className="h-6 sm:h-8 md:h-10 w-auto object-contain"
-          />
+      {/* Trusted Companies */}
+      <section id="trusted" className="py-10 bg-white text-center overflow-hidden">
+        <p className="text-gray-500 font-medium mb-6 sm:mb-8 text-base sm:text-lg">
+          Trusted by 1000+ companies
+        </p>
+
+        {/* ✅ Marquee container */}
+        <div className="relative w-full overflow-hidden">
+          <div className="flex animate-marquee whitespace-nowrap">
+            {[
+              "https://res.cloudinary.com/dm94ctges/image/upload/v1753619889/logo_bzvwmg.jpg",
+              "https://play-lh.googleusercontent.com/FPtxFPnbUNmOPvggNFaTUGPUr4DAb-djW6uWgG8lST76KTmZYko679Oh5g15gr4KAUZH",
+              "https://upload.wikimedia.org/wikipedia/commons/4/44/Microsoft_logo.svg",
+              "https://upload.wikimedia.org/wikipedia/commons/a/a9/Amazon_logo.svg",
+              "https://upload.wikimedia.org/wikipedia/commons/0/08/Netflix_2015_logo.svg",
+              "https://upload.wikimedia.org/wikipedia/commons/2/2f/Google_2015_logo.svg",
+              "https://upload.wikimedia.org/wikipedia/commons/0/05/Facebook_Logo_%282019%29.png",
+              "https://upload.wikimedia.org/wikipedia/commons/c/ca/LinkedIn_logo_initials.png",
+            ].map((logo, i) => (
+              <div
+                key={i}
+                className="flex justify-center items-center bg-gray-50 rounded-lg shadow-sm mx-4 p-3 sm:p-4 w-[100px] sm:w-[140px] md:w-[160px] flex-shrink-0"
+              >
+                <img
+                  src={logo}
+                  alt={`Company ${i}`}
+                  className="h-6 sm:h-8 md:h-10 w-auto object-contain"
+                />
+              </div>
+            ))}
+            {/* Duplicate logos for infinite loop */}
+            {[
+              "https://res.cloudinary.com/dm94ctges/image/upload/v1753619889/logo_bzvwmg.jpg",
+              "https://play-lh.googleusercontent.com/FPtxFPnbUNmOPvggNFaTUGPUr4DAb-djW6uWgG8lST76KTmZYko679Oh5g15gr4KAUZH",
+              "https://upload.wikimedia.org/wikipedia/commons/4/44/Microsoft_logo.svg",
+              "https://upload.wikimedia.org/wikipedia/commons/a/a9/Amazon_logo.svg",
+              "https://upload.wikimedia.org/wikipedia/commons/0/08/Netflix_2015_logo.svg",
+              "https://upload.wikimedia.org/wikipedia/commons/2/2f/Google_2015_logo.svg",
+              "https://upload.wikimedia.org/wikipedia/commons/0/05/Facebook_Logo_%282019%29.png",
+              "https://upload.wikimedia.org/wikipedia/commons/c/ca/LinkedIn_logo_initials.png",
+            ].map((logo, i) => (
+              <div
+                key={`dup-${i}`}
+                className="flex justify-center items-center bg-gray-50 rounded-lg shadow-sm mx-4 p-3 sm:p-4 w-[100px] sm:w-[140px] md:w-[160px] flex-shrink-0"
+              >
+                <img
+                  src={logo}
+                  alt={`Company ${i}`}
+                  className="h-6 sm:h-8 md:h-10 w-auto object-contain"
+                />
+              </div>
+            ))}
+          </div>
         </div>
-      ))}
-      {/* Duplicate logos for infinite loop */}
-      {[
-        "https://res.cloudinary.com/dm94ctges/image/upload/v1753619889/logo_bzvwmg.jpg",
-        "https://play-lh.googleusercontent.com/FPtxFPnbUNmOPvggNFaTUGPUr4DAb-djW6uWgG8lST76KTmZYko679Oh5g15gr4KAUZH",
-        "https://upload.wikimedia.org/wikipedia/commons/4/44/Microsoft_logo.svg",
-        "https://upload.wikimedia.org/wikipedia/commons/a/a9/Amazon_logo.svg",
-        "https://upload.wikimedia.org/wikipedia/commons/0/08/Netflix_2015_logo.svg",
-        "https://upload.wikimedia.org/wikipedia/commons/2/2f/Google_2015_logo.svg",
-        "https://upload.wikimedia.org/wikipedia/commons/0/05/Facebook_Logo_%282019%29.png",
-        "https://upload.wikimedia.org/wikipedia/commons/c/ca/LinkedIn_logo_initials.png",
-      ].map((logo, i) => (
-        <div
-          key={`dup-${i}`}
-          className="flex justify-center items-center bg-gray-50 rounded-lg shadow-sm mx-4 p-3 sm:p-4 w-[100px] sm:w-[140px] md:w-[160px] flex-shrink-0"
-        >
-          <img
-            src={logo}
-            alt={`Company ${i}`}
-            className="h-6 sm:h-8 md:h-10 w-auto object-contain"
-          />
-        </div>
-      ))}
-    </div>
-  </div>
-</section>
+      </section>
 
       {/* Trending Now */}
       <section id="trending" className="py-16 bg-white px-4 md:px-16">
@@ -359,7 +370,7 @@ export default function Home() {
         <p className="text-center text-xs text-gray-500 mt-8">© 2025 VHireToday. All rights reserved.</p>
       </footer>
 
-    {/* Scroll Up Button */}
+      {/* Scroll Up Button */}
       {showTopBtn && (
         <button
           onClick={scrollToTop}
@@ -370,55 +381,55 @@ export default function Home() {
         </button>
       )}
 
-    {/* ✅ Login Modal */}
-{showLoginModal && (
-  <div
-    className="fixed inset-0 flex items-center justify-center z-50 backdrop-blur-md bg-black/40 px-2 sm:px-4"
-    onClick={() => setShowLoginModal(false)}
-  >
-    <div
-      className="bg-white rounded-2xl shadow-2xl w-full max-w-md p-6 relative"
-      onClick={(e) => e.stopPropagation()}
-    >
-      {/* ✕ Close Button — inside card */}
-      <button
-        onClick={() => setShowLoginModal(false)}
-        className="absolute top-4 right-4 text-gray-500 hover:text-gray-800 text-2xl font-bold"
-        aria-label="Close login modal"
-      >
-        ✕
-      </button>
-      <div className="mt-8">
-        <Login />
-      </div>
-    </div>
-  </div>
-)}
+      {/* ✅ Login Modal */}
+      {showLoginModal && (
+        <div
+          className="fixed inset-0 flex items-center justify-center z-50 backdrop-blur-md bg-black/40 px-2 sm:px-4"
+          onClick={() => setShowLoginModal(false)}
+        >
+          <div
+            className="bg-white rounded-2xl shadow-2xl w-full max-w-md p-6 relative"
+            onClick={(e) => e.stopPropagation()}
+          >
+            {/* ✕ Close Button — inside card */}
+            <button
+              onClick={() => setShowLoginModal(false)}
+              className="absolute top-4 right-4 text-gray-500 hover:text-gray-800 text-2xl font-bold"
+              aria-label="Close login modal"
+            >
+              ✕
+            </button>
+            <div className="mt-8">
+              <Login />
+            </div>
+          </div>
+        </div>
+      )}
 
-{/* ✅ Register Modal */}
-{showRegisterModal && (
-  <div
-    className="fixed inset-0 flex items-center justify-center z-50 backdrop-blur-md bg-black/40 px-2 sm:px-4"
-    onClick={() => setShowRegisterModal(false)}
-  >
-    <div
-      className="bg-white rounded-2xl shadow-2xl w-full max-w-md p-6 relative"
-      onClick={(e) => e.stopPropagation()}
-    >
-      {/* ✕ Close Button — inside card */}
-      <button
-        onClick={() => setShowRegisterModal(false)}
-        className="absolute top-4 right-4 text-gray-500 hover:text-gray-800 text-2xl font-bold"
-        aria-label="Close register modal"
-      >
-        ✕
-      </button>
-      <div className="mt-8">
-        <Register />
-      </div>
-    </div>
-  </div>
-)}
+      {/* ✅ Register Modal */}
+      {showRegisterModal && (
+        <div
+          className="fixed inset-0 flex items-center justify-center z-50 backdrop-blur-md bg-black/40 px-2 sm:px-4"
+          onClick={() => setShowRegisterModal(false)}
+        >
+          <div
+            className="bg-white rounded-2xl shadow-2xl w-full max-w-md p-6 relative"
+            onClick={(e) => e.stopPropagation()}
+          >
+            {/* ✕ Close Button — inside card */}
+            <button
+              onClick={() => setShowRegisterModal(false)}
+              className="absolute top-4 right-4 text-gray-500 hover:text-gray-800 text-2xl font-bold"
+              aria-label="Close register modal"
+            >
+              ✕
+            </button>
+            <div className="mt-8">
+              <Register />
+            </div>
+          </div>
+        </div>
+      )}
     </div>
   );
 } 
