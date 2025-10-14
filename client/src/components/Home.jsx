@@ -112,47 +112,7 @@ export default function Home() {
         </div>
       </section>
 
-      {/* Trusted Companies */}
-      <section className="py-10 bg-white text-center overflow-hidden">
-        <p className="text-gray-500 font-medium mb-6 sm:mb-8 text-base sm:text-lg">
-          Trusted by 1000+ companies
-        </p>
-        <div className="relative w-full overflow-hidden">
-          <div className="flex animate-scroll whitespace-nowrap gap-8 sm:gap-12 px-4">
-            {[
-              "https://res.cloudinary.com/dm94ctges/image/upload/v1753619889/logo_bzvwmg.jpg",
-              "https://play-lh.googleusercontent.com/FPtxFPnbUNmOPvggNFaTUGPUr4DAb-djW6uWgG8lST76KTmZYko679Oh5g15gr4KAUZH",
-              "https://upload.wikimedia.org/wikipedia/commons/4/44/Microsoft_logo.svg",
-              "https://upload.wikimedia.org/wikipedia/commons/a/a9/Amazon_logo.svg",
-              "https://upload.wikimedia.org/wikipedia/commons/0/08/Netflix_2015_logo.svg",
-              "https://upload.wikimedia.org/wikipedia/commons/2/2f/Google_2015_logo.svg",
-              "https://upload.wikimedia.org/wikipedia/commons/0/05/Facebook_Logo_%282019%29.png",
-              "https://upload.wikimedia.org/wikipedia/commons/c/ca/LinkedIn_logo_initials.png",
-            ].map((logo, i) => (
-              <div
-                key={i}
-                className="inline-block bg-gray-50 rounded-lg shadow-sm px-4 py-3"
-              >
-                <img
-                  src={logo}
-                  alt={`Company logo ${i + 1}`}
-                  className="h-8 sm:h-10 md:h-12 lg:h-16 w-auto object-contain"
-                />
-              </div>
-            ))}
-          </div>
-        </div>
-        <style>{`
-          @keyframes scroll {
-            0% { transform: translateX(0); }
-            100% { transform: translateX(-50%); }
-          }
-          .animate-scroll {
-            display: flex;
-            animation: scroll 25s linear infinite;
-          }
-        `}</style>
-      </section>
+     
 
       {/* Trusted Companies */}
       <section className="py-10 bg-white text-center">
