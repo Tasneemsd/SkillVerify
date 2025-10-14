@@ -37,7 +37,7 @@ export default function Home() {
           <img
             src="/logos.png"
             alt="VHireToday Logo"
-            className="h-8 sm:h-10 md:h-12 lg:h-14 xl:h-16 w-auto object-contain"
+            className="h-48 sm:h-40 md:h-42 lg:h-44 xl:h-46 w-auto object-contain"
           />
         </div>
 
@@ -114,13 +114,15 @@ export default function Home() {
 
      
 
-      {/* Trusted Companies */}
-<section className="py-10 bg-white text-center">
+     {/* Trusted Companies */}
+<section className="py-10 bg-white text-center overflow-hidden">
   <p className="text-gray-500 font-medium mb-6 sm:mb-8 text-base sm:text-lg">
     Trusted by 1000+ companies
   </p>
-  <div className="w-full overflow-hidden">
-    <div className="flex flex-wrap justify-center items-center gap-4 sm:gap-8 px-4">
+
+  {/* ✅ Marquee container */}
+  <div className="relative w-full overflow-hidden">
+    <div className="flex animate-marquee whitespace-nowrap">
       {[
         "https://res.cloudinary.com/dm94ctges/image/upload/v1753619889/logo_bzvwmg.jpg",
         "https://play-lh.googleusercontent.com/FPtxFPnbUNmOPvggNFaTUGPUr4DAb-djW6uWgG8lST76KTmZYko679Oh5g15gr4KAUZH",
@@ -133,7 +135,29 @@ export default function Home() {
       ].map((logo, i) => (
         <div
           key={i}
-          className="flex justify-center items-center bg-gray-50 rounded-lg shadow-sm p-3 sm:p-4 w-[40%] sm:w-[20%] md:w-[12%]"
+          className="flex justify-center items-center bg-gray-50 rounded-lg shadow-sm mx-4 p-3 sm:p-4 w-[100px] sm:w-[140px] md:w-[160px] flex-shrink-0"
+        >
+          <img
+            src={logo}
+            alt={`Company ${i}`}
+            className="h-6 sm:h-8 md:h-10 w-auto object-contain"
+          />
+        </div>
+      ))}
+      {/* Duplicate logos for infinite loop */}
+      {[
+        "https://res.cloudinary.com/dm94ctges/image/upload/v1753619889/logo_bzvwmg.jpg",
+        "https://play-lh.googleusercontent.com/FPtxFPnbUNmOPvggNFaTUGPUr4DAb-djW6uWgG8lST76KTmZYko679Oh5g15gr4KAUZH",
+        "https://upload.wikimedia.org/wikipedia/commons/4/44/Microsoft_logo.svg",
+        "https://upload.wikimedia.org/wikipedia/commons/a/a9/Amazon_logo.svg",
+        "https://upload.wikimedia.org/wikipedia/commons/0/08/Netflix_2015_logo.svg",
+        "https://upload.wikimedia.org/wikipedia/commons/2/2f/Google_2015_logo.svg",
+        "https://upload.wikimedia.org/wikipedia/commons/0/05/Facebook_Logo_%282019%29.png",
+        "https://upload.wikimedia.org/wikipedia/commons/c/ca/LinkedIn_logo_initials.png",
+      ].map((logo, i) => (
+        <div
+          key={`dup-${i}`}
+          className="flex justify-center items-center bg-gray-50 rounded-lg shadow-sm mx-4 p-3 sm:p-4 w-[100px] sm:w-[140px] md:w-[160px] flex-shrink-0"
         >
           <img
             src={logo}
@@ -145,6 +169,7 @@ export default function Home() {
     </div>
   </div>
 </section>
+
       {/* Trending Now */}
       <section id="trending" className="py-16 bg-white px-4 md:px-16">
         {/* Heading */}
