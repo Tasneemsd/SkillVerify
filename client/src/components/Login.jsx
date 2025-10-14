@@ -53,8 +53,8 @@ export default function Login() {
   };
 
   return (
-    <div className="flex items-center justify-center min-h-screen bg-gray-50 px-4 sm:px-6 md:px-8 py-10">
-      <div className="bg-white w-full max-w-md shadow-xl rounded-2xl p-6 sm:p-8 md:p-10">
+    <div className="flex items-center justify-center min-h-screen bg-gray-50 px-4 sm:px-6 lg:px-8 py-10">
+      <div className="bg-white w-full max-w-sm sm:max-w-md md:max-w-lg lg:max-w-xl shadow-2xl rounded-2xl p-6 sm:p-8 lg:p-10">
         <div className="text-center mb-6">
           <h2 className="text-2xl sm:text-3xl font-bold text-gray-800">
             Welcome Back
@@ -120,8 +120,7 @@ export default function Login() {
 
           <div className="flex flex-col sm:flex-row items-center justify-between text-sm text-gray-500 gap-2 sm:gap-0">
             <label className="flex items-center gap-2">
-              <input type="checkbox" className="accent-indigo-500" /> Remember
-              me
+              <input type="checkbox" className="accent-indigo-500" /> Remember me
             </label>
             <a href="#" className="hover:text-indigo-600">
               Forgot password?
