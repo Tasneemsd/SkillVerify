@@ -37,6 +37,8 @@ export function clearUserData() {
   localStorage.removeItem("token");
 }
 
-// 🔹 OTP Endpoints
-export const sendOtp = (phone) => API.post("/otp/send-otp", { phone });
-export const verifyOtp = (userData) => API.post("/otp/verify-otp", userData);
+
+// 🔹 Email OTP Endpoints
+export const sendEmailOtp = (email) => API.post("/email-otp/send-otp", { email });
+export const verifyEmailOtp = (data) => API.post("/email-otp/verify-otp", data);
+

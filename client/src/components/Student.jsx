@@ -450,7 +450,7 @@ function Student() {
         {activeTab === "courses" && (
           <div>
             <h2 className="text-2xl font-bold text-gray-800 mb-6">
-              We offer courses to help you upskill and get job stipend realted Internships for 3 months.
+              We offer courses to help you upskill and get stipend realted Internships for 3 months.
             </h2>
             <div className="grid md:grid-cols-2 lg:grid-cols-4 gap-6">
               {courses.map((course) => (

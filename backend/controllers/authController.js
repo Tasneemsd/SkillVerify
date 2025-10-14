@@ -3,14 +3,10 @@ const Recruiter = require("../models/Recruiter");
 const Admin = require("../models/Admin");
 const bcrypt = require("bcryptjs");
 const jwt = require("jsonwebtoken");
-const twilio = require("twilio");
 
-// Twilio credentials
-const accountSid = process.env.TWILIO_ACCOUNT_SID;
-const authToken = process.env.TWILIO_AUTH_TOKEN;
-const serviceSid = process.env.TWILIO_SERVICE_SID2; // Verify Service SID
-
-const client = twilio(accountSid, authToken);
+// temporary in-memory verified emails (shared with emailOtp.js)
+const verifiedEmails = new Set();
+module.exports.verifiedEmails = verifiedEmails;
 
 // ===== REGISTER =====
 exports.register = async (req, res) => {
@@ -18,20 +14,15 @@ exports.register = async (req, res) => {
     const { name, email, phone, password, code, role } = req.body;
 
     // Validate required fields
-    if (!name || !email || !phone || !password || !code || !role) {
+    if (!name || !email || !password || !role) {
       return res.status(400).json({ message: "All fields are required" });
     }
 
-    // ===== VERIFY OTP WITH TWILIO =====
-    const verificationCheck = await client.verify.v2
-      .services(serviceSid)
-      .verificationChecks.create({
-        to: phone.startsWith("+") ? phone : `+91${phone}`,
-        code,
-      });
-
-    if (verificationCheck.status !== "approved") {
-      return res.status(400).json({ message: "Invalid OTP" });
+    // ✅ Check if email was verified
+    if (!verifiedEmails.has(email)) {
+      return res
+        .status(400)
+        .json({ message: "Please verify your email before registering" });
     }
 
     // ===== CHECK EMAIL DUPLICATE =====
@@ -61,6 +52,9 @@ exports.register = async (req, res) => {
 
     await user.save();
 
+    // remove email from verified set after registration
+    verifiedEmails.delete(email);
+
     return res.status(201).json({
       message: `${role} registered successfully`,
       user: { _id: user._id, name, email, phone, role },
@@ -71,86 +65,5 @@ exports.register = async (req, res) => {
       return res.status(409).json({ message: "Duplicate email detected" });
     }
     return res.status(500).json({ message: "Server error", error: err.message });
-  }
-};
-
-// ===== LOGIN =====
-exports.login = async (req, res) => {
-  try {
-    const { email, password } = req.body;
-
-    if (!email || !password)
-      return res.status(400).json({ message: "Email & password required" });
-
-    // ===== FIND USER IN ANY ROLE =====
-    let user = await Student.findOne({ email });
-    let role = "student";
-
-    if (!user) {
-      user = await Recruiter.findOne({ email });
-      if (user) role = "recruiter";
-    }
-    if (!user) {
-      user = await Admin.findOne({ email });
-      if (user) role = "admin";
-    }
-
-    if (!user) return res.status(401).json({ message: "Invalid credentials" });
-
-    // ===== COMPARE PASSWORD =====
-    const isMatch = await bcrypt.compare(password, user.password);
-    if (!isMatch) return res.status(401).json({ message: "Invalid credentials" });
-
-    // ===== GENERATE JWT =====
-    const token = jwt.sign(
-      { id: user._id, email: user.email, role },
-      process.env.JWT_SECRET || "supersecret",
-      { expiresIn: "2h" }
-    );
-
-    // ===== RESPONSE USER OBJECT =====
-    let userObj = {
-      _id: user._id,
-      name: user.name,
-      email: user.email,
-      phone: user.phone || "",
-      role,
-    };
-
-    if (role === "recruiter") {
-      userObj = {
-        ...userObj,
-        companyName: user.companyName || "",
-        position: user.position || "",
-        bio: user.bio || "",
-      };
-    }
-
-    return res.status(200).json({ message: "Login successful", token, user: userObj });
-  } catch (err) {
-    console.error("LOGIN ERROR:", err);
-    return res.status(500).json({ message: "Server error", error: err.message });
-  }
-};
-
-// ===== SEND OTP =====
-exports.sendOtp = async (req, res) => {
-  try {
-    const { phone } = req.body;
-    if (!phone || phone.length < 10) {
-      return res.status(400).json({ message: "Enter a valid phone number" });
-    }
-
-    const verification = await client.verify.v2
-      .services(serviceSid)
-      .verifications.create({
-        to: phone.startsWith("+") ? phone : `+91${phone}`,
-        channel: "sms",
-      });
-
-    return res.status(200).json({ message: "OTP sent successfully", sid: verification.sid });
-  } catch (err) {
-    console.error("SEND OTP ERROR:", err);
-    return res.status(500).json({ message: "Failed to send OTP", error: err.message });
   }
 };

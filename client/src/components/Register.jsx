@@ -1,13 +1,12 @@
 import React, { useState, useEffect } from "react";
 import { Link } from "react-router-dom";
-import API, { sendOtp as apiSendOtp, verifyOtp as apiVerifyOtp } from "../api";
+import API, { sendEmailOtp as apiSendOtp, verifyEmailOtp as apiVerifyOtp } from "../api";
 
 export default function Register({ compact }) {
   const [form, setForm] = useState({
     firstName: "",
     lastName: "",
     email: "",
-    phone: "",
     password: "",
     confirmPassword: "",
     otp: "",
@@ -23,6 +22,7 @@ export default function Register({ compact }) {
   const [error, setError] = useState("");
   const [success, setSuccess] = useState("");
 
+  // Handle input
   const handleChange = (e) => {
     const { name, value } = e.target;
     setForm((prev) => ({ ...prev, [name]: value }));
@@ -37,19 +37,20 @@ export default function Register({ compact }) {
     return () => clearTimeout(timer);
   }, [otpSent, resendTimer]);
 
-  // Send OTP
+  // 🔹 Send Email OTP
   const sendOtp = async () => {
-    if (!form.phone || form.phone.length !== 10) {
-      setError("Enter a valid 10-digit phone number");
+    if (!form.email) {
+      setError("Enter a valid email address");
       return;
     }
     try {
       setError("");
+      setSuccess("");
       setOtpSending(true);
-      await apiSendOtp(form.phone);
+      await apiSendOtp(form.email);
       setOtpSent(true);
       setResendTimer(30);
-      setSuccess("OTP sent successfully to your phone");
+      setSuccess("OTP sent successfully to your email");
     } catch (err) {
       setError(err.response?.data?.message || "Failed to send OTP");
     } finally {
@@ -57,7 +58,7 @@ export default function Register({ compact }) {
     }
   };
 
-  // Verify OTP
+  // 🔹 Verify Email OTP
   const handleVerifyOtp = async () => {
     if (!form.otp) return;
     try {
@@ -65,7 +66,7 @@ export default function Register({ compact }) {
       setOtpVerified(false);
       setSuccess("");
       setOtpVerifying(true);
-      await apiVerifyOtp({ phone: form.phone, code: form.otp });
+      await apiVerifyOtp({ email: form.email, code: form.otp });
       setOtpVerified(true);
       setSuccess("✅ OTP verified successfully!");
     } catch (err) {
@@ -76,7 +77,7 @@ export default function Register({ compact }) {
     }
   };
 
-  // Handle registration
+  // 🔹 Register User
   const handleSubmit = async (e) => {
     e.preventDefault();
     setLoading(true);
@@ -84,7 +85,7 @@ export default function Register({ compact }) {
     setSuccess("");
 
     if (!otpVerified) {
-      setError("Please verify your OTP before registering");
+      setError("Please verify your email OTP before registering");
       setLoading(false);
       return;
     }
@@ -99,18 +100,15 @@ export default function Register({ compact }) {
       const res = await API.post("/register", {
         name: `${form.firstName} ${form.lastName}`,
         email: form.email,
-        phone: form.phone,
         password: form.password,
-        code: form.otp,
         role: form.role,
       });
 
-      setSuccess(res.data.message);
+      setSuccess(res.data.message || "Registration successful!");
       setForm({
         firstName: "",
         lastName: "",
         email: "",
-        phone: "",
         password: "",
         confirmPassword: "",
         otp: "",
@@ -126,7 +124,7 @@ export default function Register({ compact }) {
   };
 
   return (
-    <div className="flex justify-center items-center min-h-[80vh] sm:min-h-[70vh] md:min-h-[65vh] px-3 py-4 sm:px-4">
+    <div className="flex justify-center items-center min-h-[80vh] px-3 py-4 sm:px-4">
       <div
         className={`flex flex-col ${
           compact ? "p-3" : "p-6 sm:p-8"
@@ -138,9 +136,7 @@ export default function Register({ compact }) {
           </h2>
           <p className="text-sm sm:text-base text-gray-500">
             Join as{" "}
-            <span className="font-medium capitalize">
-              {form.role}
-            </span>
+            <span className="font-medium capitalize">{form.role}</span>
           </p>
         </div>
 
@@ -187,22 +183,13 @@ export default function Register({ compact }) {
             />
           </div>
 
-          <input
-            type="email"
-            name="email"
-            placeholder="Email Address"
-            value={form.email}
-            onChange={handleChange}
-            required
-            className="w-full border px-3 py-2 rounded-md focus:ring-2 focus:ring-indigo-400 focus:outline-none text-sm sm:text-base"
-          />
-
+          {/* Email field */}
           <div className="flex flex-col sm:flex-row gap-2">
             <input
-              type="tel"
-              name="phone"
-              placeholder="Phone"
-              value={form.phone}
+              type="email"
+              name="email"
+              placeholder="Email Address"
+              value={form.email}
               onChange={handleChange}
               required
               className="flex-1 border px-3 py-2 rounded-md focus:ring-2 focus:ring-indigo-400 focus:outline-none text-sm sm:text-base"
@@ -210,7 +197,7 @@ export default function Register({ compact }) {
             <button
               type="button"
               onClick={sendOtp}
-              disabled={!form.phone || otpSent || otpSending}
+              disabled={!form.email || otpSent || otpSending}
               className="px-4 py-2 bg-indigo-500 text-white rounded-md hover:bg-indigo-600 disabled:opacity-50 text-sm sm:text-base"
             >
               {otpSending
@@ -221,6 +208,7 @@ export default function Register({ compact }) {
             </button>
           </div>
 
+          {/* OTP input */}
           {otpSent && (
             <div className="flex flex-col sm:flex-row gap-2">
               <input
@@ -275,12 +263,8 @@ export default function Register({ compact }) {
           </button>
         </form>
 
-        {error && (
-          <p className="text-red-500 text-center text-sm mt-2">{error}</p>
-        )}
-        {success && (
-          <p className="text-green-600 text-center text-sm mt-2">{success}</p>
-        )}
+        {error && <p className="text-red-500 text-center text-sm mt-2">{error}</p>}
+        {success && <p className="text-green-600 text-center text-sm mt-2">{success}</p>}
 
         <p className="text-center text-xs sm:text-sm text-gray-500 mt-5">
           Already have an account?{" "}
