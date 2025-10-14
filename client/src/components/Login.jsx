@@ -53,20 +53,20 @@ export default function Login() {
   };
 
   return (
-    <div className="flex items-center justify-center px-4">
-      <div className="bg-white w-full max-w-md shadow-xl rounded-2xl p-8">
+    <div className="flex items-center justify-center min-h-screen bg-gray-50 px-4 sm:px-6 md:px-8 py-10">
+      <div className="bg-white w-full max-w-md shadow-xl rounded-2xl p-6 sm:p-8 md:p-10">
         <div className="text-center mb-6">
           <h2 className="text-2xl sm:text-3xl font-bold text-gray-800">
             Welcome Back
           </h2>
-          <p className="text-gray-500">
+          <p className="text-gray-500 text-sm sm:text-base">
             Login as{" "}
             <span className="font-semibold capitalize">{form.role}</span>
           </p>
         </div>
 
         {/* Google Login */}
-        <button className="w-full border flex items-center justify-center py-2 rounded-md mb-4 hover:bg-gray-50 transition font-medium">
+        <button className="w-full border flex items-center justify-center py-2 sm:py-2.5 rounded-md mb-4 hover:bg-gray-50 transition font-medium text-sm sm:text-base">
           <img
             src="https://www.svgrepo.com/show/355037/google.svg"
             alt="Google"
@@ -75,12 +75,15 @@ export default function Login() {
           Continue with Google
         </button>
 
-        <div className="text-center text-gray-400 mb-4">OR</div>
+        <div className="text-center text-gray-400 mb-4 text-sm">OR</div>
 
         {/* Role Selection */}
-        <div className="flex justify-around mb-6">
+        <div className="flex flex-wrap justify-center gap-4 mb-6 text-sm sm:text-base">
           {["student", "recruiter", "admin"].map((roleOption) => (
-            <label key={roleOption} className="flex items-center gap-2 cursor-pointer">
+            <label
+              key={roleOption}
+              className="flex items-center gap-2 cursor-pointer"
+            >
               <input
                 type="radio"
                 name="role"
@@ -103,7 +106,7 @@ export default function Login() {
             value={form.email}
             onChange={handleChange}
             required
-            className="w-full border px-3 py-2 rounded-md focus:ring-2 focus:ring-indigo-400 focus:outline-none"
+            className="w-full border px-3 py-2 rounded-md focus:ring-2 focus:ring-indigo-400 focus:outline-none text-sm sm:text-base"
           />
           <input
             type="password"
@@ -112,31 +115,41 @@ export default function Login() {
             value={form.password}
             onChange={handleChange}
             required
-            className="w-full border px-3 py-2 rounded-md focus:ring-2 focus:ring-indigo-400 focus:outline-none"
+            className="w-full border px-3 py-2 rounded-md focus:ring-2 focus:ring-indigo-400 focus:outline-none text-sm sm:text-base"
           />
 
-          <div className="flex items-center justify-between text-sm text-gray-500">
+          <div className="flex flex-col sm:flex-row items-center justify-between text-sm text-gray-500 gap-2 sm:gap-0">
             <label className="flex items-center gap-2">
-              <input type="checkbox" className="accent-indigo-500" /> Remember me
+              <input type="checkbox" className="accent-indigo-500" /> Remember
+              me
             </label>
-            <a href="#" className="hover:text-indigo-600">Forgot password?</a>
+            <a href="#" className="hover:text-indigo-600">
+              Forgot password?
+            </a>
           </div>
 
           <button
             type="submit"
             disabled={loading}
-            className="w-full bg-indigo-500 hover:bg-indigo-600 text-white py-2 rounded-md font-semibold transition"
+            className="w-full bg-indigo-500 hover:bg-indigo-600 text-white py-2 sm:py-2.5 rounded-md font-semibold transition text-sm sm:text-base"
           >
             {loading ? "Logging in..." : "Login"}
           </button>
         </form>
 
-        {error && <p className="text-red-500 text-center mt-3">{error}</p>}
-        {success && <p className="text-green-600 text-center mt-3">{success}</p>}
+        {error && (
+          <p className="text-red-500 text-center mt-3 text-sm">{error}</p>
+        )}
+        {success && (
+          <p className="text-green-600 text-center mt-3 text-sm">{success}</p>
+        )}
 
-        <p className="text-center text-sm text-gray-500 mt-6">
+        <p className="text-center text-xs sm:text-sm text-gray-500 mt-6">
           Don’t have an account?{" "}
-          <Link to="/register" className="text-indigo-600 font-medium hover:underline">
+          <Link
+            to="/register"
+            className="text-indigo-600 font-medium hover:underline"
+          >
             Register
           </Link>
         </p>

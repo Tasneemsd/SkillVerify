@@ -126,141 +126,170 @@ export default function Register({ compact }) {
   };
 
   return (
-    <div className={`flex flex-col ${compact ? "p-2" : "p-6"} bg-white rounded-xl shadow-md w-full max-w-sm`}>
-      <div className="text-center mb-4">
-        <h2 className="text-xl font-semibold text-gray-800">Create Account</h2>
-        <p className="text-sm text-gray-500">
-          Join as <span className="font-medium">{form.role.charAt(0).toUpperCase() + form.role.slice(1)}</span>
-        </p>
-      </div>
-
-      <div className="flex justify-around mb-3 text-sm">
-        {["student", "recruiter", "admin"].map((roleOption) => (
-          <label key={roleOption} className="flex items-center gap-1 cursor-pointer">
-            <input
-              type="radio"
-              name="role"
-              value={roleOption}
-              checked={form.role === roleOption}
-              onChange={handleChange}
-              className="accent-indigo-500 w-3 h-3"
-            />
-            {roleOption.charAt(0).toUpperCase() + roleOption.slice(1)}
-          </label>
-        ))}
-      </div>
-
-      <form onSubmit={handleSubmit} className="space-y-2">
-        <div className="grid grid-cols-2 gap-2">
-          <input
-            type="text"
-            name="firstName"
-            placeholder="First Name"
-            value={form.firstName}
-            onChange={handleChange}
-            required
-            className="border px-2 py-1.5 rounded-md focus:ring-1 focus:ring-indigo-400 focus:outline-none text-sm"
-          />
-          <input
-            type="text"
-            name="lastName"
-            placeholder="Last Name"
-            value={form.lastName}
-            onChange={handleChange}
-            required
-            className="border px-2 py-1.5 rounded-md focus:ring-1 focus:ring-indigo-400 focus:outline-none text-sm"
-          />
+    <div className="flex items-center justify-center min-h-screen bg-gray-50 px-4 sm:px-6 md:px-8 py-10">
+      <div
+        className={`flex flex-col ${
+          compact ? "p-3" : "p-6 sm:p-8 md:p-10"
+        } bg-white rounded-xl shadow-md w-full max-w-sm sm:max-w-md`}
+      >
+        <div className="text-center mb-4 sm:mb-6">
+          <h2 className="text-xl sm:text-2xl font-semibold text-gray-800">
+            Create Account
+          </h2>
+          <p className="text-sm sm:text-base text-gray-500">
+            Join as{" "}
+            <span className="font-medium">
+              {form.role.charAt(0).toUpperCase() + form.role.slice(1)}
+            </span>
+          </p>
         </div>
 
-        <input
-          type="email"
-          name="email"
-          placeholder="Email"
-          value={form.email}
-          onChange={handleChange}
-          required
-          className="w-full border px-2 py-1.5 rounded-md focus:ring-1 focus:ring-indigo-400 focus:outline-none text-sm"
-        />
-
-        <div className="flex gap-1.5">
-          <input
-            type="tel"
-            name="phone"
-            placeholder="Phone"
-            value={form.phone}
-            onChange={handleChange}
-            required
-            className="flex-1 border px-2 py-1.5 rounded-md focus:ring-1 focus:ring-indigo-400 focus:outline-none text-sm"
-          />
-          <button
-            type="button"
-            onClick={sendOtp}
-            disabled={!form.phone || otpSent || otpSending}
-            className="px-3 py-1.5 bg-indigo-500 text-white rounded-md hover:bg-indigo-600 disabled:opacity-50 text-sm"
-          >
-            {otpSending ? "Sending..." : otpSent ? `Resend (${resendTimer}s)` : "Send OTP"}
-          </button>
+        <div className="flex flex-wrap justify-center gap-4 mb-4 text-sm sm:text-base">
+          {["student", "recruiter", "admin"].map((roleOption) => (
+            <label
+              key={roleOption}
+              className="flex items-center gap-2 cursor-pointer"
+            >
+              <input
+                type="radio"
+                name="role"
+                value={roleOption}
+                checked={form.role === roleOption}
+                onChange={handleChange}
+                className="accent-indigo-500"
+              />
+              {roleOption.charAt(0).toUpperCase() + roleOption.slice(1)}
+            </label>
+          ))}
         </div>
 
-        {otpSent && (
-          <div className="flex gap-2">
+        <form onSubmit={handleSubmit} className="space-y-3 sm:space-y-4">
+          <div className="grid grid-cols-1 sm:grid-cols-2 gap-2">
             <input
               type="text"
-              name="otp"
-              placeholder="Enter OTP"
-              value={form.otp}
+              name="firstName"
+              placeholder="First Name"
+              value={form.firstName}
               onChange={handleChange}
               required
-              className="flex-1 border px-2 py-1.5 rounded-md focus:ring-1 focus:ring-indigo-400 focus:outline-none text-sm"
+              className="border px-3 py-2 rounded-md focus:ring-1 focus:ring-indigo-400 focus:outline-none text-sm sm:text-base"
+            />
+            <input
+              type="text"
+              name="lastName"
+              placeholder="Last Name"
+              value={form.lastName}
+              onChange={handleChange}
+              required
+              className="border px-3 py-2 rounded-md focus:ring-1 focus:ring-indigo-400 focus:outline-none text-sm sm:text-base"
+            />
+          </div>
+
+          <input
+            type="email"
+            name="email"
+            placeholder="Email"
+            value={form.email}
+            onChange={handleChange}
+            required
+            className="w-full border px-3 py-2 rounded-md focus:ring-1 focus:ring-indigo-400 focus:outline-none text-sm sm:text-base"
+          />
+
+          <div className="flex flex-col sm:flex-row gap-2">
+            <input
+              type="tel"
+              name="phone"
+              placeholder="Phone"
+              value={form.phone}
+              onChange={handleChange}
+              required
+              className="flex-1 border px-3 py-2 rounded-md focus:ring-1 focus:ring-indigo-400 focus:outline-none text-sm sm:text-base"
             />
             <button
               type="button"
-              onClick={handleVerifyOtp}
-              disabled={!form.otp || otpVerified || otpVerifying}
-              className="px-3 py-1.5 bg-green-500 text-white rounded-md hover:bg-green-600 disabled:opacity-50 text-sm"
+              onClick={sendOtp}
+              disabled={!form.phone || otpSent || otpSending}
+              className="px-3 sm:px-4 py-2 bg-indigo-500 text-white rounded-md hover:bg-indigo-600 disabled:opacity-50 text-sm sm:text-base"
             >
-              {otpVerifying ? "Verifying..." : otpVerified ? "Verified ✅" : "Verify OTP"}
+              {otpSending
+                ? "Sending..."
+                : otpSent
+                ? `Resend (${resendTimer}s)`
+                : "Send OTP"}
             </button>
           </div>
+
+          {otpSent && (
+            <div className="flex flex-col sm:flex-row gap-2">
+              <input
+                type="text"
+                name="otp"
+                placeholder="Enter OTP"
+                value={form.otp}
+                onChange={handleChange}
+                required
+                className="flex-1 border px-3 py-2 rounded-md focus:ring-1 focus:ring-indigo-400 focus:outline-none text-sm sm:text-base"
+              />
+              <button
+                type="button"
+                onClick={handleVerifyOtp}
+                disabled={!form.otp || otpVerified || otpVerifying}
+                className="px-3 sm:px-4 py-2 bg-green-500 text-white rounded-md hover:bg-green-600 disabled:opacity-50 text-sm sm:text-base"
+              >
+                {otpVerifying
+                  ? "Verifying..."
+                  : otpVerified
+                  ? "Verified ✅"
+                  : "Verify OTP"}
+              </button>
+            </div>
+          )}
+
+          <input
+            type="password"
+            name="password"
+            placeholder="Password"
+            value={form.password}
+            onChange={handleChange}
+            required
+            className="w-full border px-3 py-2 rounded-md focus:ring-1 focus:ring-indigo-400 focus:outline-none text-sm sm:text-base"
+          />
+          <input
+            type="password"
+            name="confirmPassword"
+            placeholder="Confirm Password"
+            value={form.confirmPassword}
+            onChange={handleChange}
+            required
+            className="w-full border px-3 py-2 rounded-md focus:ring-1 focus:ring-indigo-400 focus:outline-none text-sm sm:text-base"
+          />
+
+          <button
+            type="submit"
+            disabled={loading || !otpVerified}
+            className="w-full bg-indigo-500 hover:bg-indigo-600 text-white py-2 rounded-md font-semibold text-sm sm:text-base"
+          >
+            {loading ? "Registering..." : "Create Account"}
+          </button>
+        </form>
+
+        {error && (
+          <p className="text-red-500 text-center text-sm mt-2">{error}</p>
+        )}
+        {success && (
+          <p className="text-green-600 text-center text-sm mt-2">{success}</p>
         )}
 
-        <input
-          type="password"
-          name="password"
-          placeholder="Password"
-          value={form.password}
-          onChange={handleChange}
-          required
-          className="w-full border px-2 py-1.5 rounded-md focus:ring-1 focus:ring-indigo-400 focus:outline-none text-sm"
-        />
-        <input
-          type="password"
-          name="confirmPassword"
-          placeholder="Confirm Password"
-          value={form.confirmPassword}
-          onChange={handleChange}
-          required
-          className="w-full border px-2 py-1.5 rounded-md focus:ring-1 focus:ring-indigo-400 focus:outline-none text-sm"
-        />
-
-        <button
-          type="submit"
-          disabled={loading || !otpVerified}
-          className="w-full bg-indigo-500 hover:bg-indigo-600 text-white py-1.5 rounded-md font-medium text-sm"
-        >
-          {loading ? "Registering..." : "Create Account"}
-        </button>
-      </form>
-
-      {error && <p className="text-red-500 text-center text-xs mt-2">{error}</p>}
-      {success && <p className="text-green-600 text-center text-xs mt-2">{success}</p>}
-
-      <p className="text-center text-xs text-gray-500 mt-3">
-        Already have an account?{" "}
-        <Link to="/login" className="text-indigo-600 font-medium hover:underline">
-          Login
-        </Link>
-      </p>
+        <p className="text-center text-xs sm:text-sm text-gray-500 mt-4">
+          Already have an account?{" "}
+          <Link
+            to="/login"
+            className="text-indigo-600 font-medium hover:underline"
+          >
+            Login
+          </Link>
+        </p>
+      </div>
     </div>
   );
 }
