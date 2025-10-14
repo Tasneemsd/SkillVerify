@@ -126,26 +126,26 @@ export default function Register({ compact }) {
   };
 
   return (
-  <div className="px-2 sm:px-4 py-4">
-
+    <div className="flex justify-center items-center min-h-[80vh] sm:min-h-[70vh] md:min-h-[65vh] px-3 py-4 sm:px-4">
       <div
         className={`flex flex-col ${
-          compact ? "p-3" : "p-6 sm:p-8 md:p-10"
-        } bg-white rounded-xl shadow-md w-full max-w-sm sm:max-w-md`}
+          compact ? "p-3" : "p-6 sm:p-8"
+        } bg-white rounded-2xl shadow-2xl w-full max-w-sm sm:max-w-md md:max-w-lg`}
       >
-        <div className="text-center mb-4 sm:mb-6">
-          <h2 className="text-xl sm:text-2xl font-semibold text-gray-800">
+        <div className="text-center mb-5">
+          <h2 className="text-2xl sm:text-3xl font-semibold text-gray-800">
             Create Account
           </h2>
           <p className="text-sm sm:text-base text-gray-500">
             Join as{" "}
-            <span className="font-medium">
-              {form.role.charAt(0).toUpperCase() + form.role.slice(1)}
+            <span className="font-medium capitalize">
+              {form.role}
             </span>
           </p>
         </div>
 
-        <div className="flex flex-wrap justify-center gap-4 mb-4 text-sm sm:text-base">
+        {/* Role Selection */}
+        <div className="flex flex-wrap justify-center gap-4 mb-5 text-sm sm:text-base">
           {["student", "recruiter", "admin"].map((roleOption) => (
             <label
               key={roleOption}
@@ -164,8 +164,9 @@ export default function Register({ compact }) {
           ))}
         </div>
 
+        {/* Form */}
         <form onSubmit={handleSubmit} className="space-y-3 sm:space-y-4">
-          <div className="grid grid-cols-1 sm:grid-cols-2 gap-2">
+          <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
             <input
               type="text"
               name="firstName"
@@ -173,7 +174,7 @@ export default function Register({ compact }) {
               value={form.firstName}
               onChange={handleChange}
               required
-              className="border px-3 py-2 rounded-md focus:ring-1 focus:ring-indigo-400 focus:outline-none text-sm sm:text-base"
+              className="border px-3 py-2 rounded-md focus:ring-2 focus:ring-indigo-400 focus:outline-none text-sm sm:text-base"
             />
             <input
               type="text"
@@ -182,18 +183,18 @@ export default function Register({ compact }) {
               value={form.lastName}
               onChange={handleChange}
               required
-              className="border px-3 py-2 rounded-md focus:ring-1 focus:ring-indigo-400 focus:outline-none text-sm sm:text-base"
+              className="border px-3 py-2 rounded-md focus:ring-2 focus:ring-indigo-400 focus:outline-none text-sm sm:text-base"
             />
           </div>
 
           <input
             type="email"
             name="email"
-            placeholder="Email"
+            placeholder="Email Address"
             value={form.email}
             onChange={handleChange}
             required
-            className="w-full border px-3 py-2 rounded-md focus:ring-1 focus:ring-indigo-400 focus:outline-none text-sm sm:text-base"
+            className="w-full border px-3 py-2 rounded-md focus:ring-2 focus:ring-indigo-400 focus:outline-none text-sm sm:text-base"
           />
 
           <div className="flex flex-col sm:flex-row gap-2">
@@ -204,13 +205,13 @@ export default function Register({ compact }) {
               value={form.phone}
               onChange={handleChange}
               required
-              className="flex-1 border px-3 py-2 rounded-md focus:ring-1 focus:ring-indigo-400 focus:outline-none text-sm sm:text-base"
+              className="flex-1 border px-3 py-2 rounded-md focus:ring-2 focus:ring-indigo-400 focus:outline-none text-sm sm:text-base"
             />
             <button
               type="button"
               onClick={sendOtp}
               disabled={!form.phone || otpSent || otpSending}
-              className="px-3 sm:px-4 py-2 bg-indigo-500 text-white rounded-md hover:bg-indigo-600 disabled:opacity-50 text-sm sm:text-base"
+              className="px-4 py-2 bg-indigo-500 text-white rounded-md hover:bg-indigo-600 disabled:opacity-50 text-sm sm:text-base"
             >
               {otpSending
                 ? "Sending..."
@@ -229,13 +230,13 @@ export default function Register({ compact }) {
                 value={form.otp}
                 onChange={handleChange}
                 required
-                className="flex-1 border px-3 py-2 rounded-md focus:ring-1 focus:ring-indigo-400 focus:outline-none text-sm sm:text-base"
+                className="flex-1 border px-3 py-2 rounded-md focus:ring-2 focus:ring-indigo-400 focus:outline-none text-sm sm:text-base"
               />
               <button
                 type="button"
                 onClick={handleVerifyOtp}
                 disabled={!form.otp || otpVerified || otpVerifying}
-                className="px-3 sm:px-4 py-2 bg-green-500 text-white rounded-md hover:bg-green-600 disabled:opacity-50 text-sm sm:text-base"
+                className="px-4 py-2 bg-green-500 text-white rounded-md hover:bg-green-600 disabled:opacity-50 text-sm sm:text-base"
               >
                 {otpVerifying
                   ? "Verifying..."
@@ -253,7 +254,7 @@ export default function Register({ compact }) {
             value={form.password}
             onChange={handleChange}
             required
-            className="w-full border px-3 py-2 rounded-md focus:ring-1 focus:ring-indigo-400 focus:outline-none text-sm sm:text-base"
+            className="w-full border px-3 py-2 rounded-md focus:ring-2 focus:ring-indigo-400 focus:outline-none text-sm sm:text-base"
           />
           <input
             type="password"
@@ -262,13 +263,13 @@ export default function Register({ compact }) {
             value={form.confirmPassword}
             onChange={handleChange}
             required
-            className="w-full border px-3 py-2 rounded-md focus:ring-1 focus:ring-indigo-400 focus:outline-none text-sm sm:text-base"
+            className="w-full border px-3 py-2 rounded-md focus:ring-2 focus:ring-indigo-400 focus:outline-none text-sm sm:text-base"
           />
 
           <button
             type="submit"
             disabled={loading || !otpVerified}
-            className="w-full bg-indigo-500 hover:bg-indigo-600 text-white py-2 rounded-md font-semibold text-sm sm:text-base"
+            className="w-full bg-indigo-500 hover:bg-indigo-600 text-white py-2.5 rounded-md font-semibold text-sm sm:text-base transition"
           >
             {loading ? "Registering..." : "Create Account"}
           </button>
@@ -281,7 +282,7 @@ export default function Register({ compact }) {
           <p className="text-green-600 text-center text-sm mt-2">{success}</p>
         )}
 
-        <p className="text-center text-xs sm:text-sm text-gray-500 mt-4">
+        <p className="text-center text-xs sm:text-sm text-gray-500 mt-5">
           Already have an account?{" "}
           <Link
             to="/login"

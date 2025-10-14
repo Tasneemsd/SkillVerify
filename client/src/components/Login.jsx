@@ -53,10 +53,9 @@ export default function Login() {
   };
 
   return (
-   <div className="px-2 sm:px-4 py-4">
-
-      <div className="bg-white w-full max-w-sm sm:max-w-md md:max-w-lg lg:max-w-xl shadow-2xl rounded-2xl p-6 sm:p-8 lg:p-10">
-        <div className="text-center mb-6">
+    <div className="flex justify-center items-center min-h-[90vh] px-2 sm:px-4">
+      <div className="bg-white w-full max-w-sm sm:max-w-md md:max-w-lg shadow-2xl rounded-2xl p-6 sm:p-8">
+        <div className="text-center mb-5">
           <h2 className="text-2xl sm:text-3xl font-bold text-gray-800">
             Welcome Back
           </h2>
@@ -66,20 +65,12 @@ export default function Login() {
           </p>
         </div>
 
-        {/* Google Login */}
-        <button className="w-full border flex items-center justify-center py-2 sm:py-2.5 rounded-md mb-4 hover:bg-gray-50 transition font-medium text-sm sm:text-base">
-          <img
-            src="https://www.svgrepo.com/show/355037/google.svg"
-            alt="Google"
-            className="w-5 h-5 mr-2"
-          />
-          Continue with Google
-        </button>
+      
 
         <div className="text-center text-gray-400 mb-4 text-sm">OR</div>
 
         {/* Role Selection */}
-        <div className="flex flex-wrap justify-center gap-4 mb-6 text-sm sm:text-base">
+        <div className="flex justify-center gap-4 mb-6 text-sm sm:text-base flex-wrap">
           {["student", "recruiter", "admin"].map((roleOption) => (
             <label
               key={roleOption}

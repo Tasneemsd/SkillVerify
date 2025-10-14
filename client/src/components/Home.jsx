@@ -38,7 +38,7 @@ export default function Home() {
           <img
             src="/logos.png"
             alt="VHireToday Logo"
-            className="h-8 sm:h-10 md:h-12 lg:h-14 xl:h-16 w-auto object-contain"
+            className="h-48 sm:h-10 md:h-12 lg:h-14 xl:h-16 w-auto object-contain"
           />
         </div>
 
