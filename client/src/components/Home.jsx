@@ -23,9 +23,10 @@ export default function Home() {
   }, []);
 
   useEffect(() => {
-    document.body.style.overflow =
-      showLoginModal || showRegisterModal ? "hidden" : "auto";
-  }, [showLoginModal, showRegisterModal]);
+  document.body.style.overflow =
+    showLoginModal || showRegisterModal ? "hidden" : "auto";
+}, [showLoginModal, showRegisterModal]);
+
 
   const scrollToTop = () => window.scrollTo({ top: 0, behavior: "smooth" });
 
@@ -112,7 +113,7 @@ export default function Home() {
         </div>
       </section>
 
-     
+
 
       {/* Trusted Companies */}
       <section className="py-10 bg-white text-center">
@@ -341,7 +342,7 @@ export default function Home() {
         <p className="text-center text-xs text-gray-500 mt-8">© 2025 VHireToday. All rights reserved.</p>
       </footer>
 
-    {/* Scroll Up Button */}
+      {/* Scroll Up Button */}
       {showTopBtn && (
         <button
           onClick={scrollToTop}
@@ -352,53 +353,48 @@ export default function Home() {
         </button>
       )}
 
-      {/* Login Modal */}
+      {/* ✅ LOGIN MODAL */}
       {showLoginModal && (
         <div
-          className="fixed inset-0 flex items-center justify-center z-50 backdrop-blur-md bg-black/40 p-2 sm:p-4"
+          className="fixed inset-0 z-50 flex items-center justify-center backdrop-blur-sm bg-black/50"
           onClick={() => setShowLoginModal(false)}
         >
           <div
-            className="bg-white rounded-2xl shadow-2xl w-full max-w-md max-h-[90vh] overflow-y-auto p-4 sm:p-6 relative"
+            className="relative w-[90%] sm:w-[85%] md:w-[70%] lg:w-[40%] max-h-[90vh] overflow-y-auto bg-white rounded-2xl shadow-2xl p-6 animate-fadeIn"
             onClick={(e) => e.stopPropagation()}
           >
             <button
               onClick={() => setShowLoginModal(false)}
               className="absolute top-3 right-4 text-gray-500 hover:text-gray-800 text-xl font-bold"
-              aria-label="Close login modal"
             >
               ✕
             </button>
-            <div className="mt-6">
-              <Login />
-            </div>
+            <Login />
           </div>
         </div>
       )}
 
-      {/* Register Modal */}
+      {/* ✅ REGISTER MODAL */}
       {showRegisterModal && (
         <div
-          className="fixed inset-0 flex items-center justify-center z-50 backdrop-blur-md bg-black/40 p-2 sm:p-4"
+          className="fixed inset-0 z-50 flex items-center justify-center backdrop-blur-sm bg-black/50"
           onClick={() => setShowRegisterModal(false)}
         >
           <div
-            className="bg-white rounded-2xl shadow-2xl w-full max-w-md max-h-[90vh] overflow-y-auto p-4 sm:p-6 relative"
+            className="relative w-[90%] sm:w-[85%] md:w-[70%] lg:w-[45%] max-h-[90vh] overflow-y-auto bg-white rounded-2xl shadow-2xl p-6 animate-fadeIn"
             onClick={(e) => e.stopPropagation()}
           >
             <button
               onClick={() => setShowRegisterModal(false)}
               className="absolute top-3 right-4 text-gray-500 hover:text-gray-800 text-xl font-bold"
-              aria-label="Close register modal"
             >
               ✕
             </button>
-            <div className="mt-6">
-              <Register />
-            </div>
+            <Register compact />
           </div>
         </div>
       )}
+
     </div>
   );
 }

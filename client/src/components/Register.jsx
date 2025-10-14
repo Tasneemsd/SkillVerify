@@ -126,7 +126,8 @@ export default function Register({ compact }) {
   };
 
   return (
-    <div className="flex items-center justify-center min-h-screen bg-gray-50 px-4 sm:px-6 md:px-8 py-10">
+  <div className="px-2 sm:px-4 py-4">
+
       <div
         className={`flex flex-col ${
           compact ? "p-3" : "p-6 sm:p-8 md:p-10"
