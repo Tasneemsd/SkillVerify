@@ -1,3 +1,4 @@
+// ✅ Register.jsx (fixed)
 import React, { useState, useEffect } from "react";
 import { Link } from "react-router-dom";
 import API, { sendEmailOtp as apiSendOtp, verifyEmailOtp as apiVerifyOtp } from "../api";
@@ -22,10 +23,17 @@ export default function Register({ compact }) {
   const [error, setError] = useState("");
   const [success, setSuccess] = useState("");
 
-  // Handle input
+  // Handle input changes
   const handleChange = (e) => {
     const { name, value } = e.target;
     setForm((prev) => ({ ...prev, [name]: value }));
+
+    // Reset OTP verification if email changes
+    if (name === "email") {
+      setOtpSent(false);
+      setOtpVerified(false);
+      setResendTimer(30);
+    }
   };
 
   // OTP resend countdown
@@ -37,7 +45,7 @@ export default function Register({ compact }) {
     return () => clearTimeout(timer);
   }, [otpSent, resendTimer]);
 
-  // 🔹 Send Email OTP
+  // Send Email OTP
   const sendOtp = async () => {
     if (!form.email) {
       setError("Enter a valid email address");
@@ -52,24 +60,24 @@ export default function Register({ compact }) {
       setResendTimer(30);
       setSuccess("OTP sent successfully to your email");
     } catch (err) {
+      console.error("Send OTP error:", err);
       setError(err.response?.data?.message || "Failed to send OTP");
     } finally {
       setOtpSending(false);
     }
   };
 
-  // 🔹 Verify Email OTP
+  // Verify Email OTP
   const handleVerifyOtp = async () => {
     if (!form.otp) return;
     try {
       setError("");
-      setOtpVerified(false);
-      setSuccess("");
       setOtpVerifying(true);
       await apiVerifyOtp({ email: form.email, code: form.otp });
       setOtpVerified(true);
       setSuccess("✅ OTP verified successfully!");
     } catch (err) {
+      console.error("OTP verify error:", err);
       setError(err.response?.data?.message || "OTP verification failed");
       setOtpVerified(false);
     } finally {
@@ -77,7 +85,7 @@ export default function Register({ compact }) {
     }
   };
 
-  // 🔹 Register User
+  // Register User
   const handleSubmit = async (e) => {
     e.preventDefault();
     setLoading(true);
@@ -117,6 +125,7 @@ export default function Register({ compact }) {
       setOtpSent(false);
       setOtpVerified(false);
     } catch (err) {
+      console.error("Register error:", err);
       setError(err.response?.data?.message || "Registration failed");
     } finally {
       setLoading(false);
@@ -126,27 +135,19 @@ export default function Register({ compact }) {
   return (
     <div className="flex justify-center items-center min-h-[80vh] px-3 py-4 sm:px-4">
       <div
-        className={`flex flex-col ${
-          compact ? "p-3" : "p-6 sm:p-8"
-        } bg-white rounded-2xl shadow-2xl w-full max-w-sm sm:max-w-md md:max-w-lg`}
+        className={`flex flex-col ${compact ? "p-3" : "p-6 sm:p-8"} bg-white rounded-2xl shadow-2xl w-full max-w-sm sm:max-w-md md:max-w-lg`}
       >
         <div className="text-center mb-5">
-          <h2 className="text-2xl sm:text-3xl font-semibold text-gray-800">
-            Create Account
-          </h2>
+          <h2 className="text-2xl sm:text-3xl font-semibold text-gray-800">Create Account</h2>
           <p className="text-sm sm:text-base text-gray-500">
-            Join as{" "}
-            <span className="font-medium capitalize">{form.role}</span>
+            Join as <span className="font-medium capitalize">{form.role}</span>
           </p>
         </div>
 
         {/* Role Selection */}
         <div className="flex flex-wrap justify-center gap-4 mb-5 text-sm sm:text-base">
           {["student", "recruiter", "admin"].map((roleOption) => (
-            <label
-              key={roleOption}
-              className="flex items-center gap-2 cursor-pointer"
-            >
+            <label key={roleOption} className="flex items-center gap-2 cursor-pointer">
               <input
                 type="radio"
                 name="role"
@@ -160,7 +161,6 @@ export default function Register({ compact }) {
           ))}
         </div>
 
-        {/* Form */}
         <form onSubmit={handleSubmit} className="space-y-3 sm:space-y-4">
           <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
             <input
@@ -200,11 +200,7 @@ export default function Register({ compact }) {
               disabled={!form.email || otpSent || otpSending}
               className="px-4 py-2 bg-indigo-500 text-white rounded-md hover:bg-indigo-600 disabled:opacity-50 text-sm sm:text-base"
             >
-              {otpSending
-                ? "Sending..."
-                : otpSent
-                ? `Resend (${resendTimer}s)`
-                : "Send OTP"}
+              {otpSending ? "Sending..." : otpSent ? `Resend (${resendTimer}s)` : "Send OTP"}
             </button>
           </div>
 
@@ -226,11 +222,7 @@ export default function Register({ compact }) {
                 disabled={!form.otp || otpVerified || otpVerifying}
                 className="px-4 py-2 bg-green-500 text-white rounded-md hover:bg-green-600 disabled:opacity-50 text-sm sm:text-base"
               >
-                {otpVerifying
-                  ? "Verifying..."
-                  : otpVerified
-                  ? "Verified ✅"
-                  : "Verify OTP"}
+                {otpVerifying ? "Verifying..." : otpVerified ? "Verified ✅" : "Verify OTP"}
               </button>
             </div>
           )}
@@ -268,10 +260,7 @@ export default function Register({ compact }) {
 
         <p className="text-center text-xs sm:text-sm text-gray-500 mt-5">
           Already have an account?{" "}
-          <Link
-            to="/login"
-            className="text-indigo-600 font-medium hover:underline"
-          >
+          <Link to="/login" className="text-indigo-600 font-medium hover:underline">
             Login
           </Link>
         </p>
