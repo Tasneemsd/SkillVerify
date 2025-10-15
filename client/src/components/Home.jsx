@@ -1,6 +1,4 @@
 import React, { useState, useEffect } from "react";
-import { motion, useAnimation } from "framer-motion";
-import { ShieldCheck, Brain, BookOpen } from "lucide-react";
 import { FaHandshake} from "react-icons/fa";
 import CategoryCard from "./CategoryCard";
 
@@ -10,10 +8,7 @@ import {
   FaGoogle,
   FaEnvelope,
   FaArrowUp,
-  FaLaptopCode,
-  FaChartLine,
-  FaPaintBrush,
-  FaBullhorn,
+ 
 } from "react-icons/fa";
 import Login from "./Login";
 import Register from "./Register";
@@ -365,8 +360,8 @@ export default function Home() {
             },
 
             {
-              name: "HCL Technologies",
-              src: "https://upload.wikimedia.org/wikipedia/commons/1/1a/HCL_Technologies_Logo.svg",
+              name: "Netflix",
+              src: "https://upload.wikimedia.org/wikipedia/commons/0/08/Netflix_2015_logo.svg",
             },
             {
               name: "Infosys",
@@ -388,9 +383,8 @@ export default function Home() {
               name: "Nestlé",
               src: "https://upload.wikimedia.org/wikipedia/commons/4/4e/Nestle_textlogo.svg",
             },
-            { name: "Samsung",
-              src: "https://upload.wikimedia.org/wikipedia/commons/2/24/Samsung_Logo.svg",
-            },
+            
+            
           ].map((employer) => (
             <img
               key={employer.name}
