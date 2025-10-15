@@ -19,20 +19,25 @@ export default function Login() {
     setForm((prev) => ({ ...prev, [name]: value }));
   };
 
-  const handleSubmit = async (e) => {
-    e.preventDefault();
-    setLoading(true);
-    setError("");
-    setSuccess("");
+const handleSubmit = async (e) => {
+  e.preventDefault();
+  setLoading(true);
+  setError("");
+  setSuccess("");
 
-    try {
-      const res = await API.post("/auth/login", {
-        email: form.email,
-        password: form.password,
-        role: form.role,
-      });
+  try {
+    const res = await API.post("/auth/login", {
+      email: form.email,
+      password: form.password,
+      role: form.role,
+    });
 
+    console.log("Login Route Response:", res.data); // Debug response
+
+    // Check if API returned success
+    if (res.data.success) {
       const { token, user } = res.data;
+
       localStorage.setItem("token", token);
       localStorage.setItem("userEmail", user.email);
       localStorage.setItem("userName", user.name);
@@ -42,15 +47,22 @@ export default function Login() {
       setUserData(user);
       setSuccess(`✅ Logged in as ${user.email}`);
 
+      // Navigate based on role
       if (user.role === "student") navigate("/student");
       else if (user.role === "recruiter") navigate("/recruiter");
       else if (user.role === "admin") navigate("/admin");
-    } catch (err) {
-      setError(err.response?.data?.message || "Invalid email or password!");
-    } finally {
-      setLoading(false);
+    } else {
+      // API returned a failed login message
+      setError(res.data.message || "Invalid email or password!");
     }
-  };
+  } catch (err) {
+    console.error("Login Error:", err.response?.data || err);
+    setError("Something went wrong. Please try again.");
+  } finally {
+    setLoading(false);
+  }
+};
+
 
   return (
     <div className="flex justify-center items-center min-h-[90vh] px-2 sm:px-4">
