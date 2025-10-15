@@ -132,9 +132,7 @@ const CategoriesSection = () => {
             transition={{ duration: 0.5, type: "spring" }}
             className="inline-block mb-4"
           >
-            <span className="bg-gradient-to-r from-blue-600 to-cyan-600 text-white px-6 py-2 rounded-full text-sm font-semibold shadow-lg">
-              Popular Categories
-            </span>
+           
           </motion.div>
           <h2 className="text-4xl md:text-5xl font-bold text-gray-900 mb-4">
             Explore Endless{' '}
@@ -228,7 +226,7 @@ const CategoriesSection = () => {
             whileTap={{ scale: 0.95 }}
             className="relative bg-gradient-to-r from-blue-600 via-cyan-600 to-blue-600 bg-size-200 bg-pos-0 hover:bg-pos-100 text-white px-12 py-5 rounded-full text-lg font-bold shadow-2xl transition-all duration-500 inline-flex items-center gap-3 overflow-hidden group"
           >
-            <span className="relative z-10">View All Categories</span>
+            
             <motion.div
               animate={{ x: [0, 5, 0] }}
               transition={{ duration: 1.5, repeat: Infinity }}
@@ -546,13 +544,7 @@ const EmployersSection = () => {
           transition={{ duration: 0.6, delay: 0.4 }}
           className="text-center"
         >
-          <motion.button
-            whileHover={{ scale: 1.05 }}
-            whileTap={{ scale: 0.95 }}
-            className="bg-gradient-to-r from-orange-500 to-orange-600 text-white px-10 py-4 rounded-full text-lg font-semibold shadow-lg hover:shadow-xl transition-all duration-300"
-          >
-            Post a Job
-          </motion.button>
+          
         </motion.div>
       </div>
     </section>
