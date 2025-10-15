@@ -294,7 +294,7 @@ const WhyChooseSection = () => {
           <h2 className="text-4xl md:text-5xl font-bold text-blue-600 mb-4">
             Why Choose VHireToday?
           </h2>
-          <p className="text-lg text-gray-300 max-w-2xl mx-auto">
+          <p className="text-lg text-gray-600 max-w-xl mx-auto">
             Join thousands of successful candidates who found their dream careers through our platform
           </p>
         </motion.div>
