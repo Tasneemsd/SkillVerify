@@ -26,7 +26,7 @@ export default function Login() {
     setSuccess("");
 
     try {
-      const res = await API.post("/login", {
+      const res = await API.post("/auth/login", {
         email: form.email,
         password: form.password,
         role: form.role,

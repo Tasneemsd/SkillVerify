@@ -105,7 +105,7 @@ export default function Register({ compact }) {
     }
 
     try {
-      const res = await API.post("/register", {
+      const res = await API.post("/auth/register", {
         name: `${form.firstName} ${form.lastName}`,
         email: form.email,
         password: form.password,
