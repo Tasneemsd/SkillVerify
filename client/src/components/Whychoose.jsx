@@ -134,7 +134,7 @@ const CategoriesSection = () => {
           >
            
           </motion.div>
-          <h2 className="text-4xl md:text-5xl font-bold text-gray-900 mb-4">
+          <h2 className="text-4xl md:text-5xl font-bold text-gray-600 mb-4">
             Explore Endless{' '}
             <span className="bg-gradient-to-r from-blue-600 to-cyan-600 bg-clip-text text-transparent">
               Opportunities
@@ -205,12 +205,7 @@ const CategoriesSection = () => {
                 </div>
               </div>
 
-              <motion.div
-                className={`absolute bottom-0 left-0 right-0 h-1 bg-gradient-to-r ${category.gradient}`}
-                initial={{ scaleX: 0 }}
-                whileHover={{ scaleX: 1 }}
-                transition={{ duration: 0.3 }}
-              />
+            
             </motion.div>
           ))}
         </div>
@@ -296,7 +291,7 @@ const WhyChooseSection = () => {
           transition={{ duration: 0.6 }}
           className="text-center mb-16"
         >
-          <h2 className="text-4xl md:text-5xl font-bold text-gray-900 mb-4">
+          <h2 className="text-4xl md:text-5xl font-bold text-blue-600 mb-4">
             Why Choose VHireToday?
           </h2>
           <p className="text-lg text-gray-600 max-w-2xl mx-auto">
@@ -423,7 +418,7 @@ const StatsSection = () => {
           transition={{ duration: 0.6 }}
           className="text-center mb-12"
         >
-          <h2 className="text-4xl md:text-5xl font-bold text-gray-900 mb-4">
+          <h2 className="text-4xl md:text-5xl font-bold text-blue-600 mb-4">
             Our Impact in Numbers
           </h2>
           <p className="text-lg text-gray-600">
@@ -509,7 +504,7 @@ const EmployersSection = () => {
           transition={{ duration: 0.6 }}
           className="text-center mb-16"
         >
-          <h2 className="text-4xl md:text-5xl font-bold text-gray-900 mb-4">
+          <h2 className="text-4xl md:text-5xl font-bold text-blue-600 mb-4">
             Employers Benefits
           </h2>
           <p className="text-lg text-gray-600 max-w-2xl mx-auto">
