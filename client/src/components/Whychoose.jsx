@@ -216,15 +216,7 @@ const CategoriesSection = () => {
                     transition={{ duration: 0.6, delay: 0.7 }}
                     className="text-center"
                 >
-                    <motion.button
-                        whileHover={{ scale: 1.05, boxShadow: "0 20px 40px rgba(59, 130, 246, 0.3)" }}
-                        whileTap={{ scale: 0.95 }}
-                        className="relative bg-gradient-to-r from-blue-600 via-cyan-600 to-blue-600 bg-size-200 bg-pos-0 hover:bg-pos-100 text-white px-12 py-5 rounded-full text-lg font-bold shadow-2xl transition-all duration-500 inline-flex items-center gap-3 overflow-hidden group"
-                    >
-
-
-                        <div className="absolute inset-0 bg-gradient-to-r from-cyan-600 to-blue-600 opacity-0 group-hover:opacity-100 transition-opacity duration-500" />
-                    </motion.button>
+                 
                 </motion.div>
             </div>
         </section>
