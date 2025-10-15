@@ -1,38 +1,40 @@
-import { PieChart, Pie, Cell, ResponsiveContainer } from "recharts";
-import { motion, useAnimation, useInView } from "framer-motion";
-import { useEffect, useRef } from "react";
+import { PieChart, Pie, Cell, ResponsiveContainer, Tooltip } from "recharts";
+import { motion, useInView } from "framer-motion";
+import { useEffect, useRef, useState } from "react";
 import { Users, Brain, GraduationCap, LineChart } from "lucide-react";
 
-// 🎯 Animated Counter Component
+// ✅ Animated Counter Component
 function AnimatedCounter({ value, color }) {
-  const controls = useAnimation();
   const ref = useRef(null);
   const inView = useInView(ref, { once: true });
+  const [count, setCount] = useState(0);
 
   useEffect(() => {
     if (inView) {
-      controls.start({
-        count: value,
-        transition: { duration: 2, ease: "easeOut" },
-      });
+      let start = 0;
+      const duration = 2000; // 2 seconds
+      const increment = value / (duration / 16); // ~60fps
+      const step = () => {
+        start += increment;
+        if (start < value) {
+          setCount(Math.floor(start));
+          requestAnimationFrame(step);
+        } else {
+          setCount(value);
+        }
+      };
+      requestAnimationFrame(step);
     }
-  }, [inView, controls, value]);
+  }, [inView, value]);
 
   return (
-    <motion.span
-      ref={ref}
-      animate={controls}
-      initial={{ count: 0 }}
-      className="font-bold text-lg sm:text-xl"
-      style={{ color }}
-    >
-      {({ count }) => `${Math.floor(count)}%`}
-    </motion.span>
+    <span ref={ref} className="font-bold text-lg sm:text-xl" style={{ color }}>
+      {count}%
+    </span>
   );
 }
 
 export default function WhyChoose() {
-  // Pie chart data
   const data = [
     { name: "Never heard back after applying", value: 34, color: "#1E88E5" },
     { name: "Ghosted before interview", value: 30, color: "#29B6F6" },
@@ -65,7 +67,7 @@ export default function WhyChoose() {
   ];
 
   return (
-    <section className="py-24 bg-[#F5FBFF] px-6 sm:px-10 lg:px-20 text-center overflow-hidden">
+    <section className="py-24 bg-[#F5FBFF] px-6 sm:px-10 lg:px-20 text-center overflow-hidden" id="why-choose">
       <h2 className="text-3xl sm:text-4xl font-bold mb-16 text-gray-800">
         VHireToday <span className="text-[#1E88E5]">Impact & Insights</span>
       </h2>
@@ -87,22 +89,21 @@ export default function WhyChoose() {
                 cy="50%"
                 outerRadius={110}
                 dataKey="value"
-                isAnimationActive={true}
-                animationDuration={1200}
-                labelLine={false}
-                label={({ index }) => (
-                  <tspan>
-                    <AnimatedCounter
-                      value={data[index].value}
-                      color={data[index].color}
-                    />
-                  </tspan>
-                )}
+                labelLine={true}
+                label={({ index, x, y }) => {
+                  if (!data[index]) return null;
+                  return (
+                    <text x={x} y={y} textAnchor={x > 150 ? "start" : "end"} dominantBaseline="middle" fill={data[index].color} fontSize={14} fontWeight="bold">
+                      <AnimatedCounter value={data[index].value} color={data[index].color} />
+                    </text>
+                  );
+                }}
               >
                 {data.map((entry, i) => (
                   <Cell key={`cell-${i}`} fill={entry.color} />
                 ))}
               </Pie>
+              <Tooltip formatter={(value) => `${value}%`} />
             </PieChart>
           </ResponsiveContainer>
         </motion.div>
@@ -132,20 +133,23 @@ export default function WhyChoose() {
         whileInView={{ opacity: 1, y: 0 }}
         transition={{ duration: 0.8 }}
       >
-        {features.map((feature, i) => (
-          <motion.div
-            key={i}
-            className="bg-white p-8 rounded-3xl shadow-lg hover:shadow-2xl transition-all duration-300 border-t-4"
-            style={{ borderColor: feature.icon.props.className.match(/#(.*?)"/)[1] }}
-            whileHover={{ scale: 1.05, y: -5 }}
-          >
-            <div className="flex flex-col items-center gap-3 text-center">
-              {feature.icon}
-              <h3 className="text-xl font-semibold text-gray-800 mt-2">{feature.title}</h3>
-              <p className="text-gray-600 text-sm mt-2">{feature.desc}</p>
-            </div>
-          </motion.div>
-        ))}
+        {features.map((feature, i) => {
+          const colorMatch = feature.icon.props.className.match(/#([0-9A-Fa-f]{6})/);
+          return (
+            <motion.div
+              key={i}
+              className="bg-white p-8 rounded-3xl shadow-lg hover:shadow-2xl transition-all duration-300 border-t-4"
+              style={{ borderColor: colorMatch ? `#${colorMatch[1]}` : "#000" }}
+              whileHover={{ scale: 1.05, y: -5 }}
+            >
+              <div className="flex flex-col items-center gap-3 text-center">
+                {feature.icon}
+                <h3 className="text-xl font-semibold text-gray-800 mt-2">{feature.title}</h3>
+                <p className="text-gray-600 text-sm mt-2">{feature.desc}</p>
+              </div>
+            </motion.div>
+          );
+        })}
       </motion.div>
     </section>
   );
