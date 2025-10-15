@@ -1,7 +1,7 @@
 import React, { useState, useEffect } from "react";
 import { motion, useAnimation } from "framer-motion";
 import { ShieldCheck, Brain, BookOpen } from "lucide-react";
-import { WhyChoose, StatsSection } from "./Whychoose";
+import { WhyChoose} from "./Whychoose";
 
 import {
   FaGoogle,
@@ -286,7 +286,7 @@ export default function Home() {
       </section>
 
       <WhyChoose />
-      <StatsSection />
+    
 
       {/* 🌟 Testimonials Section (Internshala-style, responsive and polished) */}
       <section className="py-20 bg-gray-50 px-6 sm:px-10 lg:px-20 text-center">
