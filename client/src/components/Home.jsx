@@ -1,4 +1,8 @@
 import React, { useState, useEffect } from "react";
+import { motion, useAnimation } from "framer-motion";
+import { ShieldCheck, Brain, BookOpen } from "lucide-react";
+import {WhyChoose,StatsSection} from "./Whychoose";
+
 import {
   FaGoogle,
   FaEnvelope,
@@ -29,14 +33,14 @@ export default function Home() {
 
   const scrollToTop = () => window.scrollTo({ top: 0, behavior: "smooth" });
   const scrollToSection = (id) => {
-  const section = document.getElementById(id);
-  if (section) {
-    window.scrollTo({
-      top: section.offsetTop - 64, // adjust if header height is 64px
-      behavior: "smooth",
-    });
-  }
-};
+    const section = document.getElementById(id);
+    if (section) {
+      window.scrollTo({
+        top: section.offsetTop - 64, // adjust if header height is 64px
+        behavior: "smooth",
+      });
+    }
+  };
 
 
   return (
@@ -265,61 +269,125 @@ export default function Home() {
         </div>
       </section>
 
-      {/* Why Choose VHireToday */}
-      <section id="why-choose" className="py-12 bg-blue-50 px-6 md:px-20 text-center">
-        <h2 className="text-2xl font-bold mb-6">Why Choose VHireToday? </h2>
-        <div className="grid md:grid-cols-3 gap-6">
+     <WhyChoose />
+      <StatsSection />
+
+      {/* 🌟 Testimonials Section (Internshala-style, responsive and polished) */}
+      <section className="py-20 bg-gray-50 px-6 sm:px-10 lg:px-20 text-center">
+        <h2 className="text-3xl sm:text-4xl font-bold mb-14 text-gray-800">
+          What Our Users Say
+        </h2>
+
+        <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-8">
           {[
-            { title: "Verified Talent", desc: "Profiles verified to save time for employers." },
-            { title: "AI Matching", desc: "Get matched with the right job opportunities." },
-            { title: "Paid Courses", desc: "Upskill yourself to boost employability." }
-          ].map((item, i) => (
-            <div key={i} className="bg-white p-6 rounded-xl shadow hover:shadow-lg transition">
-              <h3 className="font-semibold text-blue-700 mb-2">{item.title}</h3>
-              <p className="text-gray-700 text-sm">{item.desc}</p>
+            {
+              name: "Aarav Mehta",
+              role: "Computer Science Student, IIT Delhi",
+              text: "VHireToday helped me secure my first internship in under 3 days. The process was smooth and quick!",
+              img: "https://randomuser.me/api/portraits/men/32.jpg",
+            },
+            {
+              name: "Priya Sharma",
+              role: "Marketing Intern, Nestlé India",
+              text: "The skill verification feature made my profile stand out. I landed an amazing role at Nestlé!",
+              img: "https://randomuser.me/api/portraits/women/45.jpg",
+            },
+            {
+              name: "Rohit Verma",
+              role: "Software Developer, Paytm",
+              text: "A user-friendly platform with trusted employers. It truly bridges the gap between students and companies.",
+              img: "https://randomuser.me/api/portraits/men/44.jpg",
+            },
+          ].map((t, i) => (
+            <div
+              key={i}
+              className="bg-white p-8 rounded-2xl shadow-md hover:shadow-xl transition-all duration-300 flex flex-col items-center text-center border border-gray-100"
+            >
+              <img
+                src={t.img}
+                alt={t.name}
+                className="w-20 h-20 rounded-full mb-4 object-cover"
+              />
+              <p className="text-gray-600 italic mb-4 leading-relaxed text-base sm:text-lg">
+                “{t.text}”
+              </p>
+              <h4 className="font-semibold text-blue-700 text-lg">{t.name}</h4>
+              <p className="text-sm text-gray-500 mt-1">{t.role}</p>
             </div>
           ))}
         </div>
-      </section>
 
-      {/* Stats Section */}
-      <section className="py-12 text-center bg-blue-600 text-white">
-        <h2 className="text-2xl font-bold mb-6">VHireToday in Numbers</h2>
-        <div className="grid md:grid-cols-4 gap-6">
-          <div><h3 className="text-4xl font-bold">50K+</h3><p>Active Internships</p></div>
-          <div><h3 className="text-4xl font-bold">200K+</h3><p>Registered Students</p></div>
-          <div><h3 className="text-4xl font-bold">10K+</h3><p>Companies Hiring</p></div>
-          <div><h3 className="text-4xl font-bold">100%</h3><p>Verified Profiles</p></div>
+        <div className="mt-16">
+          <button className="bg-blue-600 text-white px-8 py-3 rounded-full font-medium hover:bg-blue-700 transition">
+            Read More Stories
+          </button>
         </div>
       </section>
 
-      {/* Testimonials */}
-      <section className="py-16 bg-gray-50 px-8 md:px-20 text-center">
-        <h2 className="text-2xl font-bold mb-10">What Our Users Say </h2>
-        <div className="grid md:grid-cols-3 gap-6">
-          {[{ name: "Aarav Mehta", text: "VHireToday helped me find my first internship in just 3 days!" },
-          { name: "Priya Sharma", text: "Their skill verification helped me stand out and land a great job." },
-          { name: "Rohit Verma", text: "A seamless platform with trusted employers and real opportunities." }]
-            .map((t, i) => (
-              <div key={i} className="bg-white p-6 rounded-xl shadow hover:shadow-lg transition">
-                <p className="text-gray-700 italic mb-4">“{t.text}”</p>
-                <h4 className="font-semibold text-blue-700">{t.name}</h4>
-              </div>
-            ))}
-        </div>
-      </section>
 
       {/* Employers Section */}
-      <section id="employers" className="py-12 px-6 md:px-20 text-center">
-        <h2 className="text-2xl font-bold mb-6">Top Employers </h2>
-        <div className="flex justify-center flex-wrap gap-6">
-          <img src="https://upload.wikimedia.org/wikipedia/commons/5/53/Paytm_logo.png" className="h-6" />
-          <img src="https://upload.wikimedia.org/wikipedia/commons/0/02/Nestle_textlogo_blue.svg" className="h-6" />
-          <img src="https://upload.wikimedia.org/wikipedia/commons/1/1a/HCL_Technologies_Logo.svg" className="h-6" />
-          <img src="https://upload.wikimedia.org/wikipedia/commons/2/24/BookMyShow_logo.svg" className="h-6" />
+      <section
+        id="employers"
+        className="py-16 px-4 sm:px-8 md:px-16 lg:px-24 text-center bg-white"
+      >
+        <h2 className="text-2xl sm:text-3xl font-bold mb-8 text-gray-800">
+          Top Employers
+        </h2>
+
+        <div className="flex flex-wrap justify-center items-center gap-8 sm:gap-12">
+          {[
+            {
+              name: "Google",
+              src: "https://upload.wikimedia.org/wikipedia/commons/2/2f/Google_2015_logo.svg",
+            },
+            {
+              name: "Microsoft",
+              src: "https://upload.wikimedia.org/wikipedia/commons/4/44/Microsoft_logo.svg",
+            },
+            {
+              name: "Amazon",
+              src: "https://upload.wikimedia.org/wikipedia/commons/a/a9/Amazon_logo.svg",
+            },
+            {
+              name: "HCL Technologies",
+              src: "https://upload.wikimedia.org/wikipedia/commons/1/1a/HCL_Technologies_Logo.svg",
+            },
+            {
+              name: "Infosys",
+              src: "https://upload.wikimedia.org/wikipedia/commons/2/2f/Infosys_logo.svg",
+            },
+            {
+              name: "Paytm",
+              src: "https://upload.wikimedia.org/wikipedia/commons/5/53/Paytm_logo.png",
+            },
+            {
+              name: "TCS",
+              src: "https://upload.wikimedia.org/wikipedia/commons/b/b1/Tata_Consultancy_Services_Logo.svg",
+            },
+            {
+              name: "BookMyShow",
+              src: "https://upload.wikimedia.org/wikipedia/commons/2/24/BookMyShow_logo.svg",
+            },
+            {
+              name: "Nestlé",
+              src: "https://upload.wikimedia.org/wikipedia/commons/0/02/Nestle_textlogo_blue.svg",
+            },
+          ].map((employer) => (
+            <img
+              key={employer.name}
+              src={employer.src}
+              alt={employer.name}
+              className="h-6 sm:h-8 md:h-10 lg:h-12 xl:h-14 w-auto object-contain transition-transform hover:scale-105"
+              loading="lazy"
+            />
+          ))}
         </div>
-        <button className="mt-6 bg-blue-600 text-white px-6 py-2 rounded hover:bg-blue-700">Hire Talent</button>
+
+        <button className="mt-10 bg-blue-600 hover:bg-blue-700 text-white font-semibold px-8 py-2.5 rounded-lg text-sm sm:text-base transition-transform hover:scale-105">
+          Hire Talent
+        </button>
       </section>
+
 
       {/* Newsletter Signup */}
       <section className="py-16 bg-blue-100 text-center">
