@@ -2,7 +2,7 @@ import React, { useState, useEffect } from "react";
 import { FaHandshake} from "react-icons/fa";
 import CategoryCard from "./CategoryCard";
 
-import WhyChoose from "./Whychoose";
+import {WhyChoose} from "./Whychoose";
 
 import {
   FaGoogle,
@@ -246,42 +246,7 @@ export default function Home() {
         </div>
       </section>
 
-      {/* ===== Popular Categories Section ===== */}
-      <section
-        id="categories"
-        className="py-12 px-6 md:px-20 flex flex-col items-center text-center bg-gray-50"
-      >
-        <h2 className="text-2xl md:text-3xl font-bold mb-8 text-gray-800">
-          Popular Categories
-        </h2>
-
-        <div className="relative flex flex-col items-center">
-          {/* Center Circle */}
-          <div className="relative bg-white shadow-lg rounded-full w-28 h-28 flex items-center justify-center border-4 border-blue-500 z-10">
-            <FaHandshake className="text-blue-600 text-4xl" />
-          </div>
-
-          {/* Outer Nodes */}
-          <div className="grid grid-cols-1 md:grid-cols-3 gap-6 md:gap-12 mt-8 md:mt-0 md:absolute md:w-[1000px] md:h-[450px] md:flex md:justify-between md:items-center">
-            {/* Left Side */}
-            <div className="flex flex-col gap-6 md:gap-12 md:absolute md:left-0 md:top-0">
-              <CategoryCard color="bg-blue-800" title="Platform or software" />
-              <CategoryCard color="bg-blue-600" title="Design and development" />
-            </div>
-
-            {/* Right Side */}
-            <div className="flex flex-col gap-6 md:gap-12 md:absolute md:right-0 md:top-0">
-              <CategoryCard color="bg-teal-500" title="Marketing" />
-              <CategoryCard color="bg-orange-500" title="Maintenance" />
-            </div>
-
-            {/* Bottom */}
-            <div className="md:absolute md:bottom-0 md:left-1/2 md:-translate-x-1/2">
-              <CategoryCard color="bg-pink-500" title="Hosting" />
-            </div>
-          </div>
-        </div>
-      </section>
+      
 
       <WhyChoose />
     
@@ -334,70 +299,6 @@ export default function Home() {
 
       </section>
 
-
-      {/* Employers Section */}
-      <section
-        id="employers"
-        className="py-16 px-4 sm:px-8 md:px-16 lg:px-24 text-center bg-white"
-      >
-        <h2 className="text-2xl sm:text-3xl font-bold mb-8 text-gray-800">
-          Top Employers
-        </h2>
-
-        <div className="flex flex-wrap justify-center items-center gap-8 sm:gap-12">
-          {[
-            {
-              name: "Google",
-              src: "https://upload.wikimedia.org/wikipedia/commons/2/2f/Google_2015_logo.svg",
-            },
-            {
-              name: "Microsoft",
-              src: "https://upload.wikimedia.org/wikipedia/commons/4/44/Microsoft_logo.svg",
-            },
-            {
-              name: "Amazon",
-              src: "https://upload.wikimedia.org/wikipedia/commons/a/a9/Amazon_logo.svg",
-            },
-
-            {
-              name: "Netflix",
-              src: "https://upload.wikimedia.org/wikipedia/commons/0/08/Netflix_2015_logo.svg",
-            },
-            {
-              name: "Infosys",
-              src: "https://upload.wikimedia.org/wikipedia/commons/6/69/Infosys_logo.svg",
-            },
-            {
-              name: "Paytm",
-              src: "https://upload.wikimedia.org/wikipedia/commons/5/53/Paytm_logo.png",
-            },
-            {
-              name: "TCS",
-              src: "https://upload.wikimedia.org/wikipedia/commons/8/80/Tata_Consultancy_Services_Logo.svg",
-            },
-            {
-              name: "BookMyShow",
-              src: "https://upload.wikimedia.org/wikipedia/commons/2/24/BookMyShow_logo.svg",
-            },
-            {
-              name: "Nestlé",
-              src: "https://upload.wikimedia.org/wikipedia/commons/4/4e/Nestle_textlogo.svg",
-            },
-            
-            
-          ].map((employer) => (
-            <img
-              key={employer.name}
-              src={employer.src}
-              alt={employer.name}
-              className="h-6 sm:h-8 md:h-10 lg:h-12 xl:h-14 w-auto object-contain transition-transform hover:scale-105"
-              loading="lazy"
-            />
-          ))}
-        </div>
-
-
-      </section>
 
 
       {/* Newsletter Signup */}
