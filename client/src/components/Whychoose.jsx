@@ -31,7 +31,7 @@ function AnimatedCounter({ value, color }) {
   );
 }
 
-export default function ImpactAndWhyChoose() {
+export default function WhyChoose() {
   // Pie chart data
   const data = [
     { name: "Never heard back after applying", value: 34, color: "#1E88E5" },
