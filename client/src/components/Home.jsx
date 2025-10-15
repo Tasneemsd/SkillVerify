@@ -1,7 +1,7 @@
 import React, { useState, useEffect } from "react";
 import { motion, useAnimation } from "framer-motion";
 import { ShieldCheck, Brain, BookOpen } from "lucide-react";
-import {WhyChoose,StatsSection} from "./Whychoose";
+import { WhyChoose, StatsSection } from "./Whychoose";
 
 import {
   FaGoogle,
@@ -248,28 +248,44 @@ export default function Home() {
         </div>
       </section>
 
-      {/* Popular Categories */}
-      <section id="categories" className="py-12 px-6 md:px-20 text-center">
-        <h2 className="text-2xl font-bold mb-6">Popular Categories </h2>
-        <div className="grid sm:grid-cols-2 md:grid-cols-4 gap-6">
-          {[
-            { name: "Web Development", icon: <FaLaptopCode className="text-blue-600 text-2xl mb-2" /> },
-            { name: "Data Science", icon: <FaChartLine className="text-green-600 text-2xl mb-2" /> },
-            { name: "Design", icon: <FaPaintBrush className="text-purple-600 text-2xl mb-2" /> },
-            { name: "Marketing", icon: <FaBullhorn className="text-yellow-600 text-2xl mb-2" /> },
-          ].map((cat, i) => (
-            <div key={i} className="bg-white p-6 rounded-xl shadow hover:shadow-lg transition">
-              <div className="flex flex-col items-center justify-center">
-                {cat.icon}
-                <p className="text-lg font-semibold">{cat.name}</p>
-                <p className="text-gray-500 text-sm">Top internships & jobs</p>
-              </div>
+      {/* ===== Popular Categories Section ===== */}
+      <section
+        id="categories"
+        className="py-12 px-6 md:px-20 flex flex-col items-center text-center bg-gray-50"
+      >
+        <h2 className="text-2xl md:text-3xl font-bold mb-8 text-gray-800">
+          Popular Categories
+        </h2>
+
+        <div className="relative flex flex-col items-center">
+          {/* Center Circle */}
+          <div className="relative bg-white shadow-lg rounded-full w-28 h-28 flex items-center justify-center border-4 border-blue-500 z-10">
+            <FaHandshake className="text-blue-600 text-4xl" />
+          </div>
+
+          {/* Outer Nodes */}
+          <div className="grid grid-cols-1 md:grid-cols-3 gap-6 md:gap-12 mt-8 md:mt-0 md:absolute md:w-[1000px] md:h-[450px] md:flex md:justify-between md:items-center">
+            {/* Left Side */}
+            <div className="flex flex-col gap-6 md:gap-12 md:absolute md:left-0 md:top-0">
+              <CategoryCard color="bg-blue-800" title="Platform or software" />
+              <CategoryCard color="bg-blue-600" title="Design and development" />
             </div>
-          ))}
+
+            {/* Right Side */}
+            <div className="flex flex-col gap-6 md:gap-12 md:absolute md:right-0 md:top-0">
+              <CategoryCard color="bg-teal-500" title="Marketing" />
+              <CategoryCard color="bg-orange-500" title="Maintenance" />
+            </div>
+
+            {/* Bottom */}
+            <div className="md:absolute md:bottom-0 md:left-1/2 md:-translate-x-1/2">
+              <CategoryCard color="bg-pink-500" title="Hosting" />
+            </div>
+          </div>
         </div>
       </section>
 
-     <WhyChoose />
+      <WhyChoose />
       <StatsSection />
 
       {/* 🌟 Testimonials Section (Internshala-style, responsive and polished) */}
@@ -317,7 +333,7 @@ export default function Home() {
           ))}
         </div>
 
-        
+
       </section>
 
 
@@ -344,29 +360,33 @@ export default function Home() {
               name: "Amazon",
               src: "https://upload.wikimedia.org/wikipedia/commons/a/a9/Amazon_logo.svg",
             },
+
             {
               name: "HCL Technologies",
-              src: "https://www.google.com/imgres?q=hcl&imgurl=https%3A%2F%2Fwww.hashicorp.com%2F_next%2Fimage%3Furl%3Dhttps%253A%252F%252Fwww.datocms-assets.com%252F2885%252F1683590388-hcl-logo-1976.png%26w%3D3840%26q%3D75&imgrefurl=https%3A%2F%2Fwww.hashicorp.com%2Fid%2Fpartners%2Fsystems-integrators%2Fhcl&docid=uNLzauK0AIaoiM&tbnid=HkkqnaQ7yYNYbM&vet=12ahUKEwjq2KXKsKaQAxWS-zgGHQ5rAAkQM3oECBAQAA..i&w=3840&h=2160&hcb=2&ved=2ahUKEwjq2KXKsKaQAxWS-zgGHQ5rAAkQM3oECBAQAA",
+              src: "https://upload.wikimedia.org/wikipedia/commons/1/1a/HCL_Technologies_Logo.svg",
             },
             {
               name: "Infosys",
-              src: "https://www.google.com/imgres?q=infosys%20logo&imgurl=https%3A%2F%2Fbrandeps.com%2Flogo-download%2FI%2FInfosys-logo-01.png&imgrefurl=https%3A%2F%2Fbrandeps.com%2Flogo%2FI%2FInfosys-01&docid=Tx-d0sL1-Njp4M&tbnid=Rez962yUkpJHAM&vet=12ahUKEwju27zAsaaQAxWT9DgGHTfSCbcQM3oECBgQAA..i&w=512&h=512&hcb=2&ved=2ahUKEwju27zAsaaQAxWT9DgGHTfSCbcQM3oECBgQAA",
+              src: "https://upload.wikimedia.org/wikipedia/commons/6/69/Infosys_logo.svg",
             },
             {
               name: "Paytm",
-              src: "https://www.google.com/imgres?q=infosys%2C%20paytm%2Cnestle%2CTCS&imgurl=https%3A%2F%2Fcms-resources.pocketful.in%2Fblog%2Fwp-content%2Fuploads%2F2023%2F12%2FPaytm_Logo_standalone.svg_.webp&imgrefurl=https%3A%2F%2Fwww.pocketful.in%2Fblog%2Fpaytm-case-study-business-model-and-marketing-strategy%2F&docid=zrRiul-yKEva9M&tbnid=CBi7z10fyTkm8M&vet=12ahUKEwiRrKyCsaaQAxVy7DgGHZwQKXoQM3oECB4QAA..i&w=2560&h=811&hcb=2&ved=2ahUKEwiRrKyCsaaQAxVy7DgGHZwQKXoQM3oECB4QAA",
+              src: "https://upload.wikimedia.org/wikipedia/commons/5/53/Paytm_logo.png",
             },
             {
               name: "TCS",
-              src: "https://www.google.com/imgres?q=tcs&imgurl=https%3A%2F%2Fcdn.i.haymarketmedia.asia%2F%3Fn%3Dcampaign-india%252Fcontent%252F20230531101105_Tata_Consultancy_Services_Logo.svg.png%26h%3D570%26w%3D855%26q%3D100%26v%3D20250320%26c%3D1&imgrefurl=https%3A%2F%2Fwww.campaignindia.in%2Farticle%2Ftata-consultancy-services-most-valuable-indian-brand-interbrand-study%2F490532&docid=eU34mUL36JMqsM&tbnid=nre8gntkXroG6M&vet=12ahUKEwjLrejfsaaQAxVv4DgGHfNlAFgQM3oECCIQAA..i&w=855&h=570&hcb=2&ved=2ahUKEwjLrejfsaaQAxVv4DgGHfNlAFgQM3oECCIQAA",
+              src: "https://upload.wikimedia.org/wikipedia/commons/8/80/Tata_Consultancy_Services_Logo.svg",
             },
             {
               name: "BookMyShow",
-              src: "https://www.google.com/imgres?q=infosys%2C%20paytm%2Cnestle%2Cbookmyshow&imgurl=https%3A%2F%2Fimages.livemint.com%2Fimg%2F2021%2F02%2F05%2F600x338%2FBookMyShow_1593571635994_1593571656157_1612516175604.png&imgrefurl=https%3A%2F%2Fwww.livemint.com%2Findustry%2Fmedia%2Fbookmyshow-launches-movie-streaming-service-11612515924416.html&docid=qSwXr8oDaIEdAM&tbnid=xLzN8-c6JUrKPM&vet=12ahUKEwjvuqTxsKaQAxWT4jgGHYI6MpwQM3oECBQQAA..i&w=600&h=337&hcb=2&ved=2ahUKEwjvuqTxsKaQAxWT4jgGHYI6MpwQM3oECBQQAA",
+              src: "https://upload.wikimedia.org/wikipedia/commons/2/24/BookMyShow_logo.svg",
             },
             {
               name: "Nestlé",
-              src: "https://www.google.com/imgres?q=nestle&imgurl=https%3A%2F%2Fwww.sourcewatch.org%2Fimages%2Fthumb%2F6%2F65%2FNestle-logo.jpg%2F300px-Nestle-logo.jpg&imgrefurl=https%3A%2F%2Fwww.sourcewatch.org%2Findex.php%2FNestl%25C3%25A9&docid=DLddcHnH8DLZMM&tbnid=4J1Nv1U1Va-suM&vet=12ahUKEwiKq5PysaaQAxV4zDgGHTG5KdwQM3oECBUQAA..i&w=300&h=197&hcb=2&ved=2ahUKEwiKq5PysaaQAxV4zDgGHTG5KdwQM3oECBUQAA",
+              src: "https://upload.wikimedia.org/wikipedia/commons/4/4e/Nestle_textlogo.svg",
+            },
+            { name: "Samsung",
+              src: "https://upload.wikimedia.org/wikipedia/commons/2/24/Samsung_Logo.svg",
             },
           ].map((employer) => (
             <img
@@ -379,7 +399,7 @@ export default function Home() {
           ))}
         </div>
 
-      
+
       </section>
 
 

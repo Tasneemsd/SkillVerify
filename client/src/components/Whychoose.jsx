@@ -1,109 +1,152 @@
-import { ShieldCheck, Brain, BookOpen } from "lucide-react";
+import { PieChart, Pie, Cell, ResponsiveContainer } from "recharts";
 import { motion, useAnimation, useInView } from "framer-motion";
 import { useEffect, useRef } from "react";
+import { Users, Brain, GraduationCap, LineChart } from "lucide-react";
 
-// ✅ Animated Counter Component
-function AnimatedCounter({ value, duration = 2 }) {
+// 🎯 Animated Counter Component
+function AnimatedCounter({ value, color }) {
   const controls = useAnimation();
   const ref = useRef(null);
   const inView = useInView(ref, { once: true });
-  const formattedValue = parseInt(value.replace(/\D/g, ""));
-  const suffix = value.replace(/\d/g, "");
 
   useEffect(() => {
     if (inView) {
       controls.start({
-        count: formattedValue,
-        transition: { duration, ease: "easeOut" },
+        count: value,
+        transition: { duration: 2, ease: "easeOut" },
       });
     }
-  }, [inView, controls, formattedValue, duration]);
+  }, [inView, controls, value]);
 
   return (
-    <motion.span ref={ref} animate={controls} initial={{ count: 0 }}>
-      {({ count }) => (
-        <span className="font-bold text-blue-50">
-          {Math.floor(count).toLocaleString()}
-          {suffix}
-        </span>
-      )}
+    <motion.span
+      ref={ref}
+      animate={controls}
+      initial={{ count: 0 }}
+      className="font-bold text-lg sm:text-xl"
+      style={{ color }}
+    >
+      {({ count }) => `${Math.floor(count)}%`}
     </motion.span>
   );
 }
 
-// 🌟 Why Choose VHireToday Section
-export function WhyChoose() {
+export default function ImpactAndWhyChoose() {
+  // Pie chart data
+  const data = [
+    { name: "Never heard back after applying", value: 34, color: "#1E88E5" },
+    { name: "Ghosted before interview", value: 30, color: "#29B6F6" },
+    { name: "Ghosted after first interview", value: 21, color: "#4DD0E1" },
+    { name: "Ghosted after several rounds", value: 8, color: "#EC407A" },
+    { name: "Ghosted after offer", value: 6, color: "#FB8C00" },
+  ];
+
   const features = [
     {
-      title: "Verified Talent",
-      desc: "Profiles are verified to ensure recruiters find skilled and genuine candidates quickly.",
-      icon: <ShieldCheck className="w-12 h-12 text-blue-600 mb-4" />,
+      icon: <Users className="w-12 h-12 text-[#1E88E5]" />,
+      title: "Verified Talent Network",
+      desc: "Every student profile is verified to ensure recruiters connect only with authentic, skilled candidates.",
     },
     {
-      title: "AI-Powered Matching",
-      desc: "Smart AI matches students with the right internships and jobs based on skills and preferences.",
-      icon: <Brain className="w-12 h-12 text-blue-600 mb-4" />,
+      icon: <Brain className="w-12 h-12 text-[#29B6F6]" />,
+      title: "AI Matching Engine",
+      desc: "Smart AI matches students with the right internships and jobs based on their skills and interests.",
     },
     {
+      icon: <GraduationCap className="w-12 h-12 text-[#4DD0E1]" />,
       title: "Upskilling Opportunities",
-      desc: "Access industry-relevant courses to boost employability and career growth.",
-      icon: <BookOpen className="w-12 h-12 text-blue-600 mb-4" />,
+      desc: "Learn new industry-relevant skills to grow faster and get better career opportunities.",
+    },
+    {
+      icon: <LineChart className="w-12 h-12 text-[#FB8C00]" />,
+      title: "Career Growth Analytics",
+      desc: "Real-time analytics to track performance and optimize hiring and learning outcomes.",
     },
   ];
 
   return (
-    <section className="py-24 bg-gradient-to-b from-blue-50 to-white px-6 sm:px-10 lg:px-20 text-center">
+    <section className="py-24 bg-[#F5FBFF] px-6 sm:px-10 lg:px-20 text-center overflow-hidden">
       <h2 className="text-3xl sm:text-4xl font-bold mb-16 text-gray-800">
-        Why Choose <span className="text-blue-700">VHireToday?</span>
+        VHireToday <span className="text-[#1E88E5]">Impact & Insights</span>
       </h2>
 
-      <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-10">
-        {features.map((feature, i) => (
-          <div
-            key={i}
-            className="bg-white p-8 rounded-3xl shadow-lg hover:shadow-2xl transition-all duration-300 border border-gray-100 flex flex-col items-center text-left"
-          >
-            {feature.icon}
-            <h3 className="text-xl sm:text-2xl font-semibold text-blue-700 mb-3">
-              {feature.title}
-            </h3>
-            <p className="text-gray-700 text-base sm:text-lg leading-relaxed">
-              {feature.desc}
-            </p>
-          </div>
-        ))}
+      {/* Chart + Info Section */}
+      <div className="flex flex-col lg:flex-row items-center justify-center gap-12 mb-20">
+        {/* Animated Pie Chart */}
+        <motion.div
+          className="w-full lg:w-1/2 h-80 bg-white rounded-3xl shadow-lg p-6 flex items-center justify-center"
+          initial={{ opacity: 0, scale: 0.8 }}
+          whileInView={{ opacity: 1, scale: 1 }}
+          transition={{ duration: 1 }}
+        >
+          <ResponsiveContainer>
+            <PieChart>
+              <Pie
+                data={data}
+                cx="50%"
+                cy="50%"
+                outerRadius={110}
+                dataKey="value"
+                isAnimationActive={true}
+                animationDuration={1200}
+                labelLine={false}
+                label={({ index }) => (
+                  <tspan>
+                    <AnimatedCounter
+                      value={data[index].value}
+                      color={data[index].color}
+                    />
+                  </tspan>
+                )}
+              >
+                {data.map((entry, i) => (
+                  <Cell key={`cell-${i}`} fill={entry.color} />
+                ))}
+              </Pie>
+            </PieChart>
+          </ResponsiveContainer>
+        </motion.div>
+
+        {/* Chart Description */}
+        <motion.div
+          className="lg:w-1/2 text-gray-700 text-left leading-relaxed"
+          initial={{ opacity: 0, x: 60 }}
+          whileInView={{ opacity: 1, x: 0 }}
+          transition={{ duration: 0.8 }}
+        >
+          <p className="text-lg sm:text-xl mb-4">
+            Our data highlights the common gaps between job seekers and employers. 
+            Many students never hear back after applying or interviewing.
+          </p>
+          <p className="text-lg sm:text-xl">
+            <b>VHireToday</b> bridges this gap using verified profiles and 
+            AI-powered systems to ensure transparent and fair hiring for everyone.
+          </p>
+        </motion.div>
       </div>
-    </section>
-  );
-}
 
-// 📊 Stats Section with Animated Counters
-export function StatsSection() {
-  const stats = [
-    { value: "50K+", label: "Active Internships" },
-    { value: "200K+", label: "Registered Students" },
-    { value: "10K+", label: "Companies Hiring" },
-    { value: "100%", label: "Verified Profiles" },
-  ];
-
-  return (
-    <section className="py-24 bg-blue-600 text-white text-center px-6 sm:px-10 lg:px-20">
-      <h2 className="text-3xl sm:text-4xl font-bold mb-16">VHireToday in Numbers</h2>
-
-      <div className="grid grid-cols-2 sm:grid-cols-4 gap-10">
-        {stats.map((stat, i) => (
+      {/* Why Choose Us Cards */}
+      <motion.div
+        className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-10 mt-10"
+        initial={{ opacity: 0, y: 50 }}
+        whileInView={{ opacity: 1, y: 0 }}
+        transition={{ duration: 0.8 }}
+      >
+        {features.map((feature, i) => (
           <motion.div
             key={i}
-            className="flex flex-col items-center justify-center bg-white/10 p-8 rounded-3xl hover:bg-white/20 transition-all duration-300"
-            whileHover={{ scale: 1.05 }}
+            className="bg-white p-8 rounded-3xl shadow-lg hover:shadow-2xl transition-all duration-300 border-t-4"
+            style={{ borderColor: feature.icon.props.className.match(/#(.*?)"/)[1] }}
+            whileHover={{ scale: 1.05, y: -5 }}
           >
-            <h3 className="text-4xl sm:text-5xl font-bold mb-3">
-              <AnimatedCounter value={stat.value} />
-            </h3>
-            <p className="text-sm sm:text-base font-medium">{stat.label}</p>
+            <div className="flex flex-col items-center gap-3 text-center">
+              {feature.icon}
+              <h3 className="text-xl font-semibold text-gray-800 mt-2">{feature.title}</h3>
+              <p className="text-gray-600 text-sm mt-2">{feature.desc}</p>
+            </div>
           </motion.div>
         ))}
-      </div>
+      </motion.div>
     </section>
   );
 }
