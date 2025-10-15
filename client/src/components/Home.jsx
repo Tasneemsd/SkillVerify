@@ -317,11 +317,7 @@ export default function Home() {
           ))}
         </div>
 
-        <div className="mt-16">
-          <button className="bg-blue-600 text-white px-8 py-3 rounded-full font-medium hover:bg-blue-700 transition">
-            Read More Stories
-          </button>
-        </div>
+        
       </section>
 
 
@@ -350,27 +346,27 @@ export default function Home() {
             },
             {
               name: "HCL Technologies",
-              src: "https://upload.wikimedia.org/wikipedia/commons/1/1a/HCL_Technologies_Logo.svg",
+              src: "https://www.google.com/imgres?q=hcl&imgurl=https%3A%2F%2Fwww.hashicorp.com%2F_next%2Fimage%3Furl%3Dhttps%253A%252F%252Fwww.datocms-assets.com%252F2885%252F1683590388-hcl-logo-1976.png%26w%3D3840%26q%3D75&imgrefurl=https%3A%2F%2Fwww.hashicorp.com%2Fid%2Fpartners%2Fsystems-integrators%2Fhcl&docid=uNLzauK0AIaoiM&tbnid=HkkqnaQ7yYNYbM&vet=12ahUKEwjq2KXKsKaQAxWS-zgGHQ5rAAkQM3oECBAQAA..i&w=3840&h=2160&hcb=2&ved=2ahUKEwjq2KXKsKaQAxWS-zgGHQ5rAAkQM3oECBAQAA",
             },
             {
               name: "Infosys",
-              src: "https://upload.wikimedia.org/wikipedia/commons/2/2f/Infosys_logo.svg",
+              src: "https://www.google.com/imgres?q=infosys%20logo&imgurl=https%3A%2F%2Fbrandeps.com%2Flogo-download%2FI%2FInfosys-logo-01.png&imgrefurl=https%3A%2F%2Fbrandeps.com%2Flogo%2FI%2FInfosys-01&docid=Tx-d0sL1-Njp4M&tbnid=Rez962yUkpJHAM&vet=12ahUKEwju27zAsaaQAxWT9DgGHTfSCbcQM3oECBgQAA..i&w=512&h=512&hcb=2&ved=2ahUKEwju27zAsaaQAxWT9DgGHTfSCbcQM3oECBgQAA",
             },
             {
               name: "Paytm",
-              src: "https://upload.wikimedia.org/wikipedia/commons/5/53/Paytm_logo.png",
+              src: "https://www.google.com/imgres?q=infosys%2C%20paytm%2Cnestle%2CTCS&imgurl=https%3A%2F%2Fcms-resources.pocketful.in%2Fblog%2Fwp-content%2Fuploads%2F2023%2F12%2FPaytm_Logo_standalone.svg_.webp&imgrefurl=https%3A%2F%2Fwww.pocketful.in%2Fblog%2Fpaytm-case-study-business-model-and-marketing-strategy%2F&docid=zrRiul-yKEva9M&tbnid=CBi7z10fyTkm8M&vet=12ahUKEwiRrKyCsaaQAxVy7DgGHZwQKXoQM3oECB4QAA..i&w=2560&h=811&hcb=2&ved=2ahUKEwiRrKyCsaaQAxVy7DgGHZwQKXoQM3oECB4QAA",
             },
             {
               name: "TCS",
-              src: "https://upload.wikimedia.org/wikipedia/commons/b/b1/Tata_Consultancy_Services_Logo.svg",
+              src: "https://www.google.com/imgres?q=tcs&imgurl=https%3A%2F%2Fcdn.i.haymarketmedia.asia%2F%3Fn%3Dcampaign-india%252Fcontent%252F20230531101105_Tata_Consultancy_Services_Logo.svg.png%26h%3D570%26w%3D855%26q%3D100%26v%3D20250320%26c%3D1&imgrefurl=https%3A%2F%2Fwww.campaignindia.in%2Farticle%2Ftata-consultancy-services-most-valuable-indian-brand-interbrand-study%2F490532&docid=eU34mUL36JMqsM&tbnid=nre8gntkXroG6M&vet=12ahUKEwjLrejfsaaQAxVv4DgGHfNlAFgQM3oECCIQAA..i&w=855&h=570&hcb=2&ved=2ahUKEwjLrejfsaaQAxVv4DgGHfNlAFgQM3oECCIQAA",
             },
             {
               name: "BookMyShow",
-              src: "https://upload.wikimedia.org/wikipedia/commons/2/24/BookMyShow_logo.svg",
+              src: "https://www.google.com/imgres?q=infosys%2C%20paytm%2Cnestle%2Cbookmyshow&imgurl=https%3A%2F%2Fimages.livemint.com%2Fimg%2F2021%2F02%2F05%2F600x338%2FBookMyShow_1593571635994_1593571656157_1612516175604.png&imgrefurl=https%3A%2F%2Fwww.livemint.com%2Findustry%2Fmedia%2Fbookmyshow-launches-movie-streaming-service-11612515924416.html&docid=qSwXr8oDaIEdAM&tbnid=xLzN8-c6JUrKPM&vet=12ahUKEwjvuqTxsKaQAxWT4jgGHYI6MpwQM3oECBQQAA..i&w=600&h=337&hcb=2&ved=2ahUKEwjvuqTxsKaQAxWT4jgGHYI6MpwQM3oECBQQAA",
             },
             {
               name: "Nestlé",
-              src: "https://upload.wikimedia.org/wikipedia/commons/0/02/Nestle_textlogo_blue.svg",
+              src: "https://www.google.com/imgres?q=nestle&imgurl=https%3A%2F%2Fwww.sourcewatch.org%2Fimages%2Fthumb%2F6%2F65%2FNestle-logo.jpg%2F300px-Nestle-logo.jpg&imgrefurl=https%3A%2F%2Fwww.sourcewatch.org%2Findex.php%2FNestl%25C3%25A9&docid=DLddcHnH8DLZMM&tbnid=4J1Nv1U1Va-suM&vet=12ahUKEwiKq5PysaaQAxV4zDgGHTG5KdwQM3oECBUQAA..i&w=300&h=197&hcb=2&ved=2ahUKEwiKq5PysaaQAxV4zDgGHTG5KdwQM3oECBUQAA",
             },
           ].map((employer) => (
             <img
@@ -383,9 +379,7 @@ export default function Home() {
           ))}
         </div>
 
-        <button className="mt-10 bg-blue-600 hover:bg-blue-700 text-white font-semibold px-8 py-2.5 rounded-lg text-sm sm:text-base transition-transform hover:scale-105">
-          Hire Talent
-        </button>
+      
       </section>
 
 

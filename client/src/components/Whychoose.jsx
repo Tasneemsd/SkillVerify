@@ -1,29 +1,28 @@
 import { ShieldCheck, Brain, BookOpen } from "lucide-react";
-import { motion, useAnimation } from "framer-motion";
-import { useEffect } from "react";
+import { motion, useAnimation, useInView } from "framer-motion";
+import { useEffect, useRef } from "react";
 
 // ✅ Animated Counter Component
 function AnimatedCounter({ value, duration = 2 }) {
   const controls = useAnimation();
-  const formattedValue = parseInt(value.replace(/\D/g, "")); // Extract number
-  const suffix = value.replace(/\d/g, ""); // Keep suffix like "K+" or "%"
-  const displayValue = { count: 0 };
+  const ref = useRef(null);
+  const inView = useInView(ref, { once: true });
+  const formattedValue = parseInt(value.replace(/\D/g, ""));
+  const suffix = value.replace(/\d/g, "");
 
   useEffect(() => {
-    controls.start({
-      count: formattedValue,
-      transition: { duration, ease: "easeOut" },
-    });
-  }, [controls, formattedValue, duration]);
+    if (inView) {
+      controls.start({
+        count: formattedValue,
+        transition: { duration, ease: "easeOut" },
+      });
+    }
+  }, [inView, controls, formattedValue, duration]);
 
   return (
-    <motion.span
-      animate={controls}
-      initial={{ count: 0 }}
-      variants={{}}
-    >
+    <motion.span ref={ref} animate={controls} initial={{ count: 0 }}>
       {({ count }) => (
-        <span>
+        <span className="font-bold text-blue-50">
           {Math.floor(count).toLocaleString()}
           {suffix}
         </span>
@@ -34,43 +33,42 @@ function AnimatedCounter({ value, duration = 2 }) {
 
 // 🌟 Why Choose VHireToday Section
 export function WhyChoose() {
+  const features = [
+    {
+      title: "Verified Talent",
+      desc: "Profiles are verified to ensure recruiters find skilled and genuine candidates quickly.",
+      icon: <ShieldCheck className="w-12 h-12 text-blue-600 mb-4" />,
+    },
+    {
+      title: "AI-Powered Matching",
+      desc: "Smart AI matches students with the right internships and jobs based on skills and preferences.",
+      icon: <Brain className="w-12 h-12 text-blue-600 mb-4" />,
+    },
+    {
+      title: "Upskilling Opportunities",
+      desc: "Access industry-relevant courses to boost employability and career growth.",
+      icon: <BookOpen className="w-12 h-12 text-blue-600 mb-4" />,
+    },
+  ];
+
   return (
-    <section
-      id="why-choose"
-      className="py-20 bg-gradient-to-b from-blue-50 to-white px-6 sm:px-10 lg:px-20 text-center"
-    >
-      <h2 className="text-3xl sm:text-4xl font-bold mb-12 text-gray-800">
+    <section className="py-24 bg-gradient-to-b from-blue-50 to-white px-6 sm:px-10 lg:px-20 text-center">
+      <h2 className="text-3xl sm:text-4xl font-bold mb-16 text-gray-800">
         Why Choose <span className="text-blue-700">VHireToday?</span>
       </h2>
 
-      <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-8">
-        {[
-          {
-            title: "Verified Talent",
-            desc: "Every profile is carefully verified, helping recruiters find authentic and skilled candidates faster.",
-            icon: <ShieldCheck className="w-12 h-12 text-blue-600 mb-4" />,
-          },
-          {
-            title: "AI-Powered Matching",
-            desc: "Get automatically matched with the right internships and jobs based on your skills and goals.",
-            icon: <Brain className="w-12 h-12 text-blue-600 mb-4" />,
-          },
-          {
-            title: "Upskilling Opportunities",
-            desc: "Learn from industry-focused paid and free courses to enhance your employability.",
-            icon: <BookOpen className="w-12 h-12 text-blue-600 mb-4" />,
-          },
-        ].map((item, i) => (
+      <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-10">
+        {features.map((feature, i) => (
           <div
             key={i}
-            className="bg-white p-8 rounded-2xl shadow-md hover:shadow-xl transition-all duration-300 border border-gray-100 flex flex-col items-center"
+            className="bg-white p-8 rounded-3xl shadow-lg hover:shadow-2xl transition-all duration-300 border border-gray-100 flex flex-col items-center text-left"
           >
-            {item.icon}
-            <h3 className="text-xl font-semibold text-blue-700 mb-2">
-              {item.title}
+            {feature.icon}
+            <h3 className="text-xl sm:text-2xl font-semibold text-blue-700 mb-3">
+              {feature.title}
             </h3>
-            <p className="text-gray-600 text-base leading-relaxed">
-              {item.desc}
+            <p className="text-gray-700 text-base sm:text-lg leading-relaxed">
+              {feature.desc}
             </p>
           </div>
         ))}
@@ -89,19 +87,17 @@ export function StatsSection() {
   ];
 
   return (
-    <section className="py-20 bg-blue-600 text-white text-center px-6 sm:px-10 lg:px-20">
-      <h2 className="text-3xl sm:text-4xl font-bold mb-12">
-        VHireToday in Numbers
-      </h2>
+    <section className="py-24 bg-blue-600 text-white text-center px-6 sm:px-10 lg:px-20">
+      <h2 className="text-3xl sm:text-4xl font-bold mb-16">VHireToday in Numbers</h2>
 
       <div className="grid grid-cols-2 sm:grid-cols-4 gap-10">
         {stats.map((stat, i) => (
           <motion.div
             key={i}
-            className="flex flex-col items-center justify-center bg-white/10 p-6 rounded-2xl hover:bg-white/20 transition-all duration-300"
+            className="flex flex-col items-center justify-center bg-white/10 p-8 rounded-3xl hover:bg-white/20 transition-all duration-300"
             whileHover={{ scale: 1.05 }}
           >
-            <h3 className="text-4xl sm:text-5xl font-bold mb-2">
+            <h3 className="text-4xl sm:text-5xl font-bold mb-3">
               <AnimatedCounter value={stat.value} />
             </h3>
             <p className="text-sm sm:text-base font-medium">{stat.label}</p>
