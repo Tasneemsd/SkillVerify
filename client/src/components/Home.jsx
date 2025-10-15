@@ -1,7 +1,8 @@
 import React, { useState, useEffect } from "react";
 import { motion, useAnimation } from "framer-motion";
 import { ShieldCheck, Brain, BookOpen } from "lucide-react";
-import { FaHandshake,CategoryCard } from "react-icons/fa";
+import { FaHandshake} from "react-icons/fa";
+import CategoryCard from "./CategoryCard";
 
 import WhyChoose from "./Whychoose";
 
