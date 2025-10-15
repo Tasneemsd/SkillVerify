@@ -1,8 +1,5 @@
 import React, { useState, useEffect } from "react";
-import { FaHandshake} from "react-icons/fa";
-import CategoryCard from "./CategoryCard";
-
-import {WhyChoose} from "./Whychoose";
+import Whychoose from "./Whychoose";
 
 import {
   FaGoogle,
@@ -248,7 +245,7 @@ export default function Home() {
 
       
 
-      <WhyChoose />
+      <Whychoose />
     
 
       {/* 🌟 Testimonials Section (Internshala-style, responsive and polished) */}
