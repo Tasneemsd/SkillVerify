@@ -291,12 +291,9 @@ const WhyChooseSection = () => {
           transition={{ duration: 0.6 }}
           className="text-center mb-16"
         >
-          <h2 className="text-4xl md:text-5xl font-bold text-blue-600 mb-4">
+          <h2 className="text-4xl md:text-5xl font-bold text-blue-600 mb-2">
             Why Choose VHireToday?
           </h2>
-          <p className="text-lg text-gray-600 max-w-xl mx-auto">
-            Join thousands of successful candidates who found their dream careers through our platform
-          </p>
         </motion.div>
 
         <div className="grid lg:grid-cols-2 gap-12 items-center mb-16">
