@@ -8,6 +8,20 @@ const Application = require('../models/Application');
 // Existing Working Code (Untouched)
 // =======================================
 
+exports.updateInterviewStatus = async (req, res) => {
+  try {
+    const { studentId, status } = req.body;
+    const student = await Student.findById(studentId);
+    if (!student) return res.status(404).json({ message: 'Student not found' });
+
+    student.mockInterviewStatus = status;
+    await student.save();
+
+    res.json({ message: 'Interview status updated', student });
+  } catch (err) {
+    res.status(500).json({ message: 'Failed to update interview status' });
+  }
+};
 
 // Get all courses with number of registered students
 exports.getCoursesWithRegistrations = async (req, res) => {
@@ -109,6 +123,28 @@ exports.getAllJobs = async (req, res) => {
     res.json(jobs);
   } catch (err) {
     res.status(500).json({ message: 'Failed to fetch jobs' });
+  }
+};
+exports.updateApplicationStatus = async (req, res) => {
+  try {
+    const { jobId, studentId, status } = req.body;
+    const job = await Job.findById(jobId);
+    if (!job) return res.status(404).json({ message: 'Job not found' });
+
+    const application = job.appliedBy.find(app => {
+      const studentIdInApp = app.student?._id?.toString() || app.student?.toString() || app.toString();
+      return studentIdInApp === studentId;
+    });
+
+    if (!application) return res.status(404).json({ message: 'Application not found' });
+
+    application.status = status;
+    await job.save();
+
+    res.json({ message: 'Application status updated successfully', job });
+  } catch (err) {
+    console.error('Error in updateApplicationStatus:', err);
+    res.status(500).json({ message: 'Failed to update application status', error: err.message });
   }
 };
 
