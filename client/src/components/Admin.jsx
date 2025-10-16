@@ -280,6 +280,7 @@ const Admin = () => {
   const tabs = [
     { id: "dashboard", label: "Dashboard", icon: TrendingUp },
     { id: "students", label: "Students", icon: Users },
+    { id: "nonVerified", label: "Non-Verified Students", icon: UserX },
     { id: "interviews", label: "Mock Interviews", icon: MessageSquare },
     { id: "recruiters", label: "Recruiters", icon: Briefcase },
     { id: "applications", label: "Applications", icon: FileText },
@@ -392,11 +393,10 @@ const Admin = () => {
                 <button
                   key={tab.id}
                   onClick={() => setActiveTab(tab.id)}
-                  className={`flex items-center space-x-2 px-6 py-4 font-medium transition-all duration-200 border-b-2 whitespace-nowrap ${
-                    activeTab === tab.id
+                  className={`flex items-center space-x-2 px-6 py-4 font-medium transition-all duration-200 border-b-2 whitespace-nowrap ${activeTab === tab.id
                       ? "text-blue-600 border-blue-600"
                       : "text-gray-600 border-transparent hover:text-blue-600 hover:border-gray-300"
-                  }`}
+                    }`}
                 >
                   <Icon size={20} />
                   <span>{tab.label}</span>
@@ -461,7 +461,7 @@ const Admin = () => {
                                   : student.mockResult === "Fail"
                                     ? "bg-red-100 text-red-800"
                                     : "bg-gray-100 text-gray-800"
-                                }`}
+                                  }`}
                               >
                                 {student.mockResult === "Pass" ? <CheckCircle size={14} className="mr-1" /> : <XCircle size={14} className="mr-1" />}
                                 {student.mockResult}
@@ -730,6 +730,83 @@ const Admin = () => {
           </div>
         </div>
       )}
+      {/* Non-Verified Students */}
+      {activeTab === "nonVerified" && (
+        <div className="bg-white rounded-2xl shadow-lg overflow-hidden">
+          <div className="p-6 border-b border-gray-200">
+            <h2 className="text-2xl font-bold text-gray-800">Non-Verified Students</h2>
+            <p className="text-gray-600 mt-1">List of students who are not yet verified</p>
+          </div>
+          {students.filter((s) => !s.verified).length === 0 ? (
+            <div className="flex flex-col items-center justify-center py-16">
+              <UserX size={64} className="text-gray-300 mb-4" />
+              <p className="text-gray-500 text-lg">All students are verified 🎉</p>
+            </div>
+          ) : (
+            <div className="overflow-x-auto">
+              <table className="w-full">
+                <thead className="bg-gray-50">
+                  <tr>
+                    <th className="px-6 py-4 text-left text-xs font-semibold text-gray-700 uppercase tracking-wider">
+                      Name
+                    </th>
+                    <th className="px-6 py-4 text-left text-xs font-semibold text-gray-700 uppercase tracking-wider">
+                      Email
+                    </th>
+                    <th className="px-6 py-4 text-left text-xs font-semibold text-gray-700 uppercase tracking-wider">
+                      Mock Result
+                    </th>
+                    <th className="px-6 py-4 text-left text-xs font-semibold text-gray-700 uppercase tracking-wider">
+                      Action
+                    </th>
+                  </tr>
+                </thead>
+                <tbody className="divide-y divide-gray-200">
+                  {students
+                    .filter((s) => !s.verified)
+                    .map((student) => (
+                      <tr
+                        key={student._id || student.email}
+                        className="hover:bg-gray-50 transition-colors duration-150"
+                      >
+                        <td className="px-6 py-4 whitespace-nowrap font-medium text-gray-900">
+                          {student.name || student.fullName || "—"}
+                        </td>
+                        <td className="px-6 py-4 whitespace-nowrap text-gray-600">
+                          {student.email || "—"}
+                        </td>
+                        <td className="px-6 py-4 whitespace-nowrap">
+                          <span
+                            className={`inline-flex items-center px-3 py-1 rounded-full text-xs font-semibold ${student.mockResult === "Pass"
+                                ? "bg-green-100 text-green-800"
+                                : "bg-red-100 text-red-800"
+                              }`}
+                          >
+                            {student.mockResult}
+                          </span>
+                        </td>
+                        <td className="px-6 py-4 whitespace-nowrap">
+                          {student.mockResult === "Pass" ? (
+                            <button
+                              onClick={() => handleVerifyStudent(student)}
+                              className="inline-flex items-center px-4 py-2 bg-gradient-to-r from-green-500 to-green-600 text-white rounded-lg hover:from-green-600 hover:to-green-700 transition-all duration-200 shadow-md hover:shadow-lg"
+                            >
+                              <CheckCircle size={16} className="mr-2" />
+                              Verify
+                            </button>
+                          ) : (
+                            <span className="text-gray-500 text-sm">Awaiting Pass Result</span>
+                          )}
+                        </td>
+                      </tr>
+                    ))}
+                </tbody>
+              </table>
+            </div>
+          )}
+        </div>
+      )}
+
     </div>
   );
 };
