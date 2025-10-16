@@ -202,28 +202,8 @@ exports.getAllMockInterviews = async (req, res) => {
   }
 };
 
-// Get all applications (jobs applied by students)
-exports.getAllApplications = async (req, res) => {
-  try {
-    const jobs = await Job.find().populate('appliedBy', 'name email');
-    res.json(jobs);
-  } catch (err) {
-    res.status(500).json({ message: 'Failed to fetch applications' });
-  }
-};
-// Update interview status for a student
-exports.updateInterviewStatus = async (req, res) => {
-  try {
-    const { studentId, status } = req.body;
-    const student = await Student.findById(studentId);
-    if (!student) return res.status(404).json({ message: 'Student not found' });          
-    student.mockInterviewStatus = status;
-    await student.save();
-    res.json({ message: 'Interview status updated', student });
-  } catch (err) {
-    res.status(500).json({ message: 'Failed to update interview status' });
-  } 
-};
+
+
 
 // Update application status for a job
 exports.updateApplicationStatus = async (req, res) => {
@@ -259,18 +239,35 @@ exports.toggleRecruiterApproval = async (req, res) => {
 
 exports.getAllApplications = async (req, res) => {
   try {
-    const jobs = await Job.find().populate("appliedBy.student", "name email");
-    const applications = jobs.flatMap(job =>
-      job.appliedBy.map(app => ({
-        jobTitle: job.title,
-        jobId: job._id,
-        studentName: app.student?.name,
-        studentEmail: app.student?.email,
-        status: app.status,
-      }))
-    );
+    // Try to populate either direct refs or nested
+    const jobs = await Job.find()
+      .populate({
+        path: "appliedBy",
+        populate: { path: "student", select: "name email" },
+      })
+      .populate("postedBy", "name email");
+
+    const applications = [];
+
+    jobs.forEach(job => {
+      if (Array.isArray(job.appliedBy)) {
+        job.appliedBy.forEach(app => {
+          // Handle both schema styles
+          const student = app.student || app;
+          applications.push({
+            jobTitle: job.title || "Untitled",
+            jobId: job._id,
+            studentName: student?.name || "Unknown",
+            studentEmail: student?.email || "Unknown",
+            status: app.status || "pending",
+          });
+        });
+      }
+    });
+
     res.json(applications);
   } catch (err) {
-    res.status(500).json({ message: "Failed to fetch applications" });
+    console.error("Error in getAllApplications:", err);
+    res.status(500).json({ message: "Failed to fetch applications", error: err.message });
   }
 };
