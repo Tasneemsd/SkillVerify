@@ -1,158 +1,85 @@
-import { useState, useEffect } from 'react';
+import React, { useState, useEffect } from "react";
+import axios from "axios";
 import {
-  Users,
-  UserCheck,
-  UserX,
-  Briefcase,
-  FileText,
-  MessageSquare,
-  Settings,
-  LogOut,
-  CheckCircle,
-  XCircle,
-  TrendingUp,
-  BarChart3,
-  ChevronDown,
-  Menu,
-  X
-} from 'lucide-react';
+Briefcase, Users, UserCheck, UserX, FileText, MessageSquare, CheckCircle, XCircle, LogOut, Settings,
+ChevronDown, Menu, X, TrendingUp
+} from "lucide-react";
+
+
+const BASE_URL = "https://skillverify.onrender.com/api";
+
 
 const Admin = () => {
-  const [activeTab, setActiveTab] = useState('dashboard');
-  const [isDropdownOpen, setIsDropdownOpen] = useState(false);
-  const [isMobileMenuOpen, setIsMobileMenuOpen] = useState(false);
-  const [isLoading, setIsLoading] = useState(true);
-  const [showModal, setShowModal] = useState(false);
-  const [selectedStudent, setSelectedStudent] = useState(null);
+const [users, setUsers] = useState([]);
+const [jobs, setJobs] = useState([]);
+const [courses, setCourses] = useState([]);
+const [admin, setAdmin] = useState(null);
+const [settings, setSettings] = useState({ platformName: "" });
+const [loading, setLoading] = useState(true);
+const [error, setError] = useState(null);
+const [activeTab, setActiveTab] = useState("dashboard");
+const [mobileMenuOpen, setMobileMenuOpen] = useState(false);
+const [dropdownOpen, setDropdownOpen] = useState(false);
+const [newCourse, setNewCourse] = useState({ courseName: "", courseId: "", courseDuration: "", courseFee: 0, courseDescription: "", rating: 4.5, highestSalary: "", placementPartners: "" });
+const [showModal, setShowModal] = useState(false);
+const [selectedStudent, setSelectedStudent] = useState(null);
 
-  const [dashboardData, setDashboardData] = useState({
-    totalStudents: 0,
-    verifiedStudents: 0,
-    pendingVerifications: 0,
-    totalRecruiters: 0,
-    applications: 0,
-    completedInterviews: 0
-  });
 
-  const [students, setStudents] = useState([]);
-  const [mockInterviews, setMockInterviews] = useState([]);
-  const [recruiters, setRecruiters] = useState([]);
-  const [applications, setApplications] = useState([]);
+// --- Auth helpers ---
+const getAuthToken = () => {
+try { const user = JSON.parse(localStorage.getItem("user") || "{}"); return user.token || null; } catch { return null; }
+};
+const getAuthHeaders = () => { const token = getAuthToken(); return token ? { Authorization: `Bearer ${token}` } : {}; };
 
-  useEffect(() => {
-    loadMockData();
-  }, []);
 
-  const loadMockData = () => {
-    setIsLoading(true);
-    setTimeout(() => {
-      setDashboardData({
-        totalStudents: 156,
-        verifiedStudents: 98,
-        pendingVerifications: 12,
-        totalRecruiters: 45,
-        applications: 234,
-        completedInterviews: 142
-      });
+// --- Fetch data ---
+const fetchAdmin = async () => {
+try {
+const user = JSON.parse(localStorage.getItem("user") || "{}");
+if (!user.email) return;
+setAdmin({ _id: user._id || "unknown", name: user.name || "Admin", email: user.email });
+setSettings({ platformName: user.platformName || "SkillVerify" });
+} catch { setAdmin({ _id: "default", name: "Admin", email: "admin@example.com" }); }
+};
 
-      setStudents([
-        { id: 1, name: 'Sarah Johnson', email: 'sarah.j@university.edu', mockResult: 'Pass', verified: false },
-        { id: 2, name: 'Michael Chen', email: 'michael.c@university.edu', mockResult: 'Pass', verified: true },
-        { id: 3, name: 'Emily Davis', email: 'emily.d@university.edu', mockResult: 'Fail', verified: false },
-        { id: 4, name: 'James Wilson', email: 'james.w@university.edu', mockResult: 'Pass', verified: false },
-        { id: 5, name: 'Olivia Brown', email: 'olivia.b@university.edu', mockResult: 'Pass', verified: true },
-      ]);
 
-      setMockInterviews([
-        { id: 1, studentName: 'Sarah Johnson', date: '2024-03-15', status: 'Pass' },
-        { id: 2, studentName: 'Michael Chen', date: '2024-03-14', status: 'Pass' },
-        { id: 3, studentName: 'Emily Davis', date: '2024-03-13', status: 'Fail' },
-        { id: 4, studentName: 'James Wilson', date: '2024-03-12', status: 'Pass' },
-        { id: 5, studentName: 'Olivia Brown', date: '2024-03-11', status: 'Pass' },
-      ]);
+const fetchUsers = async () => { try { const res = await axios.get(`${BASE_URL}/admin/users`, { headers: getAuthHeaders() }); setUsers(res.data || []); } catch (err) { console.error(err); setUsers([]); } };
+const fetchJobs = async () => { try { const res = await axios.get(`${BASE_URL}/admin/jobs`, { headers: getAuthHeaders() }); setJobs(res.data || []); } catch (err) { console.error(err); setJobs([]); } };
+const fetchCourses = async () => { try { const res = await axios.get(`${BASE_URL}/courses`, { headers: getAuthHeaders() }); setCourses(res.data || []); } catch (err) { console.error(err); setCourses([]); } };
 
-      setRecruiters([
-        { id: 1, name: 'John Smith', company: 'Tech Corp', status: 'Approved' },
-        { id: 2, name: 'Lisa Anderson', company: 'Innovation Labs', status: 'Pending' },
-        { id: 3, name: 'Robert Garcia', company: 'Digital Solutions', status: 'Approved' },
-        { id: 4, name: 'Jennifer Lee', company: 'Future Systems', status: 'Pending' },
-      ]);
 
-      setApplications([
-        { id: 1, studentName: 'Michael Chen', recruiterName: 'John Smith', jobTitle: 'Software Engineer', status: 'Under Review' },
-        { id: 2, studentName: 'Olivia Brown', recruiterName: 'Robert Garcia', jobTitle: 'Frontend Developer', status: 'Accepted' },
-        { id: 3, studentName: 'Sarah Johnson', recruiterName: 'John Smith', jobTitle: 'Full Stack Developer', status: 'Pending' },
-      ]);
+useEffect(() => {
+const loadData = async () => { setLoading(true); await fetchAdmin(); await Promise.all([fetchUsers(), fetchJobs(), fetchCourses()]); setLoading(false); };
+loadData();
+}, []);
 
-      setIsLoading(false);
-    }, 1000);
-  };
 
-  const handleVerifyStudent = (student) => {
-    setSelectedStudent(student);
-    setShowModal(true);
-  };
+// --- Actions ---
+const handleVerifyStudent = (student) => { setSelectedStudent(student); setShowModal(true); };
+const confirmVerification = async () => {
+try {
+await axios.post(`${BASE_URL}/admin/verify-student`, { studentId: selectedStudent._id }, { headers: getAuthHeaders() });
+setUsers(prev => prev.map(u => u._id === selectedStudent._id ? { ...u, verified: true } : u));
+setShowModal(false); alert("Student verified!");
+} catch (err) { console.error(err); alert("Failed to verify student."); }
+};
 
-  const confirmVerification = () => {
-    if (!selectedStudent) return;
-    setStudents(students.map(s =>
-      s.id === selectedStudent.id ? { ...s, verified: true } : s
-    ));
-    setShowModal(false);
-    setSelectedStudent(null);
-  };
 
-  const updateInterviewStatus = (id, newStatus) => {
-    setMockInterviews(mockInterviews.map(interview =>
-      interview.id === id ? { ...interview, status: newStatus } : interview
-    ));
-  };
+const toggleRecruiterApproval = async (recruiterId) => {
+try {
+const recruiter = users.find(u => u._id === recruiterId);
+const newStatus = recruiter.status === 'Approved' ? 'Pending' : 'Approved';
+await axios.post(`${BASE_URL}/admin/toggle-recruiter`, { recruiterId, status: newStatus }, { headers: getAuthHeaders() });
+setUsers(prev => prev.map(u => u._id === recruiterId ? { ...u, status: newStatus } : u));
+} catch (err) { console.error(err); alert("Failed to update recruiter status."); }
+};
 
-  const toggleRecruiterApproval = (id) => {
-    setRecruiters(recruiters.map(recruiter =>
-      recruiter.id === id
-        ? { ...recruiter, status: recruiter.status === 'Approved' ? 'Pending' : 'Approved' }
-        : recruiter
-    ));
-  };
 
-  const tabs = [
-    { id: 'dashboard', label: 'Dashboard', icon: BarChart3 },
-    { id: 'students', label: 'Students', icon: Users },
-    { id: 'interviews', label: 'Mock Interviews', icon: MessageSquare },
-    { id: 'recruiters', label: 'Recruiters', icon: Briefcase },
-    { id: 'applications', label: 'Applications', icon: FileText },
-    { id: 'settings', label: 'Settings', icon: Settings },
-  ];
-
-  const StatCard = ({ title, value, icon: Icon, gradient }) => (
-    <div className={`bg-gradient-to-br ${gradient} rounded-2xl p-6 text-white shadow-lg hover:shadow-xl transform hover:-translate-y-1 transition-all duration-300`}>
-      <div className="flex items-center justify-between">
-        <div>
-          <p className="text-white/80 text-sm font-medium">{title}</p>
-          <p className="text-4xl font-bold mt-2">{value}</p>
-        </div>
-        <div className="bg-white/20 p-4 rounded-xl backdrop-blur-sm">
-          <Icon size={32} />
-        </div>
-      </div>
-    </div>
-  );
-
-  const LoadingSkeleton = () => (
-    <div className="animate-pulse">
-      <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6 mb-8">
-        {[1, 2, 3, 4, 5, 6].map(i => (
-          <div key={i} className="bg-gray-200 h-32 rounded-2xl"></div>
-        ))}
-      </div>
-    </div>
-  );
-
+const recruiters = users.filter(u => u.role === 'recruiter');
   return (
     <div className="min-h-screen bg-gradient-to-br from-slate-50 via-blue-50 to-indigo-50">
       {/* Navigation Bar */}
-      <nav className="bg-white shadow-md sticky top-0 z-50 backdrop-blur-lg bg-white/90">
+      <nav className="bg-white shadow-md sticky top-0 z-50 backdrop-blur-lg bg - white /90 border-b border-gray-200">
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
           <div className="flex justify-between items-center h-16">
             {/* Logo */}
@@ -627,36 +554,38 @@ const Admin = () => {
       </div>
 
       {/* Verification Modal */}
-      {showModal && (
-        <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50 p-4">
-          <div className="bg-white rounded-2xl shadow-2xl max-w-md w-full p-8 transform transition-all">
-            <div className="text-center">
-              <div className="mx-auto flex items-center justify-center h-16 w-16 rounded-full bg-green-100 mb-4">
-                <CheckCircle className="h-10 w-10 text-green-600" />
-              </div>
-              <h3 className="text-2xl font-bold text-gray-900 mb-2">Verify Student</h3>
-              <p className="text-gray-600 mb-6">
-                Are you sure you want to verify <span className="font-semibold">{selectedStudent?.name}</span>?
-                This will make their profile visible to all recruiters.
-              </p>
-              <div className="flex space-x-4">
-                <button
-                  onClick={() => setShowModal(false)}
-                  className="flex-1 px-6 py-3 border border-gray-300 text-gray-700 rounded-xl hover:bg-gray-50 transition-all duration-200 font-medium"
-                >
-                  Cancel
-                </button>
-                <button
-                  onClick={confirmVerification}
-                  className="flex-1 px-6 py-3 bg-gradient-to-r from-green-500 to-green-600 text-white rounded-xl hover:from-green-600 hover:to-green-700 transition-all duration-200 shadow-md hover:shadow-lg font-medium"
-                >
-                  Verify
-                </button>
-              </div>
-            </div>
-          </div>
+     {/* Verification Modal */}
+{showModal && (
+  <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50 p-4">
+    <div className="bg-white rounded-2xl shadow-2xl max-w-md w-full p-8 transform transition-all scale-100">
+      <div className="text-center">
+        <div className="mx-auto flex items-center justify-center h-16 w-16 rounded-full bg-blue-100 mb-4">
+          <CheckCircle className="text-blue-600" size={40} />
         </div>
-      )}
+        <h3 className="text-xl font-bold text-gray-900 mb-2">Verify Student</h3>
+        <p className="text-gray-600 mb-6">
+          Are you sure you want to verify <span className="font-semibold text-gray-800">{selectedStudent?.name}</span>?
+        </p>
+
+        <div className="flex justify-center space-x-4">
+          <button
+            onClick={confirmVerification}
+            className="px-6 py-3 bg-gradient-to-r from-green-500 to-green-600 text-white rounded-xl hover:from-green-600 hover:to-green-700 transition-all duration-200 font-medium shadow-md hover:shadow-lg"
+          >
+            Confirm
+          </button>
+          <button
+            onClick={() => setShowModal(false)}
+            className="px-6 py-3 bg-gradient-to-r from-gray-300 to-gray-400 text-gray-800 rounded-xl hover:from-gray-400 hover:to-gray-500 transition-all duration-200 font-medium shadow-md hover:shadow-lg"
+          >
+            Cancel
+          </button>
+        </div>
+      </div>
+    </div>
+  </div>
+)}
+
     </div>
   );
 };
