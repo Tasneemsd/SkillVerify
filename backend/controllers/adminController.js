@@ -180,3 +180,77 @@ exports.getVerifiedStudents = async (req, res) => {
     res.status(500).json({ message: 'Failed to fetch verified students' });
   }
 };
+// Get all users
+exports.getAllUsers = async (req, res) => {
+  try {
+    const users = await Student.find({}, 'name email rollNo contactNumber skills isVerified mockInterviewScore');
+    res.json(users);
+  } catch (err) {
+    res.status(500).json({ message: 'Failed to fetch users' });
+  }
+};
+
+// Get all mock interviews (students with mock interviews scheduled)
+exports.getAllMockInterviews = async (req, res) => {
+  try {
+    const students = await Student.find({ mockInterviewScheduled: true }, 'name email mockInterviewDate mockInterviewScore');
+    res.json(students);
+  } catch (err) {
+    res.status(500).json({ message: 'Failed to fetch mock interviews' });
+  }
+};
+
+// Get all applications (jobs applied by students)
+exports.getAllApplications = async (req, res) => {
+  try {
+    const jobs = await Job.find().populate('appliedBy', 'name email');
+    res.json(jobs);
+  } catch (err) {
+    res.status(500).json({ message: 'Failed to fetch applications' });
+  }
+};
+// Update interview status for a student
+exports.updateInterviewStatus = async (req, res) => {
+  try {
+    const { studentId, status } = req.body;
+    const student = await Student.findById(studentId);
+    if (!student) return res.status(404).json({ message: 'Student not found' });          
+    student.mockInterviewStatus = status;
+    await student.save();
+    res.json({ message: 'Interview status updated', student });
+  } catch (err) {
+    res.status(500).json({ message: 'Failed to update interview status' });
+  } 
+};
+
+// Update application status for a job
+exports.updateApplicationStatus = async (req, res) => {
+  try {
+    const { jobId, studentId, status } = req.body;
+    const job = await Job.findById(jobId);
+    if (!job) return res.status(404).json({ message: 'Job not found' });
+    const application = job.appliedBy.find(app => app.student.toString() === studentId);      
+    if (!application) return res.status(404).json({ message: 'Application not found' });
+    application.status = status;
+    await job.save();
+    res.json({ message: 'Application status updated', job });
+  } catch (err) {   
+    res.status(500).json({ message: 'Failed to update application status' });
+  }
+} ;
+
+// Approve or reject a recruiter    
+exports.toggleRecruiterApproval = async (req, res) => {
+  try {
+    const { recruiterId, approve } = req.body;
+    const Recruiter = require('../models/Recruiter');   
+
+    const recruiter = await Recruiter.findById(recruiterId);
+    if (!recruiter) return res.status(404).json({ message: 'Recruiter not found' });
+    recruiter.isApproved = approve;
+    await recruiter.save();
+    res.json({ message: `Recruiter ${approve ? 'approved' : 'rejected'}`, recruiter });
+  } catch (err) {
+    res.status(500).json({ message: 'Failed to update recruiter status' });
+  }   
+};  
