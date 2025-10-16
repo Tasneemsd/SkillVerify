@@ -2,10 +2,12 @@ const Course = require('../models/Course');
 const Student = require('../models/Student');
 const Job = require('../models/Job');
 const Notification = require('../models/Notification');
+const Application = require('../models/Application');
 
 // =======================================
 // Existing Working Code (Untouched)
 // =======================================
+
 
 // Get all courses with number of registered students
 exports.getCoursesWithRegistrations = async (req, res) => {
@@ -254,3 +256,21 @@ exports.toggleRecruiterApproval = async (req, res) => {
     res.status(500).json({ message: 'Failed to update recruiter status' });
   }   
 };  
+
+exports.getAllApplications = async (req, res) => {
+  try {
+    const jobs = await Job.find().populate("appliedBy.student", "name email");
+    const applications = jobs.flatMap(job =>
+      job.appliedBy.map(app => ({
+        jobTitle: job.title,
+        jobId: job._id,
+        studentName: app.student?.name,
+        studentEmail: app.student?.email,
+        status: app.status,
+      }))
+    );
+    res.json(applications);
+  } catch (err) {
+    res.status(500).json({ message: "Failed to fetch applications" });
+  }
+};
