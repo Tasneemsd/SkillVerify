@@ -215,25 +215,37 @@ const Admin = () => {
       return;
     }
 
-    const loadData = async () => {
-      setLoading(true);
-      try {
-        await fetchAdmin();
-        // fetch sequentially (safer) — you can change to Promise.all if you want parallel
-        await fetchUsers();
-        await fetchJobs();
-        await fetchCourses();
-        await fetchMockInterviews();
-        await fetchApplications();
-      } catch (err) {
-        console.error("loadData error:", err);
-      } finally {
-        setLoading(false);
-      }
-    };
-    loadData();
-    // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, []); // run once
+   useEffect(() => {
+  const token = getAuthToken();
+  if (!token) {
+    navigate("/login");
+    return;
+  }
+
+  const loadData = async () => {
+    setLoading(true);
+    try {
+      await fetchAdmin();
+
+      // Run all API calls in parallel and never block others if one fails
+      await Promise.allSettled([
+        fetchUsers(),
+        fetchJobs(),
+        fetchCourses(),
+        fetchMockInterviews(),
+        fetchApplications(),
+      ]);
+    } catch (err) {
+      console.error("loadData error:", err);
+    } finally {
+      setLoading(false);
+    }
+  };
+
+  loadData();
+  // eslint-disable-next-line react-hooks/exhaustive-deps
+}, []);
+  }, [navigate]);
 
   // --- Actions ---
   const handleVerifyStudent = (student) => {
