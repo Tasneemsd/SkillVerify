@@ -41,6 +41,26 @@ const LoadingSkeleton = () => (
   </div>
 );
 
+// Normalize users so frontend always sees `verified` and `mockResult`
+const normalizeUsers = (arr = []) =>
+  (arr || []).map((u) => {
+    const verified = u.verified ?? u.isVerified ?? false;
+    // If backend uses mockInterviewScore, derive pass/fail (adjust threshold as you like)
+    let mockResult = u.mockResult;
+    if (!mockResult && typeof u.mockInterviewScore === "number") {
+      mockResult = u.mockInterviewScore >= 50 ? "Pass" : "Fail";
+    }
+    // ensure _id exists (maybe id)
+    const _id = u._id ?? u.id ?? null;
+    return {
+      ...u,
+      _id,
+      verified,
+      isVerified: verified,
+      mockResult: mockResult ?? "N/A",
+    };
+  });
+
 // --- Main Admin Component ---
 const Admin = () => {
   const [users, setUsers] = useState([]);
@@ -76,20 +96,29 @@ const Admin = () => {
   const fetchAdmin = async () => {
     try {
       const user = JSON.parse(localStorage.getItem("user") || "{}");
-      if (!user.email) return;
+      if (!user.email) {
+        setAdmin({ _id: "default", name: "Admin", email: "admin@example.com" });
+        setSettings({ platformName: "SkillVerify" });
+        return;
+      }
       setAdmin({ _id: user._id || "unknown", name: user.name || "Admin", email: user.email });
       setSettings({ platformName: user.platformName || "SkillVerify" });
     } catch {
       setAdmin({ _id: "default", name: "Admin", email: "admin@example.com" });
+      setSettings({ platformName: "SkillVerify" });
     }
   };
 
   const fetchUsers = async () => {
     try {
       const res = await axios.get(`${BASE_URL}/admin/users`, { headers: getAuthHeaders() });
-      setUsers(res.data || []);
+      // handle both res.data (array) or res.data.users (object)
+      const payload = res?.data ?? [];
+      const arr = Array.isArray(payload) ? payload : payload.users ?? payload.data ?? [];
+      const normalized = normalizeUsers(arr);
+      setUsers(normalized);
     } catch (err) {
-      console.error(err);
+      console.error("fetchUsers error:", err);
       setUsers([]);
     }
   };
@@ -97,9 +126,11 @@ const Admin = () => {
   const fetchJobs = async () => {
     try {
       const res = await axios.get(`${BASE_URL}/admin/jobs`, { headers: getAuthHeaders() });
-      setJobs(res.data || []);
+      const payload = res?.data ?? [];
+      const arr = Array.isArray(payload) ? payload : payload.jobs ?? payload.data ?? [];
+      setJobs(arr);
     } catch (err) {
-      console.error(err);
+      console.error("fetchJobs error:", err);
       setJobs([]);
     }
   };
@@ -107,20 +138,23 @@ const Admin = () => {
   const fetchCourses = async () => {
     try {
       const res = await axios.get(`${BASE_URL}/admin/courses-with-registrations`, { headers: getAuthHeaders() });
-      setCourses(res.data || []);
+      const payload = res?.data ?? [];
+      const arr = Array.isArray(payload) ? payload : payload.courses ?? payload.data ?? [];
+      setCourses(arr);
     } catch (err) {
-      console.error(err);
+      console.error("fetchCourses error:", err);
       setCourses([]);
     }
   };
 
-
   const fetchMockInterviews = async () => {
     try {
       const res = await axios.get(`${BASE_URL}/admin/mock-interviews`, { headers: getAuthHeaders() });
-      setMockInterviews(res.data || []);
+      const payload = res?.data ?? [];
+      const arr = Array.isArray(payload) ? payload : payload.mockInterviews ?? payload.data ?? [];
+      setMockInterviews(arr);
     } catch (err) {
-      console.error(err);
+      console.error("fetchMockInterviews error:", err);
       setMockInterviews([]);
     }
   };
@@ -128,9 +162,11 @@ const Admin = () => {
   const fetchApplications = async () => {
     try {
       const res = await axios.get(`${BASE_URL}/admin/applications`, { headers: getAuthHeaders() });
-      setApplications(res.data || []);
+      const payload = res?.data ?? [];
+      const arr = Array.isArray(payload) ? payload : payload.applications ?? payload.data ?? [];
+      setApplications(arr);
     } catch (err) {
-      console.error(err);
+      console.error("fetchApplications error:", err);
       setApplications([]);
     }
   };
@@ -140,10 +176,12 @@ const Admin = () => {
     const loadData = async () => {
       setLoading(true);
       await fetchAdmin();
+      // fetch in parallel
       await Promise.all([fetchUsers(), fetchJobs(), fetchCourses(), fetchMockInterviews(), fetchApplications()]);
       setLoading(false);
     };
     loadData();
+    // empty deps to run once
   }, []);
 
   // --- Actions ---
@@ -154,18 +192,22 @@ const Admin = () => {
 
   const confirmVerification = async () => {
     try {
+      if (!selectedStudent?._id) throw new Error("No student selected");
       await axios.post(
         `${BASE_URL}/admin/verify-student`,
         { studentId: selectedStudent._id },
         { headers: getAuthHeaders() }
       );
+      // update local state - ensure both flags updated
       setUsers((prev) =>
-        prev.map((u) => (u._id === selectedStudent._id ? { ...u, verified: true } : u))
+        prev.map((u) =>
+          u._id === selectedStudent._id ? { ...u, verified: true, isVerified: true } : u
+        )
       );
       setShowModal(false);
       alert("Student verified!");
     } catch (err) {
-      console.error(err);
+      console.error("confirmVerification error:", err);
       alert("Failed to verify student.");
     }
   };
@@ -173,6 +215,7 @@ const Admin = () => {
   const toggleRecruiterApproval = async (recruiterId) => {
     try {
       const recruiter = users.find((u) => u._id === recruiterId);
+      if (!recruiter) throw new Error("Recruiter not found");
       const newStatus = recruiter.status === "Approved" ? "Pending" : "Approved";
       await axios.post(
         `${BASE_URL}/admin/toggle-recruiter`,
@@ -183,7 +226,7 @@ const Admin = () => {
         prev.map((u) => (u._id === recruiterId ? { ...u, status: newStatus } : u))
       );
     } catch (err) {
-      console.error(err);
+      console.error("toggleRecruiterApproval error:", err);
       alert("Failed to update recruiter status.");
     }
   };
@@ -199,7 +242,7 @@ const Admin = () => {
         prev.map((i) => (i._id === interviewId ? { ...i, status } : i))
       );
     } catch (err) {
-      console.error(err);
+      console.error("updateInterviewStatus error:", err);
       alert("Failed to update interview status.");
     }
   };
@@ -215,22 +258,23 @@ const Admin = () => {
         prev.map((a) => (a._id === appId ? { ...a, status } : a))
       );
     } catch (err) {
-      console.error(err);
+      console.error("updateApplicationStatus error:", err);
       alert("Failed to update application status.");
     }
   };
 
   // --- Derived Data ---
-  const students = users.filter((u) => u.role === "student");
-  const recruiters = users.filter((u) => u.role === "recruiter");
+  // Use normalized `verified` property (set in normalizeUsers)
+  const students = users.filter((u) => u.role === "student" || u.role === "Student");
+  const recruiters = users.filter((u) => u.role === "recruiter" || u.role === "Recruiter");
 
   const dashboardData = {
     totalStudents: students.length,
-    verifiedStudents: students.filter((u) => u.verified).length,
-    pendingVerifications: students.filter((u) => !u.verified).length,
+    verifiedStudents: students.filter((u) => u.verified || u.isVerified).length,
+    pendingVerifications: students.filter((u) => !(u.verified || u.isVerified)).length,
     totalRecruiters: recruiters.length,
-    applications: jobs.length,
-    completedInterviews: Math.floor(users.length * 0.7),
+    applications: applications.length || jobs.length,
+    completedInterviews: Math.floor(mockInterviews.filter((i) => i.status === "Completed").length) || Math.floor(users.length * 0.7),
   };
 
   const tabs = [
@@ -244,7 +288,6 @@ const Admin = () => {
 
   const isLoading = loading;
 
- 
   return (
     <div className="min-h-screen bg-gradient-to-br from-slate-50 via-blue-50 to-indigo-50">
       {/* --- Navigation --- */}
@@ -274,9 +317,7 @@ const Admin = () => {
                   <span className="font-medium text-gray-700">{admin?.name || "Admin"}</span>
                   <ChevronDown
                     size={20}
-                    className={`text-gray-500 transition-transform duration-200 ${
-                      dropdownOpen ? "rotate-180" : ""
-                    }`}
+                    className={`text-gray-500 transition-transform duration-200 ${dropdownOpen ? "rotate-180" : ""}`}
                   />
                 </button>
 
@@ -401,34 +442,26 @@ const Admin = () => {
                     <table className="w-full">
                       <thead className="bg-gray-50">
                         <tr>
-                          <th className="px-6 py-4 text-left text-xs font-semibold text-gray-700 uppercase tracking-wider">
-                            Name
-                          </th>
-                          <th className="px-6 py-4 text-left text-xs font-semibold text-gray-700 uppercase tracking-wider">
-                            Email
-                          </th>
-                          <th className="px-6 py-4 text-left text-xs font-semibold text-gray-700 uppercase tracking-wider">
-                            Mock Result
-                          </th>
-                          <th className="px-6 py-4 text-left text-xs font-semibold text-gray-700 uppercase tracking-wider">
-                            Status
-                          </th>
-                          <th className="px-6 py-4 text-left text-xs font-semibold text-gray-700 uppercase tracking-wider">
-                            Action
-                          </th>
+                          <th className="px-6 py-4 text-left text-xs font-semibold text-gray-700 uppercase tracking-wider">Name</th>
+                          <th className="px-6 py-4 text-left text-xs font-semibold text-gray-700 uppercase tracking-wider">Email</th>
+                          <th className="px-6 py-4 text-left text-xs font-semibold text-gray-700 uppercase tracking-wider">Mock Result</th>
+                          <th className="px-6 py-4 text-left text-xs font-semibold text-gray-700 uppercase tracking-wider">Status</th>
+                          <th className="px-6 py-4 text-left text-xs font-semibold text-gray-700 uppercase tracking-wider">Action</th>
                         </tr>
                       </thead>
                       <tbody className="divide-y divide-gray-200">
                         {students.map((student) => (
-                          <tr key={student._id} className="hover:bg-gray-50 transition-colors duration-150">
-                            <td className="px-6 py-4 whitespace-nowrap font-medium text-gray-900">{student.name}</td>
-                            <td className="px-6 py-4 whitespace-nowrap text-gray-600">{student.email}</td>
+                          <tr key={student._id || student.email} className="hover:bg-gray-50 transition-colors duration-150">
+                            <td className="px-6 py-4 whitespace-nowrap font-medium text-gray-900">{student.name || student.fullName || "—"}</td>
+                            <td className="px-6 py-4 whitespace-nowrap text-gray-600">{student.email || "—"}</td>
                             <td className="px-6 py-4 whitespace-nowrap">
                               <span
                                 className={`inline-flex items-center px-3 py-1 rounded-full text-xs font-semibold ${student.mockResult === "Pass"
-                                    ? "bg-green-100 text-green-800"
-                                    : "bg-red-100 text-red-800"
-                                  }`}
+                                  ? "bg-green-100 text-green-800"
+                                  : student.mockResult === "Fail"
+                                    ? "bg-red-100 text-red-800"
+                                    : "bg-gray-100 text-gray-800"
+                                }`}
                               >
                                 {student.mockResult === "Pass" ? <CheckCircle size={14} className="mr-1" /> : <XCircle size={14} className="mr-1" />}
                                 {student.mockResult}
@@ -484,15 +517,15 @@ const Admin = () => {
                     </thead>
                     <tbody className="divide-y divide-gray-200">
                       {recruiters.map((recruiter) => (
-                        <tr key={recruiter._id} className="hover:bg-gray-50 transition-colors duration-150">
-                          <td className="px-6 py-4 whitespace-nowrap font-medium text-gray-900">{recruiter.name}</td>
-                          <td className="px-6 py-4 whitespace-nowrap text-gray-600">{recruiter.email}</td>
+                        <tr key={recruiter._id || recruiter.email} className="hover:bg-gray-50 transition-colors duration-150">
+                          <td className="px-6 py-4 whitespace-nowrap font-medium text-gray-900">{recruiter.name || "—"}</td>
+                          <td className="px-6 py-4 whitespace-nowrap text-gray-600">{recruiter.email || "—"}</td>
                           <td className="px-6 py-4 whitespace-nowrap">
                             <span
                               className={`inline-flex items-center px-3 py-1 rounded-full text-xs font-semibold ${recruiter.status === "Approved" ? "bg-green-100 text-green-800" : "bg-gray-100 text-gray-800"
                                 }`}
                             >
-                              {recruiter.status}
+                              {recruiter.status || "Pending"}
                             </span>
                           </td>
                           <td className="px-6 py-4 whitespace-nowrap">
@@ -531,133 +564,140 @@ const Admin = () => {
           </>
         )}
       </div>
+
+      {/* Interviews Section (outside main because of different layout in your original) */}
       {activeTab === "interviews" && (
-        <div className="bg-white rounded-2xl shadow-lg overflow-hidden">
-          <div className="p-6 border-b border-gray-200">
-            <h2 className="text-2xl font-bold text-gray-800">Mock Interviews</h2>
-            <p className="text-gray-600 mt-1">Update interview status for students</p>
-          </div>
-          {mockInterviews.length === 0 ? (
-            <div className="flex flex-col items-center justify-center py-16">
-              <MessageSquare size={64} className="text-gray-300 mb-4" />
-              <p className="text-gray-500 text-lg">No mock interviews found</p>
+        <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 pb-8">
+          <div className="bg-white rounded-2xl shadow-lg overflow-hidden">
+            <div className="p-6 border-b border-gray-200">
+              <h2 className="text-2xl font-bold text-gray-800">Mock Interviews</h2>
+              <p className="text-gray-600 mt-1">Update interview status for students</p>
             </div>
-          ) : (
-            <div className="overflow-x-auto">
-              <table className="w-full">
-                <thead className="bg-gray-50">
-                  <tr>
-                    <th className="px-6 py-4 text-left text-xs font-semibold text-gray-700 uppercase tracking-wider">Student</th>
-                    <th className="px-6 py-4 text-left text-xs font-semibold text-gray-700 uppercase tracking-wider">Interviewer</th>
-                    <th className="px-6 py-4 text-left text-xs font-semibold text-gray-700 uppercase tracking-wider">Date</th>
-                    <th className="px-6 py-4 text-left text-xs font-semibold text-gray-700 uppercase tracking-wider">Status</th>
-                    <th className="px-6 py-4 text-left text-xs font-semibold text-gray-700 uppercase tracking-wider">Action</th>
-                  </tr>
-                </thead>
-                <tbody className="divide-y divide-gray-200">
-                  {mockInterviews.map((interview) => (
-                    <tr key={interview._id} className="hover:bg-gray-50 transition-colors duration-150">
-                      <td className="px-6 py-4 whitespace-nowrap font-medium text-gray-900">{interview.studentName}</td>
-                      <td className="px-6 py-4 whitespace-nowrap text-gray-600">{interview.interviewerName}</td>
-                      <td className="px-6 py-4 whitespace-nowrap text-gray-600">{new Date(interview.date).toLocaleDateString()}</td>
-                      <td className="px-6 py-4 whitespace-nowrap">
-                        <span
-                          className={`inline-flex items-center px-3 py-1 rounded-full text-xs font-semibold ${interview.status === "Completed"
+            {mockInterviews.length === 0 ? (
+              <div className="flex flex-col items-center justify-center py-16">
+                <MessageSquare size={64} className="text-gray-300 mb-4" />
+                <p className="text-gray-500 text-lg">No mock interviews found</p>
+              </div>
+            ) : (
+              <div className="overflow-x-auto">
+                <table className="w-full">
+                  <thead className="bg-gray-50">
+                    <tr>
+                      <th className="px-6 py-4 text-left text-xs font-semibold text-gray-700 uppercase tracking-wider">Student</th>
+                      <th className="px-6 py-4 text-left text-xs font-semibold text-gray-700 uppercase tracking-wider">Interviewer</th>
+                      <th className="px-6 py-4 text-left text-xs font-semibold text-gray-700 uppercase tracking-wider">Date</th>
+                      <th className="px-6 py-4 text-left text-xs font-semibold text-gray-700 uppercase tracking-wider">Status</th>
+                      <th className="px-6 py-4 text-left text-xs font-semibold text-gray-700 uppercase tracking-wider">Action</th>
+                    </tr>
+                  </thead>
+                  <tbody className="divide-y divide-gray-200">
+                    {mockInterviews.map((interview) => (
+                      <tr key={interview._id || `${interview.studentId}-${interview.date}`} className="hover:bg-gray-50 transition-colors duration-150">
+                        <td className="px-6 py-4 whitespace-nowrap font-medium text-gray-900">{interview.studentName || interview.student?.name || "—"}</td>
+                        <td className="px-6 py-4 whitespace-nowrap text-gray-600">{interview.interviewerName || interview.interviewer?.name || "—"}</td>
+                        <td className="px-6 py-4 whitespace-nowrap text-gray-600">{interview.date ? new Date(interview.date).toLocaleDateString() : "—"}</td>
+                        <td className="px-6 py-4 whitespace-nowrap">
+                          <span
+                            className={`inline-flex items-center px-3 py-1 rounded-full text-xs font-semibold ${interview.status === "Completed"
                               ? "bg-green-100 text-green-800"
                               : interview.status === "Scheduled"
                                 ? "bg-blue-100 text-blue-800"
                                 : "bg-gray-100 text-gray-800"
-                            }`}
-                        >
-                          {interview.status}
-                        </span>
-                      </td>
-                      <td className="px-6 py-4 whitespace-nowrap">
-                        <button
-                          onClick={() => updateInterviewStatus(interview._id, "Completed")}
-                          className="inline-flex items-center px-3 py-1 bg-green-500 text-white rounded-lg text-sm hover:bg-green-600 transition-colors mr-2"
-                        >
-                          Complete
-                        </button>
-                        <button
-                          onClick={() => updateInterviewStatus(interview._id, "Cancelled")}
-                          className="inline-flex items-center px-3 py-1 bg-red-500 text-white rounded-lg text-sm hover:bg-red-600 transition-colors"
-                        >
-                          Cancel
-                        </button>
-                      </td>
-                    </tr>
-                  ))}
-                </tbody>
-              </table>
-            </div>
-          )}
+                              }`}
+                          >
+                            {interview.status || "—"}
+                          </span>
+                        </td>
+                        <td className="px-6 py-4 whitespace-nowrap">
+                          <button
+                            onClick={() => updateInterviewStatus(interview._id, "Completed")}
+                            className="inline-flex items-center px-3 py-1 bg-green-500 text-white rounded-lg text-sm hover:bg-green-600 transition-colors mr-2"
+                          >
+                            Complete
+                          </button>
+                          <button
+                            onClick={() => updateInterviewStatus(interview._id, "Cancelled")}
+                            className="inline-flex items-center px-3 py-1 bg-red-500 text-white rounded-lg text-sm hover:bg-red-600 transition-colors"
+                          >
+                            Cancel
+                          </button>
+                        </td>
+                      </tr>
+                    ))}
+                  </tbody>
+                </table>
+              </div>
+            )}
+          </div>
         </div>
       )}
+
+      {/* Applications Section */}
       {activeTab === "applications" && (
-        <div className="bg-white rounded-2xl shadow-lg overflow-hidden">
-          <div className="p-6 border-b border-gray-200">
-            <h2 className="text-2xl font-bold text-gray-800">Applications</h2>
-            <p className="text-gray-600 mt-1">Manage job applications from students</p>
-          </div>
-          {applications.length === 0 ? (
-            <div className="flex flex-col items-center justify-center py-16">
-              <FileText size={64} className="text-gray-300 mb-4" />
-              <p className="text-gray-500 text-lg">No applications found</p>
+        <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 pb-8">
+          <div className="bg-white rounded-2xl shadow-lg overflow-hidden">
+            <div className="p-6 border-b border-gray-200">
+              <h2 className="text-2xl font-bold text-gray-800">Applications</h2>
+              <p className="text-gray-600 mt-1">Manage job applications from students</p>
             </div>
-          ) : (
-            <div className="overflow-x-auto">
-              <table className="w-full">
-                <thead className="bg-gray-50">
-                  <tr>
-                    <th className="px-6 py-4 text-left text-xs font-semibold text-gray-700 uppercase tracking-wider">Student</th>
-                    <th className="px-6 py-4 text-left text-xs font-semibold text-gray-700 uppercase tracking-wider">Job</th>
-                    <th className="px-6 py-4 text-left text-xs font-semibold text-gray-700 uppercase tracking-wider">Date</th>
-                    <th className="px-6 py-4 text-left text-xs font-semibold text-gray-700 uppercase tracking-wider">Status</th>
-                    <th className="px-6 py-4 text-left text-xs font-semibold text-gray-700 uppercase tracking-wider">Action</th>
-                  </tr>
-                </thead>
-                <tbody className="divide-y divide-gray-200">
-                  {applications.map((app) => (
-                    <tr key={app._id} className="hover:bg-gray-50 transition-colors duration-150">
-                      <td className="px-6 py-4 whitespace-nowrap font-medium text-gray-900">{app.studentName}</td>
-                      <td className="px-6 py-4 whitespace-nowrap text-gray-600">{app.jobTitle}</td>
-                      <td className="px-6 py-4 whitespace-nowrap text-gray-600">{new Date(app.date).toLocaleDateString()}</td>
-                      <td className="px-6 py-4 whitespace-nowrap">
-                        <span
-                          className={`inline-flex items-center px-3 py-1 rounded-full text-xs font-semibold ${app.status === "Selected"
+            {applications.length === 0 ? (
+              <div className="flex flex-col items-center justify-center py-16">
+                <FileText size={64} className="text-gray-300 mb-4" />
+                <p className="text-gray-500 text-lg">No applications found</p>
+              </div>
+            ) : (
+              <div className="overflow-x-auto">
+                <table className="w-full">
+                  <thead className="bg-gray-50">
+                    <tr>
+                      <th className="px-6 py-4 text-left text-xs font-semibold text-gray-700 uppercase tracking-wider">Student</th>
+                      <th className="px-6 py-4 text-left text-xs font-semibold text-gray-700 uppercase tracking-wider">Job</th>
+                      <th className="px-6 py-4 text-left text-xs font-semibold text-gray-700 uppercase tracking-wider">Date</th>
+                      <th className="px-6 py-4 text-left text-xs font-semibold text-gray-700 uppercase tracking-wider">Status</th>
+                      <th className="px-6 py-4 text-left text-xs font-semibold text-gray-700 uppercase tracking-wider">Action</th>
+                    </tr>
+                  </thead>
+                  <tbody className="divide-y divide-gray-200">
+                    {applications.map((app) => (
+                      <tr key={app._id || `${app.studentId}-${app.jobId}`} className="hover:bg-gray-50 transition-colors duration-150">
+                        <td className="px-6 py-4 whitespace-nowrap font-medium text-gray-900">{app.studentName || app.student?.name || "—"}</td>
+                        <td className="px-6 py-4 whitespace-nowrap text-gray-600">{app.jobTitle || app.job?.title || "—"}</td>
+                        <td className="px-6 py-4 whitespace-nowrap text-gray-600">{app.date ? new Date(app.date).toLocaleDateString() : "—"}</td>
+                        <td className="px-6 py-4 whitespace-nowrap">
+                          <span
+                            className={`inline-flex items-center px-3 py-1 rounded-full text-xs font-semibold ${app.status === "Selected"
                               ? "bg-green-100 text-green-800"
                               : app.status === "Rejected"
                                 ? "bg-red-100 text-red-800"
                                 : "bg-gray-100 text-gray-800"
-                            }`}
-                        >
-                          {app.status}
-                        </span>
-                      </td>
-                      <td className="px-6 py-4 whitespace-nowrap">
-                        <button
-                          onClick={() => updateApplicationStatus(app._id, "Selected")}
-                          className="inline-flex items-center px-3 py-1 bg-green-500 text-white rounded-lg text-sm hover:bg-green-600 transition-colors mr-2"
-                        >
-                          Select
-                        </button>
-                        <button
-                          onClick={() => updateApplicationStatus(app._id, "Rejected")}
-                          className="inline-flex items-center px-3 py-1 bg-red-500 text-white rounded-lg text-sm hover:bg-red-600 transition-colors"
-                        >
-                          Reject
-                        </button>
-                      </td>
-                    </tr>
-                  ))}
-                </tbody>
-              </table>
-            </div>
-          )}
+                              }`}
+                          >
+                            {app.status || "—"}
+                          </span>
+                        </td>
+                        <td className="px-6 py-4 whitespace-nowrap">
+                          <button
+                            onClick={() => updateApplicationStatus(app._id, "Selected")}
+                            className="inline-flex items-center px-3 py-1 bg-green-500 text-white rounded-lg text-sm hover:bg-green-600 transition-colors mr-2"
+                          >
+                            Select
+                          </button>
+                          <button
+                            onClick={() => updateApplicationStatus(app._id, "Rejected")}
+                            className="inline-flex items-center px-3 py-1 bg-red-500 text-white rounded-lg text-sm hover:bg-red-600 transition-colors"
+                          >
+                            Reject
+                          </button>
+                        </td>
+                      </tr>
+                    ))}
+                  </tbody>
+                </table>
+              </div>
+            )}
+          </div>
         </div>
       )}
-
 
       {/* --- Verify Modal --- */}
       {showModal && selectedStudent && (
