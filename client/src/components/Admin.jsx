@@ -1,7 +1,7 @@
 import React, { useState, useEffect } from "react";
 import axios from "axios";
 import { useNavigate } from "react-router-dom";
-import BASE_URL from "..api/baseUrl";
+import BASE_URL from "../api"; // Ensure this points to your api.js file
 
 
 const API = axios.create({ baseURL: BASE_URL });
