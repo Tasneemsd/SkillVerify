@@ -207,15 +207,8 @@ const Admin = () => {
   };
 
   // --- Load All Data ---
-  useEffect(() => {
-    const token = getAuthToken();
-    if (!token) {
-      // If no token, redirect to login
-      navigate("/login");
-      return;
-    }
 
-   useEffect(() => {
+useEffect(() => {
   const token = getAuthToken();
   if (!token) {
     navigate("/login");
@@ -226,8 +219,6 @@ const Admin = () => {
     setLoading(true);
     try {
       await fetchAdmin();
-
-      // Run all API calls in parallel and never block others if one fails
       await Promise.allSettled([
         fetchUsers(),
         fetchJobs(),
@@ -245,7 +236,7 @@ const Admin = () => {
   loadData();
   // eslint-disable-next-line react-hooks/exhaustive-deps
 }, []);
-  }, [navigate]);
+
 
   // --- Actions ---
   const handleVerifyStudent = (student) => {
