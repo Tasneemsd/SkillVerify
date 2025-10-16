@@ -246,6 +246,9 @@ const Admin = () => {
     { id: "applications", label: "Applications", icon: FileText },
     { id: "settings", label: "Settings", icon: Settings },
   ];
+
+  const isLoading = loading;
+
   return (
     <div className="min-h-screen bg-gradient-to-br from-slate-50 via-blue-50 to-indigo-50">
       {/* --- Navigation --- */}
