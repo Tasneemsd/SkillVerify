@@ -1,17 +1,14 @@
-const mongoose = require("mongoose");
-
 const jobSchema = new mongoose.Schema({
   title: { type: String, required: true },
   description: { type: String, required: true },
   location: { type: String, required: true },
-  type: { 
-    type: String, 
-    enum: ["Full-time", "Part-time", "Internship"], 
-    required: true 
+  type: {
+    type: String,
+    enum: ["Full-time", "Part-time", "Internship"],
+    required: true
   },
   salary: {
     type: Number,
-    // For internships, salary is optional
     required: function () {
       return this.type !== "Internship";
     },
@@ -41,6 +38,13 @@ const jobSchema = new mongoose.Schema({
   postedByEmail: { type: String, required: true },
   postedAt: { type: Date, default: Date.now },
   isActive: { type: Boolean, default: true },
-});
 
-module.exports = mongoose.model("Job", jobSchema);
+  // ✅ Add this section
+  appliedBy: [
+    {
+      student: { type: mongoose.Schema.Types.ObjectId, ref: "Student" },
+      status: { type: String, enum: ["pending", "accepted", "rejected"], default: "pending" },
+      appliedAt: { type: Date, default: Date.now },
+    }
+  ]
+});

@@ -275,31 +275,31 @@ exports.toggleRecruiterApproval = async (req, res) => {
 
 exports.getAllApplications = async (req, res) => {
   try {
-    // Try to populate either direct refs or nested
     const jobs = await Job.find()
       .populate({
-        path: "appliedBy",
-        populate: { path: "student", select: "name email" },
+        path: "appliedBy.student",
+        select: "name email",
+        options: { strictPopulate: false }, // ✅ avoids crash for older docs
       })
       .populate("postedBy", "name email");
 
     const applications = [];
 
-    jobs.forEach(job => {
+    for (const job of jobs) {
       if (Array.isArray(job.appliedBy)) {
-        job.appliedBy.forEach(app => {
-          // Handle both schema styles
-          const student = app.student || app;
+        for (const app of job.appliedBy) {
           applications.push({
             jobTitle: job.title || "Untitled",
             jobId: job._id,
-            studentName: student?.name || "Unknown",
-            studentEmail: student?.email || "Unknown",
+            studentName: app.student?.name || "Unknown",
+            studentEmail: app.student?.email || "Unknown",
             status: app.status || "pending",
+            appliedAt: app.appliedAt,
+            recruiterName: job.postedBy?.name || "Unknown",
           });
-        });
+        }
       }
-    });
+    }
 
     res.json(applications);
   } catch (err) {
