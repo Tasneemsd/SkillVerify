@@ -19,7 +19,7 @@ import {
 
 const BASE_URL = "https://skillverify.onrender.com/api";
 
-// --- Helper Components ---
+// --- Helper Component ---
 const StatCard = ({ title, value, icon: Icon, gradient }) => (
   <div className={`bg-gradient-to-r ${gradient} text-white rounded-2xl p-6 shadow-lg`}>
     <div className="flex items-center justify-between">
@@ -31,77 +31,8 @@ const StatCard = ({ title, value, icon: Icon, gradient }) => (
     </div>
   </div>
 );
-// Inside the Admin component, after fetching users, jobs, courses
-const [mockInterviews, setMockInterviews] = useState([]);
-const [applications, setApplications] = useState([]);
 
-// --- Fetch Mock Interviews ---
-const fetchMockInterviews = async () => {
-  try {
-    const res = await axios.get(`${BASE_URL}/admin/mock-interviews`, { headers: getAuthHeaders() });
-    setMockInterviews(res.data || []);
-  } catch (err) {
-    console.error(err);
-    setMockInterviews([]);
-  }
-};
-
-// --- Fetch Applications ---
-const fetchApplications = async () => {
-  try {
-    const res = await axios.get(`${BASE_URL}/admin/applications`, { headers: getAuthHeaders() });
-    setApplications(res.data || []);
-  } catch (err) {
-    console.error(err);
-    setApplications([]);
-  }
-};
-
-// --- Update status functions ---
-const updateInterviewStatus = async (interviewId, status) => {
-  try {
-    await axios.post(
-      `${BASE_URL}/admin/update-interview`,
-      { interviewId, status },
-      { headers: getAuthHeaders() }
-    );
-    setMockInterviews((prev) =>
-      prev.map((i) => (i._id === interviewId ? { ...i, status } : i))
-    );
-  } catch (err) {
-    console.error(err);
-    alert("Failed to update interview status.");
-  }
-};
-
-const updateApplicationStatus = async (appId, status) => {
-  try {
-    await axios.post(
-      `${BASE_URL}/admin/update-application`,
-      { appId, status },
-      { headers: getAuthHeaders() }
-    );
-    setApplications((prev) =>
-      prev.map((a) => (a._id === appId ? { ...a, status } : a))
-    );
-  } catch (err) {
-    console.error(err);
-    alert("Failed to update application status.");
-  }
-};
-
-// --- Add to loadData ---
-useEffect(() => {
-  const loadData = async () => {
-    setLoading(true);
-    await fetchAdmin();
-    await Promise.all([fetchUsers(), fetchJobs(), fetchCourses(), fetchMockInterviews(), fetchApplications()]);
-    setLoading(false);
-  };
-  loadData();
-}, []);
-
-
+// --- Loading Skeleton ---
 const LoadingSkeleton = () => (
   <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
     {[...Array(6)].map((_, i) => (
@@ -115,6 +46,8 @@ const Admin = () => {
   const [users, setUsers] = useState([]);
   const [jobs, setJobs] = useState([]);
   const [courses, setCourses] = useState([]);
+  const [mockInterviews, setMockInterviews] = useState([]);
+  const [applications, setApplications] = useState([]);
   const [admin, setAdmin] = useState(null);
   const [settings, setSettings] = useState({ platformName: "" });
   const [loading, setLoading] = useState(true);
@@ -139,7 +72,7 @@ const Admin = () => {
     return token ? { Authorization: `Bearer ${token}` } : {};
   };
 
-  // --- Fetch Data ---
+  // --- Fetch Functions ---
   const fetchAdmin = async () => {
     try {
       const user = JSON.parse(localStorage.getItem("user") || "{}");
@@ -181,11 +114,32 @@ const Admin = () => {
     }
   };
 
+  const fetchMockInterviews = async () => {
+    try {
+      const res = await axios.get(`${BASE_URL}/admin/mock-interviews`, { headers: getAuthHeaders() });
+      setMockInterviews(res.data || []);
+    } catch (err) {
+      console.error(err);
+      setMockInterviews([]);
+    }
+  };
+
+  const fetchApplications = async () => {
+    try {
+      const res = await axios.get(`${BASE_URL}/admin/applications`, { headers: getAuthHeaders() });
+      setApplications(res.data || []);
+    } catch (err) {
+      console.error(err);
+      setApplications([]);
+    }
+  };
+
+  // --- Load All Data ---
   useEffect(() => {
     const loadData = async () => {
       setLoading(true);
       await fetchAdmin();
-      await Promise.all([fetchUsers(), fetchJobs(), fetchCourses()]);
+      await Promise.all([fetchUsers(), fetchJobs(), fetchCourses(), fetchMockInterviews(), fetchApplications()]);
       setLoading(false);
     };
     loadData();
@@ -233,7 +187,51 @@ const Admin = () => {
     }
   };
 
+  const updateInterviewStatus = async (interviewId, status) => {
+    try {
+      await axios.post(
+        `${BASE_URL}/admin/update-interview`,
+        { interviewId, status },
+        { headers: getAuthHeaders() }
+      );
+      setMockInterviews((prev) =>
+        prev.map((i) => (i._id === interviewId ? { ...i, status } : i))
+      );
+    } catch (err) {
+      console.error(err);
+      alert("Failed to update interview status.");
+    }
+  };
+
+  const updateApplicationStatus = async (appId, status) => {
+    try {
+      await axios.post(
+        `${BASE_URL}/admin/update-application`,
+        { appId, status },
+        { headers: getAuthHeaders() }
+      );
+      setApplications((prev) =>
+        prev.map((a) => (a._id === appId ? { ...a, status } : a))
+      );
+    } catch (err) {
+      console.error(err);
+      alert("Failed to update application status.");
+    }
+  };
+
   // --- Derived Data ---
+  const students = users.filter((u) => u.role === "student");
+  const recruiters = users.filter((u) => u.role === "recruiter");
+
+  const dashboardData = {
+    totalStudents: students.length,
+    verifiedStudents: students.filter((u) => u.verified).length,
+    pendingVerifications: students.filter((u) => !u.verified).length,
+    totalRecruiters: recruiters.length,
+    applications: jobs.length,
+    completedInterviews: Math.floor(users.length * 0.7),
+  };
+
   const tabs = [
     { id: "dashboard", label: "Dashboard", icon: TrendingUp },
     { id: "students", label: "Students", icon: Users },
@@ -243,27 +241,9 @@ const Admin = () => {
     { id: "settings", label: "Settings", icon: Settings },
   ];
 
-  const dashboardData = {
-    totalStudents: users.filter((u) => u.role === "student").length,
-    verifiedStudents: users.filter((u) => u.role === "student" && u.verified).length,
-    pendingVerifications: users.filter((u) => u.role === "student" && !u.verified).length,
-    totalRecruiters: users.filter((u) => u.role === "recruiter").length,
-    applications: jobs.length,
-    completedInterviews: Math.floor(users.length * 0.7),
-  };
-
-  const students = users.filter((u) => u.role === "student");
-  const recruiters = users.filter((u) => u.role === "recruiter");
-  const mockInterviews = []; // Add API fetch if available
-  const applications = []; // Add API fetch if available
   const isLoading = loading;
 
-  // --- Mock Interview Status Update ---
-  const updateInterviewStatus = (id, status) => {
-    // Implement API call if needed
-    console.log("Update Interview", id, status);
-  };
-
+  // --- Render ---
   return (
     <div className="min-h-screen bg-gradient-to-br from-slate-50 via-blue-50 to-indigo-50">
       {/* --- Navigation --- */}
@@ -293,8 +273,9 @@ const Admin = () => {
                   <span className="font-medium text-gray-700">{admin?.name || "Admin"}</span>
                   <ChevronDown
                     size={20}
-                    className={`text-gray-500 transition-transform duration-200 ${dropdownOpen ? "rotate-180" : ""
-                      }`}
+                    className={`text-gray-500 transition-transform duration-200 ${
+                      dropdownOpen ? "rotate-180" : ""
+                    }`}
                   />
                 </button>
 
@@ -369,10 +350,11 @@ const Admin = () => {
                 <button
                   key={tab.id}
                   onClick={() => setActiveTab(tab.id)}
-                  className={`flex items-center space-x-2 px-6 py-4 font-medium transition-all duration-200 border-b-2 whitespace-nowrap ${activeTab === tab.id
+                  className={`flex items-center space-x-2 px-6 py-4 font-medium transition-all duration-200 border-b-2 whitespace-nowrap ${
+                    activeTab === tab.id
                       ? "text-blue-600 border-blue-600"
                       : "text-gray-600 border-transparent hover:text-blue-600 hover:border-gray-300"
-                    }`}
+                  }`}
                 >
                   <Icon size={20} />
                   <span>{tab.label}</span>
@@ -389,48 +371,15 @@ const Admin = () => {
           <LoadingSkeleton />
         ) : (
           <>
-            {/* --- Tabs Content --- */}
             {/* Dashboard */}
             {activeTab === "dashboard" && (
-              <div>
-                <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6 mb-8">
-                  <StatCard
-                    title="Total Students"
-                    value={dashboardData.totalStudents}
-                    icon={Users}
-                    gradient="from-blue-500 to-blue-600"
-                  />
-                  <StatCard
-                    title="Verified Students"
-                    value={dashboardData.verifiedStudents}
-                    icon={UserCheck}
-                    gradient="from-green-500 to-green-600"
-                  />
-                  <StatCard
-                    title="Pending Verifications"
-                    value={dashboardData.pendingVerifications}
-                    icon={UserX}
-                    gradient="from-orange-500 to-orange-600"
-                  />
-                  <StatCard
-                    title="Total Recruiters"
-                    value={dashboardData.totalRecruiters}
-                    icon={Briefcase}
-                    gradient="from-purple-500 to-purple-600"
-                  />
-                  <StatCard
-                    title="Applications"
-                    value={dashboardData.applications}
-                    icon={FileText}
-                    gradient="from-pink-500 to-pink-600"
-                  />
-                  <StatCard
-                    title="Completed Interviews"
-                    value={dashboardData.completedInterviews}
-                    icon={MessageSquare}
-                    gradient="from-teal-500 to-teal-600"
-                  />
-                </div>
+              <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6 mb-8">
+                <StatCard title="Total Students" value={dashboardData.totalStudents} icon={Users} gradient="from-blue-500 to-blue-600" />
+                <StatCard title="Verified Students" value={dashboardData.verifiedStudents} icon={UserCheck} gradient="from-green-500 to-green-600" />
+                <StatCard title="Pending Verifications" value={dashboardData.pendingVerifications} icon={UserX} gradient="from-orange-500 to-orange-600" />
+                <StatCard title="Total Recruiters" value={dashboardData.totalRecruiters} icon={Briefcase} gradient="from-purple-500 to-purple-600" />
+                <StatCard title="Applications" value={dashboardData.applications} icon={FileText} gradient="from-pink-500 to-pink-600" />
+                <StatCard title="Completed Interviews" value={dashboardData.completedInterviews} icon={MessageSquare} gradient="from-teal-500 to-teal-600" />
               </div>
             )}
 
