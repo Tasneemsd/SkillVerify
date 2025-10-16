@@ -1,5 +1,5 @@
 import React, { useState, useEffect } from "react";
-import { Link } from "react-router-dom";
+import { Link, useNavigate } from "react-router-dom";
 import axios from "axios";
 import {
   Briefcase,
@@ -53,8 +53,24 @@ const normalizeUsers = (arr = []) =>
     return { ...u, _id, verified, isVerified: verified, mockResult: mockResult ?? "N/A" };
   });
 
+// Utility to extract an array from various response shapes
+const extractArray = (resData, fallbacks = []) => {
+  if (!resData && fallbacks.length === 0) return [];
+  if (Array.isArray(resData)) return resData;
+  // If resData is an object, try common keys
+  const keysToTry = ["users", "data", "jobs", "courses", "applications", "mockInterviews", "items", ...fallbacks];
+  for (const k of keysToTry) {
+    if (resData && resData[k]) {
+      return Array.isArray(resData[k]) ? resData[k] : [];
+    }
+  }
+  return [];
+};
+
 // --- Admin Component ---
 const Admin = () => {
+  const navigate = useNavigate();
+
   const [users, setUsers] = useState([]);
   const [jobs, setJobs] = useState([]);
   const [courses, setCourses] = useState([]);
@@ -71,9 +87,12 @@ const Admin = () => {
 
   // --- Auth Helpers ---
   const getAuthToken = () => {
+    // Accept either localStorage 'token' (used in Student.jsx) or user.token
     try {
+      const rawToken = localStorage.getItem("token");
+      if (rawToken) return rawToken;
       const user = JSON.parse(localStorage.getItem("user") || "{}");
-      return user.token || null;
+      return user?.token || null;
     } catch {
       return null;
     }
@@ -103,11 +122,18 @@ const Admin = () => {
   const fetchUsers = async () => {
     try {
       const res = await axios.get(`${BASE_URL}/admin/users`, { headers: getAuthHeaders() });
-      const payload = res?.data ?? [];
-      const arr = Array.isArray(payload) ? payload : payload.users ?? payload.data ?? [];
+      console.log("fetchUsers response:", res.data);
+      // If backend returns array => res.data is array. If wrapped => try common keys
+      const arr = extractArray(res.data, []);
       setUsers(normalizeUsers(arr));
     } catch (err) {
-      console.error("fetchUsers error:", err);
+      console.error("fetchUsers error:", err.response || err);
+      // If unauthorized, navigate to login
+      if (err.response?.status === 401) {
+        alert("Session expired. Please login again.");
+        navigate("/login");
+        return;
+      }
       setUsers([]);
     }
   };
@@ -115,11 +141,16 @@ const Admin = () => {
   const fetchJobs = async () => {
     try {
       const res = await axios.get(`${BASE_URL}/admin/jobs`, { headers: getAuthHeaders() });
-      const payload = res?.data ?? [];
-      const arr = Array.isArray(payload) ? payload : payload.jobs ?? payload.data ?? [];
+      console.log("fetchJobs response:", res.data);
+      const arr = extractArray(res.data, []);
       setJobs(arr);
     } catch (err) {
-      console.error("fetchJobs error:", err);
+      console.error("fetchJobs error:", err.response || err);
+      if (err.response?.status === 401) {
+        alert("Session expired. Please login again.");
+        navigate("/login");
+        return;
+      }
       setJobs([]);
     }
   };
@@ -127,11 +158,16 @@ const Admin = () => {
   const fetchCourses = async () => {
     try {
       const res = await axios.get(`${BASE_URL}/admin/courses-with-registrations`, { headers: getAuthHeaders() });
-      const payload = res?.data ?? [];
-      const arr = Array.isArray(payload) ? payload : payload.courses ?? payload.data ?? [];
+      console.log("fetchCourses response:", res.data);
+      const arr = extractArray(res.data, ["courses"]);
       setCourses(arr);
     } catch (err) {
-      console.error("fetchCourses error:", err);
+      console.error("fetchCourses error:", err.response || err);
+      if (err.response?.status === 401) {
+        alert("Session expired. Please login again.");
+        navigate("/login");
+        return;
+      }
       setCourses([]);
     }
   };
@@ -139,11 +175,16 @@ const Admin = () => {
   const fetchMockInterviews = async () => {
     try {
       const res = await axios.get(`${BASE_URL}/admin/mock-interviews`, { headers: getAuthHeaders() });
-      const payload = res?.data ?? [];
-      const arr = Array.isArray(payload) ? payload : payload.mockInterviews ?? payload.data ?? [];
+      console.log("fetchMockInterviews response:", res.data);
+      const arr = extractArray(res.data, ["mockInterviews"]);
       setMockInterviews(arr);
     } catch (err) {
-      console.error("fetchMockInterviews error:", err);
+      console.error("fetchMockInterviews error:", err.response || err);
+      if (err.response?.status === 401) {
+        alert("Session expired. Please login again.");
+        navigate("/login");
+        return;
+      }
       setMockInterviews([]);
     }
   };
@@ -151,25 +192,48 @@ const Admin = () => {
   const fetchApplications = async () => {
     try {
       const res = await axios.get(`${BASE_URL}/admin/applications`, { headers: getAuthHeaders() });
-      const payload = res?.data ?? [];
-      const arr = Array.isArray(payload) ? payload : payload.applications ?? payload.data ?? [];
+      console.log("fetchApplications response:", res.data);
+      const arr = extractArray(res.data, ["applications"]);
       setApplications(arr);
     } catch (err) {
-      console.error("fetchApplications error:", err);
+      console.error("fetchApplications error:", err.response || err);
+      if (err.response?.status === 401) {
+        alert("Session expired. Please login again.");
+        navigate("/login");
+        return;
+      }
       setApplications([]);
     }
   };
 
   // --- Load All Data ---
   useEffect(() => {
+    const token = getAuthToken();
+    if (!token) {
+      // If no token, redirect to login
+      navigate("/login");
+      return;
+    }
+
     const loadData = async () => {
       setLoading(true);
-      await fetchAdmin();
-      await Promise.all([fetchUsers(), fetchJobs(), fetchCourses(), fetchMockInterviews(), fetchApplications()]);
-      setLoading(false);
+      try {
+        await fetchAdmin();
+        // fetch sequentially (safer) — you can change to Promise.all if you want parallel
+        await fetchUsers();
+        await fetchJobs();
+        await fetchCourses();
+        await fetchMockInterviews();
+        await fetchApplications();
+      } catch (err) {
+        console.error("loadData error:", err);
+      } finally {
+        setLoading(false);
+      }
     };
     loadData();
-  }, []);
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, []); // run once
 
   // --- Actions ---
   const handleVerifyStudent = (student) => {
@@ -187,8 +251,8 @@ const Admin = () => {
       setShowModal(false);
       alert("Student verified!");
     } catch (err) {
-      console.error("confirmVerification error:", err);
-      alert("Failed to verify student.");
+      console.error("confirmVerification error:", err.response || err);
+      alert(err.response?.data?.message || "Failed to verify student.");
     }
   };
 
@@ -200,8 +264,8 @@ const Admin = () => {
       await axios.post(`${BASE_URL}/admin/toggle-recruiter`, { recruiterId, status: newStatus }, { headers: getAuthHeaders() });
       setUsers((prev) => prev.map((u) => (u._id === recruiterId ? { ...u, status: newStatus } : u)));
     } catch (err) {
-      console.error("toggleRecruiterApproval error:", err);
-      alert("Failed to update recruiter status.");
+      console.error("toggleRecruiterApproval error:", err.response || err);
+      alert(err.response?.data?.message || "Failed to update recruiter status.");
     }
   };
 
@@ -210,8 +274,8 @@ const Admin = () => {
       await axios.post(`${BASE_URL}/admin/update-interview`, { interviewId, status }, { headers: getAuthHeaders() });
       setMockInterviews((prev) => prev.map((i) => (i._id === interviewId ? { ...i, status } : i)));
     } catch (err) {
-      console.error("updateInterviewStatus error:", err);
-      alert("Failed to update interview status.");
+      console.error("updateInterviewStatus error:", err.response || err);
+      alert(err.response?.data?.message || "Failed to update interview status.");
     }
   };
 
@@ -220,8 +284,8 @@ const Admin = () => {
       await axios.post(`${BASE_URL}/admin/update-application`, { appId, status }, { headers: getAuthHeaders() });
       setApplications((prev) => prev.map((a) => (a._id === appId ? { ...a, status } : a)));
     } catch (err) {
-      console.error("updateApplicationStatus error:", err);
-      alert("Failed to update application status.");
+      console.error("updateApplicationStatus error:", err.response || err);
+      alert(err.response?.data?.message || "Failed to update application status.");
     }
   };
 
@@ -261,7 +325,6 @@ const Admin = () => {
               <Link to="/" className="flex items-center gap-2 text-blue-600 font-bold text-xl hover:opacity-80 transition-opacity">
                 <img src="/logos.png" alt="Logo" className="h-48 w-auto" />
               </Link>
-
             </div>
 
             {/* Desktop Nav */}
@@ -689,83 +752,6 @@ const Admin = () => {
           </div>
         </div>
       )}
-      {/* Non-Verified Students */}
-      {activeTab === "nonVerified" && (
-        <div className="bg-white rounded-2xl shadow-lg overflow-hidden">
-          <div className="p-6 border-b border-gray-200">
-            <h2 className="text-2xl font-bold text-gray-800">Non-Verified Students</h2>
-            <p className="text-gray-600 mt-1">List of students who are not yet verified</p>
-          </div>
-          {students.filter((s) => !s.verified).length === 0 ? (
-            <div className="flex flex-col items-center justify-center py-16">
-              <UserX size={64} className="text-gray-300 mb-4" />
-              <p className="text-gray-500 text-lg">All students are verified 🎉</p>
-            </div>
-          ) : (
-            <div className="overflow-x-auto">
-              <table className="w-full">
-                <thead className="bg-gray-50">
-                  <tr>
-                    <th className="px-6 py-4 text-left text-xs font-semibold text-gray-700 uppercase tracking-wider">
-                      Name
-                    </th>
-                    <th className="px-6 py-4 text-left text-xs font-semibold text-gray-700 uppercase tracking-wider">
-                      Email
-                    </th>
-                    <th className="px-6 py-4 text-left text-xs font-semibold text-gray-700 uppercase tracking-wider">
-                      Mock Result
-                    </th>
-                    <th className="px-6 py-4 text-left text-xs font-semibold text-gray-700 uppercase tracking-wider">
-                      Action
-                    </th>
-                  </tr>
-                </thead>
-                <tbody className="divide-y divide-gray-200">
-                  {students
-                    .filter((s) => !s.verified)
-                    .map((student) => (
-                      <tr
-                        key={student._id || student.email}
-                        className="hover:bg-gray-50 transition-colors duration-150"
-                      >
-                        <td className="px-6 py-4 whitespace-nowrap font-medium text-gray-900">
-                          {student.name || student.fullName || "—"}
-                        </td>
-                        <td className="px-6 py-4 whitespace-nowrap text-gray-600">
-                          {student.email || "—"}
-                        </td>
-                        <td className="px-6 py-4 whitespace-nowrap">
-                          <span
-                            className={`inline-flex items-center px-3 py-1 rounded-full text-xs font-semibold ${student.mockResult === "Pass"
-                              ? "bg-green-100 text-green-800"
-                              : "bg-red-100 text-red-800"
-                              }`}
-                          >
-                            {student.mockResult}
-                          </span>
-                        </td>
-                        <td className="px-6 py-4 whitespace-nowrap">
-                          {student.mockResult === "Pass" ? (
-                            <button
-                              onClick={() => handleVerifyStudent(student)}
-                              className="inline-flex items-center px-4 py-2 bg-gradient-to-r from-green-500 to-green-600 text-white rounded-lg hover:from-green-600 hover:to-green-700 transition-all duration-200 shadow-md hover:shadow-lg"
-                            >
-                              <CheckCircle size={16} className="mr-2" />
-                              Verify
-                            </button>
-                          ) : (
-                            <span className="text-gray-500 text-sm">Awaiting Pass Result</span>
-                          )}
-                        </td>
-                      </tr>
-                    ))}
-                </tbody>
-              </table>
-            </div>
-          )}
-        </div>
-      )}2
-
     </div>
   );
 };
