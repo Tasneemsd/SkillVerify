@@ -236,7 +236,6 @@ const Admin = () => {
     applications: applications.length || jobs.length,
     completedInterviews: mockInterviews.filter((i) => i.status === "Completed").length || Math.floor(users.length * 0.7),
   };
-
   const tabs = [
     { id: "dashboard", label: "Dashboard", icon: TrendingUp },
     { id: "students", label: "Students", icon: Users },
