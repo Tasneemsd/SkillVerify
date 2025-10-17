@@ -52,11 +52,11 @@ exports.getAllJobs = async (req, res) => {
       skillsRequired: job.skillsRequired,
       postedBy: job.postedBy
         ? {
-            _id: job.postedBy._id,
-            name: job.postedBy.name,
-            email: job.postedBy.email,
-            company: job.postedBy.company,
-          }
+          _id: job.postedBy._id,
+          name: job.postedBy.name,
+          email: job.postedBy.email,
+          company: job.postedBy.company,
+        }
         : null,
       postedAt: job.postedAt,
       isActive: job.isActive,
@@ -114,13 +114,34 @@ exports.getApplicationsForJob = async (req, res) => {
 };
 exports.getApplications = async (req, res) => {
   try {
-    const apps = await Application.find().populate("student job");
-    res.json({ applications: apps });
+    const apps = await Application.find()
+      .populate("studentId", "name email rollNo contactNumber skills profilePicture")
+      .populate("jobId", "title postedByEmail type");
+
+    const data = apps.map(app => ({
+      _id: app._id,
+      studentId: app.studentId._id,
+      studentName: app.studentId.name,
+      studentEmail: app.studentId.email,
+      studentRollNo: app.studentId.rollNo,
+      studentContact: app.studentId.contactNumber,
+      studentSkills: app.studentId.skills,
+      studentProfilePicture: app.studentId.profilePicture,
+      jobId: app.jobId._id,
+      jobTitle: app.jobId.title,
+      company: app.jobId.postedByEmail,
+      jobType: app.jobId.type,
+      status: app.status,
+      appliedOn: app.appliedOn,
+    }));
+
+    res.json(data);
   } catch (err) {
-    console.error(err);
-    res.status(500).json({ message: "Failed to fetch applications" });
+    console.error("Get all applications error:", err);
+    res.status(500).json({ message: "Failed to fetch applications", error: err.message });
   }
 };
+
 // 📋 Get all courses with student registration count
 exports.getCoursesWithRegistrations = async (req, res) => {
   try {
