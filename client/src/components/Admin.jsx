@@ -321,7 +321,6 @@ const Admin = () => {
 
   const tabs = [
     { id: "dashboard", label: "Dashboard", icon: TrendingUp },
-    { id: "students", label: "Students", icon: Users },
     { id: "nonVerified", label: "Non-Verified Students", icon: UserX },
     { id: "candidates", label: "Candidates", icon: Users },
     { id: "interviews", label: "Mock Interviews", icon: MessageSquare },
