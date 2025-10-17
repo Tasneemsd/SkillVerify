@@ -33,39 +33,7 @@ const StatCard = ({ title, value, icon: Icon, gradient }) => (
   </div>
 );
 
-const LoadingSkeleton = () => (
-  <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
-    {[...Array(6)].map((_, i) => (
-      <div key={i} className="h-32 bg-gray-200 animate-pulse rounded-2xl"></div>
-    ))}
-  </div>
-);
 
-// --- Normalize Users ---
-const normalizeUsers = (arr = []) =>
-  (arr || []).map((u) => {
-    const verified = u.verified ?? u.isVerified ?? false;
-    let mockResult = u.mockResult;
-    if (!mockResult && typeof u.mockInterviewScore === "number") {
-      mockResult = u.mockInterviewScore >= 50 ? "Pass" : "Fail";
-    }
-    const _id = u._id ?? u.id ?? null;
-    return { ...u, _id, verified, isVerified: verified, mockResult: mockResult ?? "N/A" };
-  });
-
-// Utility to extract an array from various response shapes
-const extractArray = (resData, fallbacks = []) => {
-  if (!resData && fallbacks.length === 0) return [];
-  if (Array.isArray(resData)) return resData;
-  // If resData is an object, try common keys
-  const keysToTry = ["users", "data", "jobs", "courses", "applications", "mockInterviews", "items", ...fallbacks];
-  for (const k of keysToTry) {
-    if (resData && resData[k]) {
-      return Array.isArray(resData[k]) ? resData[k] : [];
-    }
-  }
-  return [];
-};
 
 // --- Admin Component ---
 const Admin = () => {
