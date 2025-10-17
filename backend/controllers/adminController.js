@@ -1,57 +1,58 @@
+// ===============================
+// 📦 Imports
+// ===============================
 const Course = require('../models/Course');
 const Student = require('../models/Student');
 const Job = require('../models/Job');
 const Notification = require('../models/Notification');
-const Application = require('../models/Application');
 const Recruiter = require('../models/Recruiter');
 
-// =======================================
-// 📘 COURSE MANAGEMENT
-// =======================================
+// ===============================
+// 🏫 COURSE MANAGEMENT
+// ===============================
 
-// Admin creates a new course
+// ➕ Create a new course
 exports.createCourse = async (req, res) => {
   try {
     const { courseName, courseId, courseDuration, courseFee, courseDescription } = req.body;
     if (!courseName || !courseId || !courseDuration || courseFee === undefined) {
-      return res.status(400).json({ message: 'All fields are required' });
+      return res.status(400).json({ message: 'All fields are required.' });
     }
-    const exists = await Course.findOne({ courseId });
-    if (exists) return res.status(400).json({ message: 'Course ID already exists' });
 
-    const course = new Course({ courseName, courseId, courseDuration, courseFee, courseDescription });
-    await course.save();
-    res.json({ message: 'Course created', course });
+    const existing = await Course.findOne({ courseId });
+    if (existing) return res.status(400).json({ message: 'Course ID already exists.' });
+
+    const newCourse = await Course.create({
+      courseName,
+      courseId,
+      courseDuration,
+      courseFee,
+      courseDescription,
+    });
+
+    res.status(201).json({ message: 'Course created successfully.', course: newCourse });
   } catch (err) {
-    res.status(500).json({ message: 'Failed to create course' });
+    res.status(500).json({ message: 'Error creating course.', error: err.message });
   }
 };
 
-// Get all courses with number of registered students
+// 📋 Get all courses with student registration count
 exports.getCoursesWithRegistrations = async (req, res) => {
   try {
     const courses = await Course.find();
-    const courseData = await Promise.all(
+    const data = await Promise.all(
       courses.map(async (course) => {
         const count = await Student.countDocuments({ registeredCourses: course._id });
-        return {
-          _id: course._id,
-          courseName: course.courseName,
-          courseId: course.courseId,
-          courseDuration: course.courseDuration,
-          courseFee: course.courseFee,
-          courseDescription: course.courseDescription,
-          registrations: count,
-        };
+        return { ...course.toObject(), registrations: count };
       })
     );
-    res.json(courseData);
+    res.json(data);
   } catch (err) {
-    res.status(500).json({ message: 'Failed to fetch courses with registrations' });
+    res.status(500).json({ message: 'Failed to fetch course data.', error: err.message });
   }
 };
 
-// Get students registered for a specific course
+// 👩‍🎓 Get students registered for a specific course
 exports.getRegistrationsForCourse = async (req, res) => {
   try {
     const { courseId } = req.params;
@@ -61,144 +62,83 @@ exports.getRegistrationsForCourse = async (req, res) => {
     );
     res.json(students);
   } catch (err) {
-    res.status(500).json({ message: 'Failed to fetch registrations' });
+    res.status(500).json({ message: 'Failed to fetch students.', error: err.message });
   }
 };
 
-// =======================================
-// 👩‍🎓 STUDENT MANAGEMENT
-// =======================================
+// ===============================
+// 👨‍🎓 STUDENT MANAGEMENT
+// ===============================
 
-// Get all students with their skills
+// 📋 Get all students (verified + unverified)
+exports.getAllStudents = async (req, res) => {
+  try {
+    const students = await Student.find(
+      {},
+      'name email rollNo contactNumber branch college skills isVerified mockInterviewScore badge profilePicture mockInterviewDate paymentDone'
+    ).sort({ name: 1 }); // Sort alphabetically
+    res.json(students);
+  } catch (err) {
+    res.status(500).json({ message: 'Failed to fetch students.', error: err.message });
+  }
+};
+
+// Get all students with skills (for listing/filter)
 exports.getAllStudentsWithSkills = async (req, res) => {
   try {
     const students = await Student.find({}, 'name email rollNo contactNumber skills profilePicture');
     res.json(students);
   } catch (err) {
-    res.status(500).json({ message: 'Failed to fetch students' });
+    res.status(500).json({ message: 'Error fetching students.', error: err.message });
   }
 };
 
-// Verify a student's skill
+// ✅ Verify student skill manually (by Admin)
 exports.verifyStudentSkill = async (req, res) => {
   try {
     const { studentId, skillName } = req.body;
     const student = await Student.findById(studentId);
-    if (!student) return res.status(404).json({ message: 'Student not found' });
+    if (!student) return res.status(404).json({ message: 'Student not found.' });
 
-    let updated = false;
-    student.skills = student.skills.map((skill) => {
-      if (skill.name === skillName) {
-        updated = true;
-        return { ...skill.toObject(), verified: true };
+    let skillUpdated = false;
+    student.skills = student.skills.map((s) => {
+      if (s.name === skillName) {
+        skillUpdated = true;
+        return { ...s.toObject(), verified: true };
       }
-      return skill;
+      return s;
     });
 
-    if (!updated) return res.status(400).json({ message: 'Skill not found' });
+    if (!skillUpdated) return res.status(400).json({ message: 'Skill not found.' });
+
     await student.save();
 
     await Notification.create({
       type: 'skill_verified',
       student: student._id,
-      message: `Your skill '${skillName}' has been verified by admin.`,
-      status: 'accepted',
-      skillName,
+      message: `Your skill '${skillName}' has been verified by the admin.`,
     });
 
-    res.json({ message: 'Skill verified', skills: student.skills });
+    res.json({ message: 'Skill verified successfully.', skills: student.skills });
   } catch (err) {
-    res.status(500).json({ message: 'Failed to verify skill' });
+    res.status(500).json({ message: 'Failed to verify skill.', error: err.message });
   }
 };
 
-// =======================================
-// 💼 JOB MANAGEMENT
-// =======================================
+// ===============================
+// 🎯 MOCK INTERVIEW + BADGE MANAGEMENT
+// ===============================
 
-// Get all jobs
-exports.getAllJobs = async (req, res) => {
-  try {
-    const jobs = await Job.find().populate('postedBy', 'name email');
-    res.json(jobs);
-  } catch (err) {
-    res.status(500).json({ message: 'Failed to fetch jobs' });
-  }
-};
-
-// Update application status for a job ✅ (Final & Correct)
-exports.updateApplicationStatus = async (req, res) => {
-  try {
-    const { jobId, studentId, status } = req.body;
-    const job = await Job.findById(jobId);
-    if (!job) return res.status(404).json({ message: 'Job not found' });
-
-    const application = job.appliedBy.find((app) => {
-      const studentIdInApp = app.student?._id?.toString() || app.student?.toString();
-      return studentIdInApp === studentId;
-    });
-
-    if (!application) return res.status(404).json({ message: 'Application not found' });
-
-    application.status = status;
-    await job.save();
-
-    res.json({ message: 'Application status updated successfully', job });
-  } catch (err) {
-    console.error('Error in updateApplicationStatus:', err);
-    res.status(500).json({ message: 'Failed to update application status', error: err.message });
-  }
-};
-
-// Get all job applications (for admin)
-exports.getAllApplications = async (req, res) => {
-  try {
-    const jobs = await Job.find()
-      .populate({
-        path: 'appliedBy.student',
-        select: 'name email',
-        options: { strictPopulate: false },
-      })
-      .populate('postedBy', 'name email');
-
-    const applications = [];
-    for (const job of jobs) {
-      if (Array.isArray(job.appliedBy)) {
-        for (const app of job.appliedBy) {
-          applications.push({
-            jobTitle: job.title || 'Untitled',
-            jobId: job._id,
-            studentName: app.student?.name || 'Unknown',
-            studentEmail: app.student?.email || 'Unknown',
-            status: app.status || 'pending',
-            appliedAt: app.appliedAt,
-            recruiterName: job.postedBy?.name || 'Unknown',
-          });
-        }
-      }
-    }
-
-    res.json(applications);
-  } catch (err) {
-    console.error('Error in getAllApplications:', err);
-    res.status(500).json({ message: 'Failed to fetch applications', error: err.message });
-  }
-};
-
-// =======================================
-// 🧠 MOCK INTERVIEW MANAGEMENT
-// =======================================
-
-// Admin schedules mock interview for a student
+// 📅 Schedule mock interview (admin-level for paid mocks)
 exports.scheduleMockInterview = async (req, res) => {
   try {
     const { studentId, date } = req.body;
     const student = await Student.findById(studentId);
-    if (!student) return res.status(404).json({ message: 'Student not found' });
+    if (!student) return res.status(404).json({ message: 'Student not found.' });
 
     student.mockInterviewScheduled = true;
     student.mockInterviewDate = date;
-    student.paymentDone = true;
+    student.paymentDone = true; // paid mock confirmation
     await student.save();
 
     await Notification.create({
@@ -207,164 +147,128 @@ exports.scheduleMockInterview = async (req, res) => {
       message: `Your mock interview has been scheduled on ${new Date(date).toLocaleString()}.`,
     });
 
-    res.json({ message: 'Mock interview scheduled successfully', student });
+    res.json({ message: 'Mock interview scheduled successfully.', student });
   } catch (err) {
-    res.status(500).json({ message: 'Failed to schedule mock interview' });
+    res.status(500).json({ message: 'Failed to schedule mock interview.', error: err.message });
   }
 };
 
-// Update interview status
-exports.updateInterviewStatus = async (req, res) => {
-  try {
-    const { studentId, status } = req.body;
-    const student = await Student.findById(studentId);
-    if (!student) return res.status(404).json({ message: 'Student not found' });
-
-    student.mockInterviewStatus = status;
-    await student.save();
-
-    res.json({ message: 'Interview status updated', student });
-  } catch (err) {
-    res.status(500).json({ message: 'Failed to update interview status' });
-  }
-};
-
-// Verify student after mock interview
-exports.verifyStudent = async (req, res) => {
+// 🏆 Verify student based on mock interview result
+exports.verifyStudentAndAwardBadge = async (req, res) => {
   try {
     const { studentId, mockInterviewScore } = req.body;
-    const student = await Student.findById(studentId);
-    if (!student) return res.status(404).json({ message: 'Student not found' });
 
+    const student = await Student.findById(studentId);
+    if (!student) {
+      return res.status(404).json({ message: "Student not found." });
+    }
+
+    // Update mock interview score and verification info
     student.mockInterviewScore = mockInterviewScore;
-    student.isVerified = mockInterviewScore >= 70;
+    student.isVerified = mockInterviewScore >= 70; // ✅ verified if score ≥ 70
+    student.verifiedBy = "Admin";
+    student.verificationDate = new Date();
+
     await student.save();
 
-    await Notification.create({
-      type: 'student_verified',
-      student: student._id,
-      message: student.isVerified
-        ? 'Congratulations! You have been verified based on your mock interview performance.'
-        : 'Unfortunately, your mock interview did not meet the verification criteria.',
-    });
+    // Optionally send a notification (if Notification model exists)
+    if (typeof Notification !== "undefined") {
+      await Notification.create({
+        type: "student_verified",
+        student: student._id,
+        message: student.isVerified
+          ? "🎉 Congratulations! You have been verified based on your mock interview performance."
+          : "⚠️ Your performance did not meet the verification criteria.",
+      });
+    }
 
     res.json({
       message: student.isVerified
-        ? 'Student verified successfully.'
-        : 'Student not verified (low score).',
-      verified: student.isVerified,
+        ? "✅ Student verified successfully."
+        : "❌ Student not verified (low score).",
       student,
     });
   } catch (err) {
-    res.status(500).json({ message: 'Failed to verify student' });
+    console.error("Verification error:", err);
+    res.status(500).json({ message: "Failed to verify student.", error: err.message });
   }
 };
 
-// Get all mock interviews
+
+// 📃 Get all mock interviews scheduled
 exports.getAllMockInterviews = async (req, res) => {
   try {
-    const students = await Student.find(
+    const interviews = await Student.find(
       { mockInterviewScheduled: true },
-      'name email mockInterviewDate mockInterviewScore'
+      'name email mockInterviewDate mockInterviewScore isVerified badge'
     );
-    res.json(students);
+    res.json(interviews);
   } catch (err) {
-    res.status(500).json({ message: 'Failed to fetch mock interviews' });
+    res.status(500).json({ message: 'Failed to fetch mock interviews.', error: err.message });
   }
 };
 
-// =======================================
-// 🧾 VERIFICATION & REPORTS
-// =======================================
+// ===============================
+// 👩‍💼 VERIFIED STUDENTS → RECRUITER PORTAL
+// ===============================
 
+// Get all verified students (visible to recruiters)
 exports.getVerifiedStudents = async (req, res) => {
   try {
-    const students = await Student.find(
+    const verified = await Student.find(
       { isVerified: true },
-      'name email branch college skills mockInterviewScore'
+      'name email branch college skills mockInterviewScore badge profilePicture'
     );
-    res.json(students);
+    res.json(verified);
   } catch (err) {
-    res.status(500).json({ message: 'Failed to fetch verified students' });
+    res.status(500).json({ message: 'Error fetching verified students.', error: err.message });
   }
 };
 
-// Get all users (for dashboard overview)
-exports.getAllUsers = async (req, res) => {
-  try {
-    const users = await Student.find({}, 'name email rollNo contactNumber skills isVerified mockInterviewScore');
-    res.json(users);
-  } catch (err) {
-    res.status(500).json({ message: 'Failed to fetch users' });
-  }
-};
-
-// =======================================
+// ===============================
 // 🧑‍💼 RECRUITER MANAGEMENT
-// =======================================
+// ===============================
 
 exports.getAllRecruiters = async (req, res) => {
   try {
     const recruiters = await Recruiter.find({}, 'name email company isApproved');
     res.json(recruiters);
   } catch (err) {
-    res.status(500).json({ message: 'Failed to fetch recruiters' });
+    res.status(500).json({ message: 'Failed to fetch recruiters.', error: err.message });
   }
 };
 
-exports.approveRecruiter = async (req, res) => {
-  try {
-    const { recruiterId } = req.body;
-    const recruiter = await Recruiter.findById(recruiterId);
-    if (!recruiter) return res.status(404).json({ message: 'Recruiter not found' });
-
-    recruiter.isApproved = true;
-    await recruiter.save();
-
-    res.json({ message: 'Recruiter approved successfully', recruiter });
-  } catch (err) {
-    res.status(500).json({ message: 'Failed to approve recruiter' });
-  }
-};
-
-// Toggle recruiter approval (approve/reject)
 exports.toggleRecruiterApproval = async (req, res) => {
   try {
     const { recruiterId, approve } = req.body;
     const recruiter = await Recruiter.findById(recruiterId);
-    if (!recruiter) return res.status(404).json({ message: 'Recruiter not found' });
+    if (!recruiter) return res.status(404).json({ message: 'Recruiter not found.' });
 
     recruiter.isApproved = approve;
     await recruiter.save();
 
-    res.json({ message: `Recruiter ${approve ? 'approved' : 'rejected'}`, recruiter });
+    res.json({
+      message: `Recruiter ${approve ? 'approved' : 'rejected'} successfully.`,
+      recruiter,
+    });
   } catch (err) {
-    res.status(500).json({ message: 'Failed to update recruiter status' });
+    res.status(500).json({ message: 'Failed to update recruiter status.', error: err.message });
   }
 };
 
-// =======================================
-// 📊 REPORTS & CANDIDATES
-// =======================================
+// ===============================
+// 📊 DASHBOARD REPORTS
+// ===============================
 
 exports.generateReports = async (req, res) => {
   try {
     const totalStudents = await Student.countDocuments();
     const verifiedStudents = await Student.countDocuments({ isVerified: true });
-    const recruiters = await Recruiter.countDocuments();
+    const totalRecruiters = await Recruiter.countDocuments();
     const totalJobs = await Job.countDocuments();
 
-    res.json({ totalStudents, verifiedStudents, recruiters, totalJobs });
+    res.json({ totalStudents, verifiedStudents, totalRecruiters, totalJobs });
   } catch (err) {
-    res.status(500).json({ message: 'Failed to generate reports' });
-  }
-};
-
-exports.getCandidates = async (req, res) => {
-  try {
-    const candidates = await Student.find({ appliedJob: { $exists: true } });
-    res.json(candidates);
-  } catch (err) {
-    res.status(500).json({ message: err.message });
+    res.status(500).json({ message: 'Error generating reports.', error: err.message });
   }
 };
