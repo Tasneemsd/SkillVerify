@@ -118,26 +118,29 @@ exports.getApplications = async (req, res) => {
       .populate("studentId", "name email rollNo contactNumber skills profilePicture")
       .populate("jobId", "title postedByEmail type");
 
-    const data = apps.map(app => ({
+    // Filter out applications missing studentId or jobId (optional)
+    const validApps = apps.filter(app => app.studentId && app.jobId);
+
+    const data = validApps.map(app => ({
       _id: app._id,
-      studentId: app.studentId._id,
-      studentName: app.studentId.name,
-      studentEmail: app.studentId.email,
-      studentRollNo: app.studentId.rollNo,
-      studentContact: app.studentId.contactNumber,
-      studentSkills: app.studentId.skills,
-      studentProfilePicture: app.studentId.profilePicture,
-      jobId: app.jobId._id,
-      jobTitle: app.jobId.title,
-      company: app.jobId.postedByEmail,
-      jobType: app.jobId.type,
+      studentId: app.studentId?._id || null,
+      studentName: app.studentId?.name || "N/A",
+      studentEmail: app.studentId?.email || "N/A",
+      studentRollNo: app.studentId?.rollNo || "N/A",
+      studentContact: app.studentId?.contactNumber || "N/A",
+      studentSkills: app.studentId?.skills || [],
+      studentProfilePicture: app.studentId?.profilePicture || "",
+      jobId: app.jobId?._id || null,
+      jobTitle: app.jobId?.title || "N/A",
+      company: app.jobId?.postedByEmail || "N/A",
+      jobType: app.jobId?.type || "N/A",
       status: app.status,
       appliedOn: app.appliedOn,
     }));
 
-    res.json(data);
+    res.json({ applications: data });
   } catch (err) {
-    console.error("Get all applications error:", err);
+    console.error("Get applications error:", err);
     res.status(500).json({ message: "Failed to fetch applications", error: err.message });
   }
 };
