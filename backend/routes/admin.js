@@ -12,7 +12,8 @@ router.get('/registrations/:courseId', adminController.getRegistrationsForCourse
 // ===============================
 // 👨‍🎓 STUDENT MANAGEMENT
 // ===============================
-router.get('/students', adminController.getAllStudents); // ✅ NEW: Get all students (verified + unverified)
+router.get('/students', adminController.getAllStudents);
+
 router.get('/students-with-skills', adminController.getAllStudentsWithSkills);
 router.post('/verify-skill', adminController.verifyStudentSkill);
 

@@ -90,7 +90,7 @@ const Admin = () => {
 
   const fetchCandidates = async () => {
     try {
-      const res = await axios.get(`${BASE_URL}/admin/candidates`, { headers: getAuthHeaders() });
+      const res = await axios.get(`${BASE_URL}/admin/students`, { headers: getAuthHeaders() });
       console.log("fetchUsers response:", res.data);
       // If backend returns array => res.data is array. If wrapped => try common keys
       const arr = extractArray(res.data, []);
