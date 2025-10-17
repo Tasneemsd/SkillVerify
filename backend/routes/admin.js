@@ -1,5 +1,7 @@
 const express = require('express');
 const adminController = require('../controllers/adminController');
+const Application = require("../models/Application");
+const Job = require("../models/Job");
 const router = express.Router();
 
 // ===============================
@@ -8,7 +10,7 @@ const router = express.Router();
 router.post('/create-course', adminController.createCourse);
 router.get('/courses-with-registrations', adminController.getCoursesWithRegistrations);
 router.get('/registrations/:courseId', adminController.getRegistrationsForCourse);
-
+router.get('/jobs', adminController.getAllJobs);
 // ===============================
 // 👨‍🎓 STUDENT MANAGEMENT
 // ===============================
@@ -39,6 +41,8 @@ router.post('/toggle-recruiter', adminController.toggleRecruiterApproval);
 // 📊 DASHBOARD & REPORTS
 // ===============================
 router.get('/reports', adminController.generateReports);
+router.get('/applications',adminController.getAllApplications);
+router.get('/job-applications/:jobId', adminController.getApplicationsForJob);
 
 // ===============================
 // ✅ EXPORT ROUTER
