@@ -416,7 +416,11 @@ const Admin = () => {
             </div>
             <div className="hidden md:block">
               <div className="w-64 h-64 bg-white/10 rounded-full backdrop-blur-sm flex items-center justify-center">
-                <TrendingUp size={120} className="text-white/80" />
+               <img
+                    src="https://www.google.com/url?sa=i&url=https%3A%2F%2Fwww.vecteezy.com%2Ffree-vector%2Fjob-portal&psig=AOvVaw2ulVrmErTTPZAVKz9OWUHH&ust=1760807712977000&source=images&cd=vfe&opi=89978449&ved=0CBUQjRxqFwoTCPj8lJTeq5ADFQAAAAAdAAAAABAE"
+                    alt="Student Illustration"
+                    className="w-56 h-56 object-cover rounded-full drop-shadow-lg"
+                  />
               </div>
             </div>
           </div>
