@@ -1,387 +1,242 @@
-api.js
+import React, { useState, useEffect } from "react";
 import axios from "axios";
+import { useNavigate } from "react-router-dom";
 
-// Axios instance with backend base URL
-const API = axios.create({
-  baseURL: "https://skillverify.onrender.com/api", // Render backend
-});
-
-// Attach JWT automatically if stored
-API.interceptors.request.use((config) => {
-  const token = localStorage.getItem("token"); // unified key
-  if (token) config.headers.Authorization = `Bearer ${token}`;
-  return config;
-});
-
-// Export instance
-export default API;
-
-// 🔹 Auth Helpers
-export function setAuthToken(token) {
-  localStorage.setItem("token", token); // unified key
-}
-
-export function getAuthToken() {
-  return localStorage.getItem("token");
-}
-
-export function setUserData(user) {
-  localStorage.setItem("user", JSON.stringify(user));
-}
-
-export function getUserData() {
-  return JSON.parse(localStorage.getItem("user") || "{}");
-}
-
-export function clearUserData() {
-  localStorage.removeItem("user");
-  localStorage.removeItem("token");
-}
-
-
-// 🔹 Email OTP Endpoints
-export const sendEmailOtp = (email) => API.post("/email-otp/send-otp", { email });
-export const verifyEmailOtp = (data) => API.post("/email-otp/verify-otp", data);
-
-Login.jsx
-
-import React, { useState } from "react";
-import { Link, useNavigate } from "react-router-dom";
-import API, { setAuthToken, setUserData } from "../api";
-
-export default function Login() {
-  const [form, setForm] = useState({
-    email: "",
-    password: "",
-    role: "student",
-  });
-
-  const [loading, setLoading] = useState(false);
-  const [error, setError] = useState("");
-  const [success, setSuccess] = useState("");
+export default function Admin() {
   const navigate = useNavigate();
 
-  const handleChange = (e) => {
-    const { name, value } = e.target;
-    setForm((prev) => ({ ...prev, [name]: value }));
+  // ---------------- STATE ----------------
+  const [activeTab, setActiveTab] = useState("students");
+  const [students, setStudents] = useState([]);
+  const [companies, setCompanies] = useState([]);
+  const [applications, setApplications] = useState([]);
+  const [loading, setLoading] = useState(false);
+
+  // ---------------- HELPERS ----------------
+  const BASE_URL = import.meta.env.VITE_API_URL || "https://skillverify.onrender.com/api";
+
+  const getAuthHeaders = () => ({
+    Authorization: `Bearer ${localStorage.getItem("token")}`,
+  });
+
+  // 🧠 More robust extraction (handles nested or wrapped responses)
+  const extractArray = (data, possibleKeys = []) => {
+    if (Array.isArray(data)) return data;
+    for (const key of ["students", "users", "data", ...possibleKeys]) {
+      if (Array.isArray(data?.[key])) return data[key];
+    }
+    if (Array.isArray(data?.data)) return data.data;
+    return [];
   };
 
-const handleSubmit = async (e) => {
-  e.preventDefault();
-  setLoading(true);
-  setError("");
-  setSuccess("");
+  // Normalize data to consistent structure (avoids missing props)
+  const normalizeUsers = (arr) =>
+    arr.map((u) => ({
+      _id: u._id || u.id || "",
+      name: u.name || `${u.firstName || ""} ${u.lastName || ""}`.trim(),
+      email: u.email || "",
+      verified: u.isVerified || u.verified || false,
+    }));
 
-  try {
-    const res = await API.post("/auth/login", {
-      email: form.email,
-      password: form.password,
-      role: form.role,
-    });
-
-    console.log("Login Route Response:", res.data); // Debug response
-
-    // Check if API returned success
-    if (res.data.success) {
-      const { token, user } = res.data;
-
-      localStorage.setItem("token", token);
-      localStorage.setItem("userEmail", user.email);
-      localStorage.setItem("userName", user.name);
-      localStorage.setItem("userRole", user.role);
-
-      setAuthToken(token);
-      setUserData(user);
-      setSuccess(`✅ Logged in as ${user.email}`);
-
-      // Navigate based on role
-      if (user.role === "student") navigate("/student");
-      else if (user.role === "recruiter") navigate("/recruiter");
-      else if (user.role === "admin") navigate("/admin");
-    } else {
-      // API returned a failed login message
-      setError(res.data.message || "Invalid email or password!");
+  // ---------------- FETCH FUNCTIONS ----------------
+  const fetchStudents = async () => {
+    setLoading(true);
+    try {
+      const res = await axios.get(`${BASE_URL}/admin/students`, { headers: getAuthHeaders() });
+      console.log("fetchStudents response:", res.data);
+      const arr = extractArray(res.data);
+      setStudents(normalizeUsers(arr));
+    } catch (err) {
+      console.error("fetchStudents error:", err.response || err);
+      setStudents([]);
+      if (err.response?.status === 401) navigate("/login");
+    } finally {
+      setLoading(false);
     }
-  } catch (err) {
-    console.error("Login Error:", err.response?.data || err);
-    setError("Something went wrong. Please try again.");
-  } finally {
-    setLoading(false);
-  }
-};
+  };
 
+  const fetchCompanies = async () => {
+    setLoading(true);
+    try {
+      const res = await axios.get(`${BASE_URL}/admin/companies`, { headers: getAuthHeaders() });
+      console.log("fetchCompanies response:", res.data);
+      setCompanies(extractArray(res.data));
+    } catch (err) {
+      console.error("fetchCompanies error:", err.response || err);
+      setCompanies([]);
+    } finally {
+      setLoading(false);
+    }
+  };
 
+  const fetchApplications = async () => {
+    setLoading(true);
+    try {
+      const res = await axios.get(`${BASE_URL}/admin/applications`, { headers: getAuthHeaders() });
+      console.log("fetchApplications response:", res.data);
+      setApplications(extractArray(res.data));
+    } catch (err) {
+      console.error("fetchApplications error:", err.response || err);
+      setApplications([]);
+    } finally {
+      setLoading(false);
+    }
+  };
+
+  // ---------------- VERIFY FUNCTION ----------------
+  const handleVerifyStudent = async (student) => {
+    try {
+      await axios.put(
+        `${BASE_URL}/admin/verify/${student._id}`,
+        {},
+        { headers: getAuthHeaders() }
+      );
+      alert(`✅ ${student.name} verified successfully`);
+      fetchStudents(); // refresh list
+    } catch (err) {
+      console.error("verify error:", err.response || err);
+      alert("❌ Failed to verify student");
+    }
+  };
+
+  // ---------------- EFFECTS ----------------
+  useEffect(() => {
+    // Fetch relevant data only for active tab
+    if (activeTab === "students") fetchStudents();
+    else if (activeTab === "companies") fetchCompanies();
+    else if (activeTab === "applications") fetchApplications();
+  }, [activeTab]);
+
+  // ---------------- UI ----------------
   return (
-    <div className="flex justify-center items-center min-h-[90vh] px-2 sm:px-4">
-      <div className="bg-white w-full max-w-sm sm:max-w-md md:max-w-lg shadow-2xl rounded-2xl p-6 sm:p-8">
-        <div className="text-center mb-5">
-          <h2 className="text-2xl sm:text-3xl font-bold text-gray-800">
-            Welcome Back
-          </h2>
-          <p className="text-gray-500 text-sm sm:text-base">
-            Login as{" "}
-            <span className="font-semibold capitalize">{form.role}</span>
-          </p>
-        </div>
+    <div className="min-h-screen bg-gray-50 p-6">
+      <h1 className="text-2xl font-bold mb-6 text-center text-blue-700">
+        Admin Dashboard
+      </h1>
 
-      
-
-        <div className="text-center text-gray-400 mb-4 text-sm">OR</div>
-
-        {/* Role Selection */}
-        <div className="flex justify-center gap-4 mb-6 text-sm sm:text-base flex-wrap">
-          {["student", "recruiter", "admin"].map((roleOption) => (
-            <label
-              key={roleOption}
-              className="flex items-center gap-2 cursor-pointer"
-            >
-              <input
-                type="radio"
-                name="role"
-                value={roleOption}
-                checked={form.role === roleOption}
-                onChange={handleChange}
-                className="accent-indigo-500"
-              />
-              {roleOption.charAt(0).toUpperCase() + roleOption.slice(1)}
-            </label>
-          ))}
-        </div>
-
-        {/* Form */}
-        <form onSubmit={handleSubmit} className="space-y-4">
-          <input
-            type="email"
-            name="email"
-            placeholder="Email Address"
-            value={form.email}
-            onChange={handleChange}
-            required
-            className="w-full border px-3 py-2 rounded-md focus:ring-2 focus:ring-indigo-400 focus:outline-none text-sm sm:text-base"
-          />
-          <input
-            type="password"
-            name="password"
-            placeholder="Password"
-            value={form.password}
-            onChange={handleChange}
-            required
-            className="w-full border px-3 py-2 rounded-md focus:ring-2 focus:ring-indigo-400 focus:outline-none text-sm sm:text-base"
-          />
-
-          <div className="flex flex-col sm:flex-row items-center justify-between text-sm text-gray-500 gap-2 sm:gap-0">
-            <label className="flex items-center gap-2">
-              <input type="checkbox" className="accent-indigo-500" /> Remember me
-            </label>
-            <a href="#" className="hover:text-indigo-600">
-              Forgot password?
-            </a>
-          </div>
-
+      {/* Tabs */}
+      <div className="flex justify-center gap-4 mb-8">
+        {["students", "companies", "applications"].map((tab) => (
           <button
-            type="submit"
-            disabled={loading}
-            className="w-full bg-indigo-500 hover:bg-indigo-600 text-white py-2 sm:py-2.5 rounded-md font-semibold transition text-sm sm:text-base"
+            key={tab}
+            onClick={() => setActiveTab(tab)}
+            className={`px-5 py-2 rounded-full font-medium transition ${
+              activeTab === tab
+                ? "bg-blue-600 text-white shadow-md"
+                : "bg-white border text-gray-600 hover:bg-gray-100"
+            }`}
           >
-            {loading ? "Logging in..." : "Login"}
+            {tab.charAt(0).toUpperCase() + tab.slice(1)}
           </button>
-        </form>
-
-        {error && (
-          <p className="text-red-500 text-center mt-3 text-sm">{error}</p>
-        )}
-        {success && (
-          <p className="text-green-600 text-center mt-3 text-sm">{success}</p>
-        )}
-
-        <p className="text-center text-xs sm:text-sm text-gray-500 mt-6">
-          Don’t have an account?{" "}
-          <Link
-            to="/register"
-            className="text-indigo-600 font-medium hover:underline"
-          >
-            Register
-          </Link>
-        </p>
+        ))}
       </div>
+
+      {/* ---------- STUDENTS TAB ---------- */}
+      {activeTab === "students" && (
+        <div className="overflow-auto">
+          <h2 className="text-xl font-semibold mb-4">All Students</h2>
+
+          {loading ? (
+            <p className="text-gray-500 p-4">Loading students...</p>
+          ) : students.length === 0 ? (
+            <p className="text-gray-500 p-4">
+              No students found or data still loading.
+            </p>
+          ) : (
+            <table className="min-w-full bg-white rounded shadow">
+              <thead className="bg-gray-100">
+                <tr>
+                  <th className="px-4 py-2 text-left">Name</th>
+                  <th className="px-4 py-2 text-left">Email</th>
+                  <th className="px-4 py-2 text-left">Verified</th>
+                  <th className="px-4 py-2 text-left">Actions</th>
+                </tr>
+              </thead>
+              <tbody>
+                {students.map((stu) => (
+                  <tr key={stu._id || stu.id} className="border-t hover:bg-gray-50">
+                    <td className="px-4 py-2">{stu.name || "—"}</td>
+                    <td className="px-4 py-2">{stu.email || "—"}</td>
+                    <td className="px-4 py-2">
+                      {stu.verified ? "✅ Verified" : "❌ Not Verified"}
+                    </td>
+                    <td className="px-4 py-2">
+                      {!stu.verified && (
+                        <button
+                          onClick={() => handleVerifyStudent(stu)}
+                          className="bg-green-500 text-white px-3 py-1 rounded hover:bg-green-600"
+                        >
+                          Verify
+                        </button>
+                      )}
+                    </td>
+                  </tr>
+                ))}
+              </tbody>
+            </table>
+          )}
+        </div>
+      )}
+
+      {/* ---------- COMPANIES TAB ---------- */}
+      {activeTab === "companies" && (
+        <div className="overflow-auto">
+          <h2 className="text-xl font-semibold mb-4">Registered Companies</h2>
+          {loading ? (
+            <p className="text-gray-500 p-4">Loading companies...</p>
+          ) : companies.length === 0 ? (
+            <p className="text-gray-500 p-4">No companies found.</p>
+          ) : (
+            <table className="min-w-full bg-white rounded shadow">
+              <thead className="bg-gray-100">
+                <tr>
+                  <th className="px-4 py-2 text-left">Company Name</th>
+                  <th className="px-4 py-2 text-left">Email</th>
+                </tr>
+              </thead>
+              <tbody>
+                {companies.map((comp) => (
+                  <tr key={comp._id || comp.id} className="border-t hover:bg-gray-50">
+                    <td className="px-4 py-2">{comp.name || "—"}</td>
+                    <td className="px-4 py-2">{comp.email || "—"}</td>
+                  </tr>
+                ))}
+              </tbody>
+            </table>
+          )}
+        </div>
+      )}
+
+      {/* ---------- APPLICATIONS TAB ---------- */}
+      {activeTab === "applications" && (
+        <div className="overflow-auto">
+          <h2 className="text-xl font-semibold mb-4">All Applications</h2>
+          {loading ? (
+            <p className="text-gray-500 p-4">Loading applications...</p>
+          ) : applications.length === 0 ? (
+            <p className="text-gray-500 p-4">No applications found.</p>
+          ) : (
+            <table className="min-w-full bg-white rounded shadow">
+              <thead className="bg-gray-100">
+                <tr>
+                  <th className="px-4 py-2 text-left">Student</th>
+                  <th className="px-4 py-2 text-left">Company</th>
+                  <th className="px-4 py-2 text-left">Status</th>
+                </tr>
+              </thead>
+              <tbody>
+                {applications.map((app) => (
+                  <tr key={app._id || app.id} className="border-t hover:bg-gray-50">
+                    <td className="px-4 py-2">{app.student?.name || "—"}</td>
+                    <td className="px-4 py-2">{app.company?.name || "—"}</td>
+                    <td className="px-4 py-2">{app.status || "Pending"}</td>
+                  </tr>
+                ))}
+              </tbody>
+            </table>
+          )}
+        </div>
+      )}
     </div>
   );
 }
-
-index.js
-const express = require("express");
-const cors = require("cors");
-const dotenv = require("dotenv");
-const connectDB = require("./config/db");
-
-// Load env vars
-dotenv.config({ path: "./.env" });
-
-if (!process.env.MONGO_URI) {
-  console.error("❌ MONGO_URI is missing. Check your .env file.");
-  process.exit(1);
-} else {
-  console.log("✅ MONGO_URI loaded");
-}
-
-// Connect to MongoDB
-connectDB();
-
-// Seed dummy courses (optional)
-const seedCourses = require("./seed/seedCourses");
-seedCourses();
-
-const app = express();
-
-// Enable CORS for frontend
-app.use(
-  cors({
-    origin: ["https://skill-verify.vercel.app"], // frontend domain
-    credentials: true,
-  })
-);
-
-// Body parser
-app.use(express.json({ limit: "10mb" }));
-
-// Routes
-app.use("/api/courses", require("./routes/courses"));
-app.use("/api/jobs", require("./routes/jobs"));
-app.use("/api/applications", require("./routes/applications"));
-app.use("/api/student", require("./routes/student"));
-app.use("/api/student/profile", require("./routes/studentProfile"));
-app.use("/api/student/register-course", require("./routes/registerCourse"));
-app.use("/api/student/enroll", require("./routes/studentEnroll"));
-app.use("/api/recruiter", require("./routes/recruiter"));
-app.use("/api/admin", require("./routes/admin"));
-app.use("/api/notification", require("./routes/notification"));
-app.use("/api/email-otp", require("./routes/emailOtp"));
-app.use("/api/student/skills", require("./routes/studentSkills"));
-app.use("/api/auth", require("./routes/auth"));
-
-// Default error handler
-app.use((err, req, res, next) => {
-  console.error(err.stack);
-  res.status(500).json({ message: "Server error", error: err.message });
-});
-
-// Start server
-const PORT = process.env.PORT || 5000;
-app.listen(PORT, () => {
-  console.log(`🚀 Server running on port ${PORT}`);
-});
-
-auth.js
-const express = require('express');
-const router = express.Router();
-const { register, login } = require('../controllers/authController');
-
-// Register route
-router.post('/register', register);
-
-// Login route
-router.post('/login', login);
-
-module.exports = router;
-
-authController.js
-const Student = require("../models/Student");
-const Recruiter = require("../models/Recruiter");
-const Admin = require("../models/Admin");
-const bcrypt = require("bcryptjs");
-const jwt = require("jsonwebtoken");
-
-const verifiedEmails = new Set();
-module.exports.verifiedEmails = verifiedEmails;
-
-// REGISTER
-const register = async (req, res) => {
-  try {
-    const { name, email, phone, password, role } = req.body;
-    if (!name || !email || !password || !role)
-      return res.status(400).json({ message: "All fields are required" });
-
-    if (!verifiedEmails.has(email))
-      return res
-        .status(400)
-        .json({ message: "Please verify your email before registering" });
-
-    const existingUser =
-      (await Student.findOne({ email })) ||
-      (await Recruiter.findOne({ email })) ||
-      (await Admin.findOne({ email }));
-
-    if (existingUser)
-      return res.status(409).json({ message: "Email already exists" });
-
-    const hashedPassword = await bcrypt.hash(password, 10);
-
-    let user;
-    if (role === "student")
-      user = new Student({ name, email, phone, password: hashedPassword, skills: [] });
-    else if (role === "recruiter")
-      user = new Recruiter({ name, email, phone, password: hashedPassword });
-    else if (role === "admin")
-      user = new Admin({ name, email, phone, password: hashedPassword });
-    else return res.status(400).json({ message: "Invalid role" });
-
-    await user.save();
-    verifiedEmails.delete(email);
-
-    return res.status(201).json({
-      message: `${role} registered successfully`,
-      user: { _id: user._id, name, email, phone, role },
-    });
-  } catch (err) {
-    console.error("REGISTER ERROR:", err);
-    return res.status(500).json({ message: "Server error", error: err.message });
-  }
-};
-
-// ✅ LOGIN (fixed)
-const login = async (req, res) => {
-  try {
-    const { email, password, role } = req.body;
-
-    if (!email || !password || !role)
-      return res.status(400).json({ message: "All fields are required" });
-
-    // Find user by role
-    let user;
-    if (role === "student") user = await Student.findOne({ email });
-    else if (role === "recruiter") user = await Recruiter.findOne({ email });
-    else if (role === "admin") user = await Admin.findOne({ email });
-    else return res.status(400).json({ message: "Invalid role" });
-
-    if (!user) return res.status(404).json({ message: "User not found" });
-
-    // Compare password
-    const isMatch = await bcrypt.compare(password, user.password);
-    if (!isMatch)
-      return res.status(401).json({ message: "Invalid credentials" });
-
-    // Generate JWT
-    const token = jwt.sign(
-      { id: user._id, role: role },
-      process.env.JWT_SECRET || "defaultsecret",
-      { expiresIn: "7d" }
-    );
-
-    // Success response
-    res.status(200).json({
-      message: "Login successful",
-      token,
-      user: {
-        id: user._id,
-        name: user.name,
-        email: user.email,
-        role: role,
-      },
-    });
-  } catch (err) {
-    console.error("LOGIN ERROR:", err);
-    res.status(500).json({ message: "Server error", error: err.message });
-  }
-};
-
-module.exports = { register, login, verifiedEmails };
