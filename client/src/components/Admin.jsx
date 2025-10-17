@@ -88,7 +88,7 @@ const Admin = () => {
     }
   };
 
-  const fetchUsers = async () => {
+  /* const fetchUsers = async () => {
     try {
       const res = await axios.get(`${BASE_URL}/admin/users`, { headers: getAuthHeaders() });
       console.log("fetchUsers response:", res.data);
@@ -105,7 +105,7 @@ const Admin = () => {
       }
       setUsers([]);
     }
-  };
+  }; */
 
   const fetchJobs = async () => {
     try {
@@ -177,34 +177,34 @@ const Admin = () => {
 
   // --- Load All Data ---
 
-useEffect(() => {
-  const token = getAuthToken();
-  if (!token) {
-    navigate("/login");
-    return;
-  }
-
-  const loadData = async () => {
-    setLoading(true);
-    try {
-      await fetchAdmin();
-      await Promise.allSettled([
-        fetchUsers(),
-        fetchJobs(),
-        fetchCourses(),
-        fetchMockInterviews(),
-        fetchApplications(),
-      ]);
-    } catch (err) {
-      console.error("loadData error:", err);
-    } finally {
-      setLoading(false);
+  useEffect(() => {
+    const token = getAuthToken();
+    if (!token) {
+      navigate("/login");
+      return;
     }
-  };
 
-  loadData();
-  // eslint-disable-next-line react-hooks/exhaustive-deps
-}, []);
+    const loadData = async () => {
+      setLoading(true);
+      try {
+        await fetchAdmin();
+        await Promise.allSettled([
+          fetchCandidates(),
+          fetchJobs(),
+          fetchCourses(),
+          fetchMockInterviews(),
+          fetchApplications(),
+        ]);
+      } catch (err) {
+        console.error("loadData error:", err);
+      } finally {
+        setLoading(false);
+      }
+    };
+
+    loadData();
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, []);
 
 
   // --- Actions ---
@@ -260,10 +260,10 @@ useEffect(() => {
       alert(err.response?.data?.message || "Failed to update application status.");
     }
   };
-   // ---- Fetch Candidates ----
+  // ---- Fetch Candidates ----
   const fetchCandidates = async () => {
     try {
-      const res = await axios.get(`${BASE_URL}/recruiter/students`, {
+      const res = await axios.get(`${BASE_URL}/admin/students`, {
         headers: getAuthHeaders(),
       });
       setCandidates(res.data || []);
@@ -272,7 +272,7 @@ useEffect(() => {
       setCandidates([]);
     }
   };
-  
+
 
   // --- Derived Data ---
   const students = users.filter((u) => u.role?.toLowerCase() === "student");
@@ -286,23 +286,23 @@ useEffect(() => {
     applications: applications.length || jobs.length,
     completedInterviews: mockInterviews.filter((i) => i.status === "Completed").length || Math.floor(users.length * 0.7),
   };
-// ✅ Simple Loading Skeleton (fixes "LoadingSkeleton is not defined" error)
-const LoadingSkeleton = () => (
-  <div className="animate-pulse space-y-4 p-4">
-    <div className="h-6 bg-gray-300 rounded w-1/3"></div>
-    <div className="h-4 bg-gray-200 rounded w-2/3"></div>
-    <div className="h-4 bg-gray-200 rounded w-1/2"></div>
-  </div>
-);
+  // ✅ Simple Loading Skeleton (fixes "LoadingSkeleton is not defined" error)
+  const LoadingSkeleton = () => (
+    <div className="animate-pulse space-y-4 p-4">
+      <div className="h-6 bg-gray-300 rounded w-1/3"></div>
+      <div className="h-4 bg-gray-200 rounded w-2/3"></div>
+      <div className="h-4 bg-gray-200 rounded w-1/2"></div>
+    </div>
+  );
   // --- Utility Functions ---  
   const extractArray = (data, possibleKeys) => {
-    if (Array.isArray(data)) return data; 
+    if (Array.isArray(data)) return data;
     for (const key of possibleKeys) {
       if (Array.isArray(data[key])) return data[key];
-    } 
+    }
     return [];
   };
-  
+
   const tabs = [
     { id: "dashboard", label: "Dashboard", icon: TrendingUp },
     { id: "students", label: "Students", icon: Users },
@@ -450,7 +450,7 @@ const LoadingSkeleton = () => (
             )}
 
             {/* Students */}
-            {activeTab === "students" && (
+            {activeTab === "candidates" && (
               <div className="bg-white rounded-2xl shadow-lg overflow-hidden">
                 <div className="p-6 border-b border-gray-200">
                   <h2 className="text-2xl font-bold text-gray-800">Manage Students</h2>
@@ -521,37 +521,37 @@ const LoadingSkeleton = () => (
                 )}
               </div>
             )}
-            
-        {/* Candidates */}
-        {activeTab === "candidates" && (
-          <div className="bg-white shadow rounded-lg p-4">
-            {candidates.length === 0 ? (
-              <p className="text-gray-500 text-center py-8">
-                No candidates found
-              </p>
-            ) : (
-              <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-                {candidates.map((cand) => (
-                  <div
-                    key={cand._id}
-                    className="border rounded-lg p-4 flex flex-col"
-                  >
-                    <h4 className="font-semibold text-gray-900">{cand.name}</h4>
-                    <p className="text-gray-600">{cand.email}</p>
-                    <p className="text-sm text-gray-500">
-                      Branch: {cand.branch || "-"}, College: {cand.college},{" "}
-                      Graduation: {cand.graduationYear}
-                    </p>
-                    <p className="text-sm text-gray-500">
-                      Skills:{" "}
-                      {cand.skills?.length ? cand.skills.join(", ") : "-"}
-                    </p>
+
+            {/* Candidates */}
+            {activeTab === "candidates" && (
+              <div className="bg-white shadow rounded-lg p-4">
+                {candidates.length === 0 ? (
+                  <p className="text-gray-500 text-center py-8">
+                    No candidates found
+                  </p>
+                ) : (
+                  <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                    {candidates.map((cand) => (
+                      <div
+                        key={cand._id}
+                        className="border rounded-lg p-4 flex flex-col"
+                      >
+                        <h4 className="font-semibold text-gray-900">{cand.name}</h4>
+                        <p className="text-gray-600">{cand.email}</p>
+                        <p className="text-sm text-gray-500">
+                          Branch: {cand.branch || "-"}, College: {cand.college},{" "}
+                          Graduation: {cand.graduationYear}
+                        </p>
+                        <p className="text-sm text-gray-500">
+                          Skills:{" "}
+                          {cand.skills?.length ? cand.skills.join(", ") : "-"}
+                        </p>
+                      </div>
+                    ))}
                   </div>
-                ))}
+                )}
               </div>
             )}
-          </div>
-        )}
 
 
             {/* Recruiters */}
