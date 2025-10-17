@@ -286,7 +286,23 @@ useEffect(() => {
     applications: applications.length || jobs.length,
     completedInterviews: mockInterviews.filter((i) => i.status === "Completed").length || Math.floor(users.length * 0.7),
   };
-
+// ✅ Simple Loading Skeleton (fixes "LoadingSkeleton is not defined" error)
+const LoadingSkeleton = () => (
+  <div className="animate-pulse space-y-4 p-4">
+    <div className="h-6 bg-gray-300 rounded w-1/3"></div>
+    <div className="h-4 bg-gray-200 rounded w-2/3"></div>
+    <div className="h-4 bg-gray-200 rounded w-1/2"></div>
+  </div>
+);
+  // --- Utility Functions ---  
+  const extractArray = (data, possibleKeys) => {
+    if (Array.isArray(data)) return data; 
+    for (const key of possibleKeys) {
+      if (Array.isArray(data[key])) return data[key];
+    } 
+    return [];
+  };
+  
   const tabs = [
     { id: "dashboard", label: "Dashboard", icon: TrendingUp },
     { id: "students", label: "Students", icon: Users },
