@@ -21,7 +21,6 @@ import {
   Target,
   X
 } from 'lucide-react';
-import { supabase } from '../lib/supabase';
 
 function Recruiter() {
   const [students, setStudents] = useState([]);
