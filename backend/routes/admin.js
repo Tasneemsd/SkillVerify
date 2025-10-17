@@ -34,4 +34,4 @@ router.get('/reports', adminController.generateReports);
 router.get('/job-applications/:jobId', adminController.getApplicationsForJob);
 
 module.exports = router;
-router.get("/applications", getApplications);
+router.get("/applications", adminController.getApplications);
