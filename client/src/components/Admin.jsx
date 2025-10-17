@@ -83,6 +83,7 @@ const Admin = () => {
   const [mobileMenuOpen, setMobileMenuOpen] = useState(false);
   const [dropdownOpen, setDropdownOpen] = useState(false);
   const [showModal, setShowModal] = useState(false);
+  const [candidates, setCandidates] = useState([]);
   const [selectedStudent, setSelectedStudent] = useState(null);
 
   // --- Auth Helpers ---
@@ -291,6 +292,19 @@ useEffect(() => {
       alert(err.response?.data?.message || "Failed to update application status.");
     }
   };
+   // ---- Fetch Candidates ----
+  const fetchCandidates = async () => {
+    try {
+      const res = await axios.get(`${BASE_URL}/recruiter/students`, {
+        headers: getAuthHeaders(),
+      });
+      setCandidates(res.data || []);
+    } catch (err) {
+      console.error("FETCH CANDIDATES ERROR:", err);
+      setCandidates([]);
+    }
+  };
+  
 
   // --- Derived Data ---
   const students = users.filter((u) => u.role?.toLowerCase() === "student");
@@ -309,6 +323,7 @@ useEffect(() => {
     { id: "dashboard", label: "Dashboard", icon: TrendingUp },
     { id: "students", label: "Students", icon: Users },
     { id: "nonVerified", label: "Non-Verified Students", icon: UserX },
+    { id: "candidates", label: "Candidates", icon: Users },
     { id: "interviews", label: "Mock Interviews", icon: MessageSquare },
     { id: "recruiters", label: "Recruiters", icon: Briefcase },
     { id: "applications", label: "Applications", icon: FileText },
@@ -522,6 +537,38 @@ useEffect(() => {
                 )}
               </div>
             )}
+            
+        {/* Candidates */}
+        {activeTab === "candidates" && (
+          <div className="bg-white shadow rounded-lg p-4">
+            {candidates.length === 0 ? (
+              <p className="text-gray-500 text-center py-8">
+                No candidates found
+              </p>
+            ) : (
+              <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                {candidates.map((cand) => (
+                  <div
+                    key={cand._id}
+                    className="border rounded-lg p-4 flex flex-col"
+                  >
+                    <h4 className="font-semibold text-gray-900">{cand.name}</h4>
+                    <p className="text-gray-600">{cand.email}</p>
+                    <p className="text-sm text-gray-500">
+                      Branch: {cand.branch || "-"}, College: {cand.college},{" "}
+                      Graduation: {cand.graduationYear}
+                    </p>
+                    <p className="text-sm text-gray-500">
+                      Skills:{" "}
+                      {cand.skills?.length ? cand.skills.join(", ") : "-"}
+                    </p>
+                  </div>
+                ))}
+              </div>
+            )}
+          </div>
+        )}
+
 
             {/* Recruiters */}
             {activeTab === "recruiters" && (
