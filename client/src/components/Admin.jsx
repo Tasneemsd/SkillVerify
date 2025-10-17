@@ -263,7 +263,7 @@ const Admin = () => {
   // ---- Fetch Candidates ----
   const fetchCandidates = async () => {
     try {
-      const res = await axios.get(`${BASE_URL}/admin/students`, {
+      const res = await axios.get(`${BASE_URL}/admin/candidates`, {
         headers: getAuthHeaders(),
       });
       setCandidates(res.data || []);
