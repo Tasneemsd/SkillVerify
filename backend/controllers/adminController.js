@@ -112,7 +112,15 @@ exports.getApplicationsForJob = async (req, res) => {
     res.status(500).json({ message: 'Failed to fetch applications', error: err.message });
   }
 };
-
+exports.getApplications = async (req, res) => {
+  try {
+    const apps = await Application.find().populate("student job");
+    res.json({ applications: apps });
+  } catch (err) {
+    console.error(err);
+    res.status(500).json({ message: "Failed to fetch applications" });
+  }
+};
 // 📋 Get all courses with student registration count
 exports.getCoursesWithRegistrations = async (req, res) => {
   try {
