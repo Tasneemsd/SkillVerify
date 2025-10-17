@@ -307,3 +307,13 @@ exports.getAllApplications = async (req, res) => {
     res.status(500).json({ message: "Failed to fetch applications", error: err.message });
   }
 };
+
+// GET /recruiter/candidates
+exports.getCandidates = async (req, res) => {
+  try {
+    const candidates = await Student.find({ appliedJob: { $exists: true } });
+    res.json(candidates);
+  } catch (err) {
+    res.status(500).json({ message: err.message });
+  }
+};
