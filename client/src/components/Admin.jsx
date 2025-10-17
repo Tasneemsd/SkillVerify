@@ -417,7 +417,7 @@ const Admin = () => {
             <div className="hidden md:block">
               <div className="w-64 h-64 bg-white/10 rounded-full backdrop-blur-sm flex items-center justify-center">
                <img
-                    src="https://www.google.com/url?sa=i&url=https%3A%2F%2Fwww.vecteezy.com%2Ffree-vector%2Fjob-portal&psig=AOvVaw2ulVrmErTTPZAVKz9OWUHH&ust=1760807712977000&source=images&cd=vfe&opi=89978449&ved=0CBUQjRxqFwoTCPj8lJTeq5ADFQAAAAAdAAAAABAE"
+                    src="https://static.vecteezy.com/system/resources/previews/025/441/277/non_2x/job-hiring-and-job-search-concept-headhunting-we-are-hiring-tiny-people-interviewed-for-job-modern-flat-cartoon-style-illustration-on-white-background-vector.jpg"
                     alt="Student Illustration"
                     className="w-56 h-56 object-cover rounded-full drop-shadow-lg"
                   />
