@@ -10,12 +10,13 @@ router.get('/students-with-skills', adminController.getAllStudentsWithSkills);
 router.post('/verify-skill', adminController.verifyStudentSkill);
 router.get('/jobs', adminController.getAllJobs);
 router.post('/schedule-mock', adminController.scheduleMockInterview);
+
 router.post('/verify-student', adminController.verifyStudent);
 router.get('/verified-students', adminController.getVerifiedStudents);
 router.get('/non-verified-students', adminController.getNonVerifiedStudents);
 router.get('/recruiters', adminController.getAllRecruiters);
 router.post('/approve-recruiter', adminController.approveRecruiter);
-router.get('/reports', adminController.generateReports);
+
 router.get('/candidates', adminController.getCandidates);
 
 // --- NEW ROUTES FOR FRONTEND ---
