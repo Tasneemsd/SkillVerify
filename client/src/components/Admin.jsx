@@ -88,9 +88,9 @@ const Admin = () => {
     }
   };
 
-  /* const fetchUsers = async () => {
+  const fetchCandidates = async () => {
     try {
-      const res = await axios.get(`${BASE_URL}/admin/users`, { headers: getAuthHeaders() });
+      const res = await axios.get(`${BASE_URL}/admin/candidates`, { headers: getAuthHeaders() });
       console.log("fetchUsers response:", res.data);
       // If backend returns array => res.data is array. If wrapped => try common keys
       const arr = extractArray(res.data, []);
@@ -105,7 +105,7 @@ const Admin = () => {
       }
       setUsers([]);
     }
-  }; */
+  }; 
 
   const fetchJobs = async () => {
     try {
@@ -261,17 +261,7 @@ const Admin = () => {
     }
   };
   // ---- Fetch Candidates ----
-  const fetchCandidates = async () => {
-    try {
-      const res = await axios.get(`${BASE_URL}/admin/candidates`, {
-        headers: getAuthHeaders(),
-      });
-      setCandidates(res.data || []);
-    } catch (err) {
-      console.error("FETCH CANDIDATES ERROR:", err);
-      setCandidates([]);
-    }
-  };
+ 
 
 
   // --- Derived Data ---
