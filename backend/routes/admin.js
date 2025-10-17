@@ -13,7 +13,7 @@ router.post('/schedule-mock', adminController.scheduleMockInterview);
 
 router.post('/verify-student', adminController.verifyStudent);
 router.get('/verified-students', adminController.getVerifiedStudents);
-router.get('/non-verified-students', adminController.getNonVerifiedStudents);
+
 router.get('/recruiters', adminController.getAllRecruiters);
 router.post('/approve-recruiter', adminController.approveRecruiter);
 
