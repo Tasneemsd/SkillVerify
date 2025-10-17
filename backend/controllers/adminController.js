@@ -1,11 +1,8 @@
-// ===============================
-// 📦 Imports
-// ===============================
 const Course = require('../models/Course');
 const Student = require('../models/Student');
 const Job = require('../models/Job');
-const Notification = require('../models/Notification');
 const Application = require("../models/Application");
+const Notification = require('../models/Notification');
 const Recruiter = require('../models/Recruiter');
 
 // ===============================
@@ -36,46 +33,6 @@ exports.createCourse = async (req, res) => {
     res.status(500).json({ message: 'Error creating course.', error: err.message });
   }
 };
-// Get all applications (Admin)
-exports.getAllApplications = async (req, res) => {
-  try {
-    const applications = await Application.find()
-      .populate('studentId', 'name email rollNo contactNumber skills profilePicture')
-      .populate('jobId', 'title postedByEmail type')
-      .sort({ appliedOn: -1 });
-
-    // Map data for frontend
-    const data = applications.map(app => ({
-      _id: app._id,
-      studentId: app.studentId._id,
-      studentName: app.studentId.name,
-      studentEmail: app.studentId.email,
-      studentRollNo: app.studentId.rollNo,
-      studentContact: app.studentId.contactNumber,
-      studentSkills: app.studentId.skills,
-      studentProfilePicture: app.studentId.profilePicture,
-
-      jobId: app.jobId._id,
-      jobTitle: app.jobId.title,
-      company: app.jobId.postedByEmail,
-      jobType: app.jobId.type,
-
-      status: app.status,
-      appliedOn: app.appliedOn,
-    }));
-
-    res.json(data);
-  } catch (err) {
-    console.error("Get applications error:", err);
-    res.status(500).json({ message: 'Failed to fetch applications', error: err.message });
-  }
-};
-
-// ===============================
-// 📄 JOB MANAGEMENT
-// ===============================
-
-
 // Get all jobs (Admin) with applied students info
 exports.getAllJobs = async (req, res) => {
   try {
@@ -93,12 +50,14 @@ exports.getAllJobs = async (req, res) => {
       salary: job.salary,
       stipend: job.stipend,
       skillsRequired: job.skillsRequired,
-      postedBy: job.postedBy ? {
-        _id: job.postedBy._id,
-        name: job.postedBy.name,
-        email: job.postedBy.email,
-        company: job.postedBy.company,
-      } : null,
+      postedBy: job.postedBy
+        ? {
+            _id: job.postedBy._id,
+            name: job.postedBy.name,
+            email: job.postedBy.email,
+            company: job.postedBy.company,
+          }
+        : null,
       postedAt: job.postedAt,
       isActive: job.isActive,
       appliedStudents: job.appliedBy.map(a => ({
@@ -109,14 +68,48 @@ exports.getAllJobs = async (req, res) => {
         skills: a.student.skills,
         profilePicture: a.student.profilePicture,
         status: a.status,
-        appliedAt: a.appliedAt
-      }))
+        appliedAt: a.appliedAt,
+      })),
     }));
 
     res.json(data);
   } catch (err) {
     console.error("Get jobs error:", err);
     res.status(500).json({ message: 'Failed to fetch jobs', error: err.message });
+  }
+};
+
+// Get all applications for a specific job
+exports.getApplicationsForJob = async (req, res) => {
+  try {
+    const { jobId } = req.params;
+
+    const applications = await Application.find({ jobId })
+      .populate('studentId', 'name email rollNo contactNumber skills profilePicture')
+      .populate('jobId', 'title postedByEmail type')
+      .sort({ appliedOn: -1 });
+
+    const data = applications.map(app => ({
+      _id: app._id,
+      studentId: app.studentId._id,
+      studentName: app.studentId.name,
+      studentEmail: app.studentId.email,
+      studentRollNo: app.studentId.rollNo,
+      studentContact: app.studentId.contactNumber,
+      studentSkills: app.studentId.skills,
+      studentProfilePicture: app.studentId.profilePicture,
+      jobId: app.jobId._id,
+      jobTitle: app.jobId.title,
+      company: app.jobId.postedByEmail,
+      jobType: app.jobId.type,
+      status: app.status,
+      appliedOn: app.appliedOn,
+    }));
+
+    res.json(data);
+  } catch (err) {
+    console.error("Get applications for job error:", err);
+    res.status(500).json({ message: 'Failed to fetch applications', error: err.message });
   }
 };
 

@@ -1,50 +1,36 @@
 const express = require('express');
-const adminController = require('../controllers/adminController');
-const Application = require("../models/Application");
-const Job = require("../models/Job");
 const router = express.Router();
+const adminController = require('../controllers/adminController');
 
-// ===============================
-// 🏫 COURSE MANAGEMENT
-// ===============================
+// COURSE ROUTES
 router.post('/create-course', adminController.createCourse);
 router.get('/courses-with-registrations', adminController.getCoursesWithRegistrations);
 router.get('/registrations/:courseId', adminController.getRegistrationsForCourse);
-router.get('/jobs', adminController.getAllJobs);
-// ===============================
-// 👨‍🎓 STUDENT MANAGEMENT
-// ===============================
-router.get('/students', adminController.getAllStudents);
 
+// JOB ROUTES
+router.get('/jobs', adminController.getAllJobs);
+
+// STUDENT ROUTES
+router.get('/students', adminController.getAllStudents);
 router.get('/students-with-skills', adminController.getAllStudentsWithSkills);
 router.post('/verify-skill', adminController.verifyStudentSkill);
 
-// ===============================
-// 🎯 MOCK INTERVIEW & BADGE
-// ===============================
+// MOCK INTERVIEWS & BADGES
 router.post('/schedule-mock', adminController.scheduleMockInterview);
-router.post('/verify-student-badge', adminController.verifyStudentAndAwardBadge); // ✅ NEW: verify + badge
+router.post('/verify-student-badge', adminController.verifyStudentAndAwardBadge);
 router.get('/mock-interviews', adminController.getAllMockInterviews);
 
-// ===============================
-// 👩‍💼 VERIFIED STUDENTS (Recruiter View)
-// ===============================
+// VERIFIED STUDENTS
 router.get('/verified-students', adminController.getVerifiedStudents);
 
-// ===============================
-// 🧑‍💼 RECRUITER MANAGEMENT
-// ===============================
+// RECRUITER ROUTES
 router.get('/recruiters', adminController.getAllRecruiters);
 router.post('/toggle-recruiter', adminController.toggleRecruiterApproval);
 
-// ===============================
-// 📊 DASHBOARD & REPORTS
-// ===============================
+// DASHBOARD & REPORTS
 router.get('/reports', adminController.generateReports);
-router.get('/applications',adminController.getAllApplications);
+
+// APPLICATIONS
 router.get('/job-applications/:jobId', adminController.getApplicationsForJob);
 
-// ===============================
-// ✅ EXPORT ROUTER
-// ===============================
 module.exports = router;
