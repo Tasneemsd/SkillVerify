@@ -29,7 +29,7 @@ router.post("/send-otp", async (req, res) => {
 
   try {
     const mailOptions = {
-      from: `"SkillVerify" <${process.env.SENDER_EMAIL}>`,
+      from: `"SkillVerify" <${process.env.EMAIL_USER}>`,
       to: email,
       subject: "Your OTP Code",
       html: `
