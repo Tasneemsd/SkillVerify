@@ -267,7 +267,7 @@ function Student() {
 
     // 2️⃣ Initialize Razorpay checkout
     const options = {
-      key: import.meta.env.VITE_RAZORPAY_KEY_ID || "your_live_key_here", // keep it secure
+      key: import.meta.env.RAZORPAY_KEY_ID || rzp_live_RU9VteoKvCVxku, // keep it secure
       amount: order.amount,
       currency: order.currency,
       name: "Learnfinity Mock Interview",
