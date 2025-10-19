@@ -247,7 +247,8 @@ function Student() {
     }
   };
   // ✅ Mock Interview Payment
-  const handleMockPayment = async () => {
+// ✅ Mock Interview Payment
+const handleMockPayment = async () => {
   try {
     const token = localStorage.getItem("token");
     if (!token) return alert("You must be logged in to make a payment.");
@@ -267,17 +268,17 @@ function Student() {
 
     // 2️⃣ Initialize Razorpay checkout
     const options = {
-      key: import.meta.env.RAZORPAY_KEY_ID || rzp_live_RU9VteoKvCVxku, // keep it secure
-      amount: order.amount,
+      key: import.meta.env.RAZORPAY_KEY_ID || "rzp_live_RU9VteoKvCVxku", // ✅ Correct key
+      amount: order.amount, // razorpay expects in paisa internally
       currency: order.currency,
-      name: "Learnfinity Mock Interview",
+      name: "VHireToday Mock Interview",
       description: "Mock Interview Verification Fee",
       order_id: order.id,
       handler: async function (response) {
         try {
           // 3️⃣ Verify payment on backend
           const verifyRes = await API.post(
-            "/payment/verify-payment",
+            "/razorpay/verify-payment", // ✅ Corrected route path
             {
               razorpay_order_id: response.razorpay_order_id,
               razorpay_payment_id: response.razorpay_payment_id,
@@ -295,8 +296,6 @@ function Student() {
             );
 
             alert("✅ Payment successful! You can now schedule your mock interview.");
-
-            // Update local UI state
             setMockInterviewStatus(true);
             setIsVerified(true);
           } else {
@@ -311,15 +310,12 @@ function Student() {
         name: `${student?.firstName || ""} ${student?.lastName || ""}`,
         email: student?.email || "",
       },
-      theme: {
-        color: "#4F46E5",
-      },
+      theme: { color: "#4F46E5" },
     };
 
     const razorpay = new window.Razorpay(options);
     razorpay.open();
 
-    // Handle close event (optional)
     razorpay.on("payment.failed", function (response) {
       alert("❌ Payment failed or cancelled.");
       console.error("Payment failed:", response.error);
