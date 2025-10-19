@@ -154,4 +154,19 @@ router.post("/mock-interview/schedule", authMiddleware, async (req, res) => {
   }
 });
 
+router.post("/verify-payment-success", authMiddleware, async (req, res) => {
+  try {
+    const student = await Student.findByIdAndUpdate(
+      req.user.id,
+      { isVerified: true },
+      { new: true }
+    );
+    res.json({ success: true, student });
+  } catch (err) {
+    console.error("Verify payment update error:", err);
+    res.status(500).json({ message: "Failed to update verification status" });
+  }
+});
+
+
 module.exports = router;
