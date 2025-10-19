@@ -256,7 +256,7 @@ function Student() {
 
     // 1️⃣ Create order from backend
     const { data: order } = await API.post(
-      "/payment/create-order",
+      "/razorpay/create-order",
       { amount },
       { headers: { Authorization: `Bearer ${token}` } }
     );
