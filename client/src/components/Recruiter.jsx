@@ -181,7 +181,8 @@ const updateNotes = async (studentId, notes) => {
     setFilters(prev => ({ ...prev, [key]: value }));
   };
   const [showDropdown, setShowDropdown] = useState(false);
-  const recruiter = getCurrentUser(); // Assume this function fetches the logged-in recruiter details
+// FIX — use this instead
+const recruiter = JSON.parse(localStorage.getItem("user")) || {};
   const handleLogout = () => {
     localStorage.removeItem("token");
     localStorage.removeItem("user");
