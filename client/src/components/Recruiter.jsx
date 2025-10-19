@@ -132,6 +132,20 @@ function Recruiter() {
   const handleFilterChange = (key, value) => {
     setFilters(prev => ({ ...prev, [key]: value }));
   };
+  const [showDropdown, setShowDropdown] = useState(false);
+  const recruiter = getCurrentUser(); // Assume this function fetches the logged-in recruiter details
+  const handleLogout = () => {
+    localStorage.removeItem("token");
+    localStorage.removeItem("user");
+    window.location.href = "/login";
+  };
+  const getUserInitials = (name) => {
+    if (!name) return "R";
+    const names = name.split(" ");
+    const initials = names.map(n => n.charAt(0).toUpperCase()).join("");
+    return initials.slice(0, 2);
+  };
+
 
   const clearFilters = () => {
     setFilters({
@@ -187,6 +201,52 @@ function Recruiter() {
 
   return (
     <div className="min-h-screen bg-gray-50">
+          {/* Navigation */}
+            <nav className="bg-white shadow-sm border-b sticky top-0 z-50">
+              <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+                <div className="flex justify-between items-center h-16">
+                  <Link to="/" className="flex items-center gap-2 text-blue-600 font-bold text-xl hover:opacity-80 transition-opacity">
+                    <img src="/logos.png" alt="Logo" className="h-48 w-auto" />
+                  </Link>
+      
+                  {/* Profile Section */}
+                  <div className="relative flex items-center gap-3">
+                    <div className="hidden sm:block">
+                      <p className="text-gray-700 font-medium">
+                        Welcome,{" "}
+                        <span className="font-bold">{recruiter?.name || "Student"}</span>
+                       
+                      </p>
+      
+                    </div>
+                    <button
+                      onClick={() => setShowDropdown(!showDropdown)}
+                      className="w-10 h-10 rounded-full bg-blue-600 text-white flex items-center justify-center font-semibold text-sm hover:bg-blue-700 transition-all duration-200"
+                    >
+                      {getUserInitials(recruiter?.name)}
+                    </button>
+      
+                    {showDropdown && (
+                      <div className="absolute right-0 top-full mt-2 w-56 bg-white rounded-lg shadow-xl py-2 z-50 border border-gray-200">
+                        <div className="px-4 py-3 border-b">
+                          <p className="font-semibold text-gray-800">
+                            {recruiter?.name || "Recruiter"}
+                          </p>
+                          <p className="text-sm text-gray-500">{recruiter?.email}</p>
+                        </div>
+                        
+                        <button
+                          onClick={handleLogout}
+                          className="flex items-center gap-2 w-full text-left px-4 py-2 text-sm text-red-600 hover:bg-red-50 transition-colors"
+                        >
+                          <LogOut className="w-4 h-4" /> Logout
+                        </button>
+                      </div>
+                    )}
+                  </div>
+                </div>
+              </div>
+            </nav>
       <div className="bg-gradient-to-r from-blue-600 to-blue-800 text-white">
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-16">
           <div className="flex flex-col md:flex-row items-center justify-between">
