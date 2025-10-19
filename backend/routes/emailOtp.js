@@ -1,6 +1,6 @@
 const express = require("express");
 const router = express.Router();
-const axios = require("axios");
+const nodemailer = require("nodemailer");
 const { verifiedEmails } = require("../controllers/authController"); // shared set
 
 const otpStore = new Map();
@@ -8,6 +8,15 @@ const otpStore = new Map();
 // Generate 6-digit OTP
 const generateOtp = () => Math.floor(100000 + Math.random() * 900000).toString();
 const OTP_EXPIRY = 5 * 60 * 1000; // 5 minutes
+
+// Configure Nodemailer transporter (Gmail example)
+const transporter = nodemailer.createTransport({
+  service: "gmail",
+  auth: {
+    user: process.env.EMAIL_USER, // your email
+    pass: process.env.EMAIL_PASS, // app password or real password
+  },
+});
 
 // Send OTP
 router.post("/send-otp", async (req, res) => {
@@ -19,28 +28,23 @@ router.post("/send-otp", async (req, res) => {
   otpStore.set(email, { otp, expiresAt });
 
   try {
-    await axios.post(
-      "https://api.sendinblue.com/v3/smtp/email",
-      {
-        sender: { email: process.env.SENDER_EMAIL, name: "SkillVerify" },
-        to: [{ email }],
-        subject: "Your OTP Code",
-        htmlContent: `<h2>Email Verification</h2>
-                      <p>Your OTP code is:</p>
-                      <h1>${otp}</h1>
-                      <p>Valid for 5 minutes.</p>`,
-      },
-      {
-        headers: {
-          "api-key": process.env.SENDINBLUE_API_KEY,
-          "Content-Type": "application/json",
-        },
-      }
-    );
+    const mailOptions = {
+      from: `"SkillVerify" <${process.env.SENDER_EMAIL}>`,
+      to: email,
+      subject: "Your OTP Code",
+      html: `
+        <h2>Email Verification</h2>
+        <p>Your OTP code is:</p>
+        <h1>${otp}</h1>
+        <p>Valid for 5 minutes.</p>
+      `,
+    };
+
+    await transporter.sendMail(mailOptions);
 
     res.json({ success: true, message: "OTP sent successfully!" });
   } catch (err) {
-    console.error("❌ Send OTP Error:", err.response?.data || err.message);
+    console.error("❌ Send OTP Error:", err.message);
     res.status(500).json({ message: "Failed to send OTP" });
   }
 });
@@ -48,15 +52,18 @@ router.post("/send-otp", async (req, res) => {
 // Verify OTP
 router.post("/verify-otp", (req, res) => {
   const { email, code } = req.body;
-  if (!email || !code) return res.status(400).json({ message: "Email and OTP required" });
+  if (!email || !code)
+    return res.status(400).json({ message: "Email and OTP required" });
 
   const record = otpStore.get(email);
-  if (!record) return res.status(400).json({ message: "No OTP sent to this email" });
+  if (!record)
+    return res.status(400).json({ message: "No OTP sent to this email" });
   if (Date.now() > record.expiresAt) {
     otpStore.delete(email);
     return res.status(400).json({ message: "OTP expired. Request again." });
   }
-  if (record.otp !== code) return res.status(400).json({ message: "Invalid OTP" });
+  if (record.otp !== code)
+    return res.status(400).json({ message: "Invalid OTP" });
 
   otpStore.delete(email);
   verifiedEmails.add(email); // mark as verified
