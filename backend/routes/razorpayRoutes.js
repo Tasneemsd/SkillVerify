@@ -46,4 +46,4 @@ router.post("/verify-payment", (req, res) => {
   }
 });
 
-export default router;
+module.exports = router;
