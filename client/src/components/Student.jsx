@@ -375,7 +375,7 @@ const handleMockPayment = async () => {
     );
 
   return (
-    <div className="min-h-screen bg-gray-50">
+    <div className="min-h-screen flex flex-col bg-gray-50">
 
       {/* Navigation */}
       <nav className="bg-white shadow-sm border-b sticky top-0 z-50">
@@ -478,7 +478,7 @@ const handleMockPayment = async () => {
       </div>
 
       {/* Tabs */}
-      <div className="bg-white border-b-slate-50 sticky top-16 z-40">
+      <div className="bg-white border-b sticky top-16 z-40">
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
           <div className="flex gap-8 overflow-x-auto">
             {[
@@ -507,7 +507,7 @@ const handleMockPayment = async () => {
 
 
       {/* Tab Content */}
-      <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
+      <div className="flex-1 overflow-auto max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
         {/* Available Courses */}
         {activeTab === "courses" && (
           <div>
