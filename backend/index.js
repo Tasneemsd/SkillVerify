@@ -40,6 +40,7 @@ app.use("/api/applications", require("./routes/applications"));
 app.use("/api/student", require("./routes/student"));
 app.use("/api/razorpay", require("./routes/razorpayRoutes"));
 
+
 app.use("/api/student/profile", require("./routes/studentProfile"));
 app.use("/api/student/register-course", require("./routes/registerCourse"));
 app.use("/api/student/enroll", require("./routes/studentEnroll"));
