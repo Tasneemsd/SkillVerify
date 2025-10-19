@@ -24,6 +24,7 @@ import {
 
 function Recruiter() {
   const [students, setStudents] = useState([]);
+  
   const [filteredStudents, setFilteredStudents] = useState([]);
   const [loading, setLoading] = useState(true);
   const [activeTab, setActiveTab] = useState('all');
@@ -80,7 +81,7 @@ const toggleShortlist = async (studentId, currentStatus) => {
 // Toggle interview
 const toggleInterview = async (studentId, currentStatus) => {
   try {
-    await fetch(`/api/students/${studentId}/interview`, {
+    await fetch(`/students/${studentId}/interview`, {
       method: 'PATCH',
       headers: { 'Content-Type': 'application/json' },
       body: JSON.stringify({ interview_scheduled: !currentStatus })
@@ -96,7 +97,7 @@ const toggleInterview = async (studentId, currentStatus) => {
 // Update recruiter notes
 const updateNotes = async (studentId, notes) => {
   try {
-    await fetch(`/api/students/${studentId}/notes`, {
+    await fetch(`/students/${studentId}/notes`, {
       method: 'PATCH',
       headers: { 'Content-Type': 'application/json' },
       body: JSON.stringify({ recruiter_notes: notes })
