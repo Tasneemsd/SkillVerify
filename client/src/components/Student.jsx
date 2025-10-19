@@ -162,6 +162,8 @@ function Student() {
     }
   };
 
+  
+
   // Skills
   const handleAddSkill = async () => {
     if (!newSkillName.trim()) return alert("Please enter a skill name");
@@ -246,23 +248,87 @@ function Student() {
   };
   // ✅ Mock Interview Payment
   const handleMockPayment = async () => {
-    try {
-      const token = localStorage.getItem("token");
-      const res = await API.post(
-        "/student/mock-interview/pay",
-        {},
-        { headers: { Authorization: `Bearer ${token}` } }
-      );
-      if (res.data.success) {
-        alert("Payment successful! You can now schedule your mock interview.");
-      } else {
-        alert("Payment failed. Please try again.");
-      }
-    } catch (err) {
-      console.error("Payment error:", err);
-      alert(err.response?.data?.message || "Payment failed");
+  try {
+    const token = localStorage.getItem("token");
+    if (!token) return alert("You must be logged in to make a payment.");
+
+    const amount = 499;
+
+    // 1️⃣ Create order from backend
+    const { data: order } = await API.post(
+      "/payment/create-order",
+      { amount },
+      { headers: { Authorization: `Bearer ${token}` } }
+    );
+
+    if (!order || !order.id) {
+      throw new Error("Failed to create payment order. Please try again.");
     }
-  };
+
+    // 2️⃣ Initialize Razorpay checkout
+    const options = {
+      key: import.meta.env.VITE_RAZORPAY_KEY_ID || "your_live_key_here", // keep it secure
+      amount: order.amount,
+      currency: order.currency,
+      name: "Learnfinity Mock Interview",
+      description: "Mock Interview Verification Fee",
+      order_id: order.id,
+      handler: async function (response) {
+        try {
+          // 3️⃣ Verify payment on backend
+          const verifyRes = await API.post(
+            "/payment/verify-payment",
+            {
+              razorpay_order_id: response.razorpay_order_id,
+              razorpay_payment_id: response.razorpay_payment_id,
+              razorpay_signature: response.razorpay_signature,
+            },
+            { headers: { Authorization: `Bearer ${token}` } }
+          );
+
+          if (verifyRes.status === 200) {
+            // 4️⃣ Mark student as verified
+            await API.post(
+              "/student/verify-payment-success",
+              {},
+              { headers: { Authorization: `Bearer ${token}` } }
+            );
+
+            alert("✅ Payment successful! You can now schedule your mock interview.");
+
+            // Update local UI state
+            setMockInterviewStatus(true);
+            setIsVerified(true);
+          } else {
+            alert("❌ Payment verification failed. Please contact support.");
+          }
+        } catch (err) {
+          console.error("Verification Error:", err);
+          alert("Payment verification failed. Please try again.");
+        }
+      },
+      prefill: {
+        name: `${student?.firstName || ""} ${student?.lastName || ""}`,
+        email: student?.email || "",
+      },
+      theme: {
+        color: "#4F46E5",
+      },
+    };
+
+    const razorpay = new window.Razorpay(options);
+    razorpay.open();
+
+    // Handle close event (optional)
+    razorpay.on("payment.failed", function (response) {
+      alert("❌ Payment failed or cancelled.");
+      console.error("Payment failed:", response.error);
+    });
+  } catch (error) {
+    console.error("Payment Error:", error);
+    alert(error.response?.data?.message || "Failed to initialize payment. Please try again.");
+  }
+};
 
   const getSkillColor = (level) => {
     switch (level) {
@@ -827,7 +893,7 @@ function Student() {
                       Please complete the ₹499 verification fee to enable scheduling.
                     </p>
                     <button
-                      onClick={handleMockPayment}
+                        onClick={handleMockPayment}
                       className="px-6 py-2 bg-green-600 text-white rounded-lg hover:bg-green-700 font-semibold transition-all duration-200"
                     >
                       Pay ₹499 to Proceed
