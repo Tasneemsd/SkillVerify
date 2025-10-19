@@ -48,20 +48,67 @@ function Recruiter() {
     applyFilters();
   }, [students, filters, activeTab]);
 
-  const fetchStudents = async () => {
-    setLoading(true);
-    const { data, error } = await supabase
-      .from('students')
-      .select('*')
-      .order('created_at', { ascending: false });
+  // Fetch students
+const fetchStudents = async () => {
+  setLoading(true);
+  try {
+    const res = await fetch('/api/students'); // GET all students
+    const data = await res.json();
+    setStudents(data || []);
+  } catch (err) {
+    console.error('Error fetching students:', err);
+  }
+  setLoading(false);
+};
 
-    if (error) {
-      console.error('Error fetching students:', error);
-    } else {
-      setStudents(data || []);
-    }
-    setLoading(false);
-  };
+// Toggle shortlist
+const toggleShortlist = async (studentId, currentStatus) => {
+  try {
+    await fetch(`/api/students/${studentId}/shortlist`, {
+      method: 'PATCH',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ shortlisted: !currentStatus })
+    });
+    setStudents(prev =>
+      prev.map(s => s._id === studentId ? { ...s, shortlisted: !currentStatus } : s)
+    );
+  } catch (err) {
+    console.error(err);
+  }
+};
+
+// Toggle interview
+const toggleInterview = async (studentId, currentStatus) => {
+  try {
+    await fetch(`/api/students/${studentId}/interview`, {
+      method: 'PATCH',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ interview_scheduled: !currentStatus })
+    });
+    setStudents(prev =>
+      prev.map(s => s._id === studentId ? { ...s, interview_scheduled: !currentStatus } : s)
+    );
+  } catch (err) {
+    console.error(err);
+  }
+};
+
+// Update recruiter notes
+const updateNotes = async (studentId, notes) => {
+  try {
+    await fetch(`/api/students/${studentId}/notes`, {
+      method: 'PATCH',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ recruiter_notes: notes })
+    });
+    setStudents(prev =>
+      prev.map(s => s._id === studentId ? { ...s, recruiter_notes: notes } : s)
+    );
+  } catch (err) {
+    console.error(err);
+  }
+};
+
 
   const applyFilters = () => {
     let filtered = [...students];
@@ -160,44 +207,7 @@ function Recruiter() {
     });
   };
 
-  const toggleShortlist = async (studentId, currentStatus) => {
-    const { error } = await supabase
-      .from('students')
-      .update({ shortlisted: !currentStatus })
-      .eq('id', studentId);
-
-    if (!error) {
-      setStudents(prev =>
-        prev.map(s => s.id === studentId ? { ...s, shortlisted: !currentStatus } : s)
-      );
-    }
-  };
-
-  const toggleInterview = async (studentId, currentStatus) => {
-    const { error } = await supabase
-      .from('students')
-      .update({ interview_scheduled: !currentStatus })
-      .eq('id', studentId);
-
-    if (!error) {
-      setStudents(prev =>
-        prev.map(s => s.id === studentId ? { ...s, interview_scheduled: !currentStatus } : s)
-      );
-    }
-  };
-
-  const updateNotes = async (studentId, notes) => {
-    const { error } = await supabase
-      .from('students')
-      .update({ recruiter_notes: notes })
-      .eq('id', studentId);
-
-    if (!error) {
-      setStudents(prev =>
-        prev.map(s => s.id === studentId ? { ...s, recruiter_notes: notes } : s)
-      );
-    }
-  };
+ 
 
   return (
     <div className="min-h-screen bg-gray-50">
