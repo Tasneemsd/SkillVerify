@@ -339,53 +339,57 @@ function Recruiter() {
     <div className="min-h-screen bg-gray-50">
       {/* Navigation */}
       {/* --- Navigation --- */}
-      <nav className="bg-white shadow-md sticky top-0 z-50 backdrop-blur-lg border-b border-gray-200">
+      <nav className="bg-white shadow-md sticky top-0 z-50 backdrop-blur-lg border-b border-gray-200 overflow-visible">
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
           <div className="flex justify-between items-center h-16">
+
             {/* Logo */}
-            <div className="flex items-center space-x-3">
-              <Link to="/" className="flex items-center gap-2 text-blue-600 font-bold text-xl hover:opacity-80 transition-opacity">
-                <img src="/logos.png" alt="Logo" className="h-48 w-auto" />
+            <div className="flex items-center space-x-3 overflow-visible">
+              <Link
+                to="/"
+                className="flex items-center gap-2 text-blue-600 font-bold text-xl hover:opacity-80 transition-opacity relative"
+              >
+                <div className="relative h-16 overflow-visible">
+                  <img
+                    src="/logos.png"
+                    alt="Logo"
+                    className="absolute top-1/2 -translate-y-1/2 h-48 w-auto"
+                  />
+                </div>
               </Link>
             </div>
 
-
             {/* Desktop Nav */}
-            <div className="hidden md:flex items-center space-x-4">
-              <div className="relative">
-                <button
-                  onClick={() => setDropdownOpen(!dropdownOpen)}
-                  className="flex items-center space-x-2 px-4 py-2 rounded-xl hover:bg-gray-100 transition-colors duration-200"
-                >
-                  
-                  <span className="font-medium text-gray-700">{recruiter?.name || "Recruiter"}</span>
-                  <ChevronDown
-                    size={20}
-                    className={`text-gray-500 transition-transform duration-200 ${dropdownOpen ? "rotate-180" : ""}`}
-                  />
-                </button>
-                <button
-                  onClick={() => setDropdownOpen(!dropdownOpen)}
-                  className="w-10 h-10 rounded-full bg-blue-600 text-white flex items-center justify-center font-semibold text-sm hover:bg-blue-700 transition-all duration-200"
-                >
+            <div className="hidden md:flex items-center space-x-4 relative">
+              <button
+                onClick={() => setDropdownOpen(!dropdownOpen)}
+                className="flex items-center space-x-2 px-4 py-2 rounded-xl hover:bg-gray-100 transition-colors duration-200"
+              >
+                <div className="w-10 h-10 rounded-full bg-blue-600 text-white flex items-center justify-center font-semibold text-sm hover:bg-blue-700 transition-all duration-200">
                   {getUserInitials(recruiter?.name)}
-                </button>
+                </div>
+                <span className="font-medium text-gray-700">{recruiter?.name || "Recruiter"}</span>
+                <ChevronDown
+                  size={20}
+                  className={`text-gray-500 transition-transform duration-200 ${dropdownOpen ? "rotate-180" : ""}`}
+                />
+              </button>
 
-
-                {dropdownOpen && (
-                  <div className="absolute right-0 mt-2 w-48 bg-white rounded-xl shadow-lg py-2 border border-gray-100">
-                    <button className="w-full text-left px-4 py-2 hover:bg-gray-50 flex items-center space-x-2 text-gray-700">
-                      <Settings size={18} />
-                      <span>Settings</span>
-                    </button>
-                    <button className="w-full text-left px-4 py-2 hover:bg-gray-50 flex items-center space-x-2 text-red-600" onClick={handleLogout}>
-                      <LogOut size={18} />
-
-                      <span>Logout</span>
-                    </button>
-                  </div>
-                )}
-              </div>
+              {dropdownOpen && (
+                <div className="absolute right-0 mt-2 w-48 bg-white rounded-xl shadow-lg py-2 border border-gray-100">
+                  <button className="w-full text-left px-4 py-2 hover:bg-gray-50 flex items-center space-x-2 text-gray-700">
+                    <Settings size={18} />
+                    <span>Settings</span>
+                  </button>
+                  <button
+                    className="w-full text-left px-4 py-2 hover:bg-gray-50 flex items-center space-x-2 text-red-600"
+                    onClick={handleLogout}
+                  >
+                    <LogOut size={18} />
+                    <span>Logout</span>
+                  </button>
+                </div>
+              )}
             </div>
 
             {/* Mobile Menu Button */}
@@ -400,13 +404,19 @@ function Recruiter() {
 
         {/* Mobile Menu */}
         {mobileMenuOpen && (
-          <div className="md:hidden bg-white border-t border-gray-200" >
+          <div className="md:hidden bg-white border-t border-gray-200">
             <div className="px-4 py-3 space-y-2">
-              <button className="w-full text-left px-4 py-2 hover:bg-gray-50 flex items-center space-x-2 text-gray-700 rounded-lg" onClick={() => setDropdownOpen(!dropdownOpen)}>
+              <button
+                className="w-full text-left px-4 py-2 hover:bg-gray-50 flex items-center space-x-2 text-gray-700 rounded-lg"
+                onClick={() => setDropdownOpen(!dropdownOpen)}
+              >
                 <Settings size={18} />
                 <span>Settings</span>
               </button>
-              <button className="w-full text-left px-4 py-2 hover:bg-gray-50 flex items-center space-x-2 text-red-600 rounded-lg" onClick={handleLogout}>
+              <button
+                className="w-full text-left px-4 py-2 hover:bg-gray-50 flex items-center space-x-2 text-red-600 rounded-lg"
+                onClick={handleLogout}
+              >
                 <LogOut size={18} />
                 <span>Logout</span>
               </button>
@@ -414,6 +424,7 @@ function Recruiter() {
           </div>
         )}
       </nav>
+
 
       {/* Hero */}
       <div className="bg-gradient-to-r from-blue-600 to-blue-800 text-white">
