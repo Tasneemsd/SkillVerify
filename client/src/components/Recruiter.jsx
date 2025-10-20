@@ -10,10 +10,6 @@ import {
   Star,
   Briefcase,
   Mail,
-  ChevronDown,
-  Menu,
-  Settings,
-
   Phone,
   ExternalLink,
   Filter,
@@ -304,9 +300,7 @@ function Recruiter() {
     setFilters((prev) => ({ ...prev, [key]: value }));
   };
 
-  const [dropdownOpen, setDropdownOpen] = useState(false);
-  const [mobileMenuOpen, setMobileMenuOpen] = useState(false);
-
+  const [showDropdown, setShowDropdown] = useState(false);
   const recruiter = JSON.parse(localStorage.getItem("user")) || {};
 
   const handleLogout = () => {
@@ -338,93 +332,51 @@ function Recruiter() {
   return (
     <div className="min-h-screen bg-gray-50">
       {/* Navigation */}
-      {/* --- Navigation --- */}
-      <nav className="bg-white shadow-md sticky top-0 z-50 backdrop-blur-lg border-b border-gray-200 overflow-visible">
-        <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
-          <div className="flex justify-between items-center h-16">
-
-            {/* Logo */}
-            <div className="flex items-center space-x-3 overflow-visible">
-              <Link
-                to="/"
-                className="flex items-center gap-2 text-blue-600 font-bold text-xl hover:opacity-80 transition-opacity relative"
-              >
-                <div className="relative h-16 overflow-visible">
-                  <img
-                    src="/logos.png"
-                    alt="Logo"
-                    className="absolute top-1/2 -translate-y-1/2 h-48 w-auto"
-                  />
-                </div>
+      <nav className="bg-white shadow-sm border-b sticky top-0 z-50">
+        <div className="max-w-7xl mx-auto px-3 sm:px-4 md:px-6 lg:px-8">
+          <div className="flex flex-wrap items-center justify-between h-16 gap-3">
+            <div className="flex items-center space-x-3">
+              <Link to="/" className="flex items-center gap-2 text-blue-600 font-bold text-xl hover:opacity-80 transition-opacity">
+                <img src="/logos.png" alt="Logo" className="h-48 w-auto" />
               </Link>
             </div>
 
-            {/* Desktop Nav */}
-            <div className="hidden md:flex items-center space-x-4 relative">
+
+            {/* Profile Section */}
+            <div className="relative flex items-center gap-3">
+              <div className="hidden sm:block">
+                <p className="text-gray-700 font-medium text-sm sm:text-base">
+                  Welcome, <span className="font-bold">{recruiter?.name || "Student"}</span>
+                </p>
+              </div>
               <button
-                onClick={() => setDropdownOpen(!dropdownOpen)}
-                className="flex items-center space-x-2 px-4 py-2 rounded-xl hover:bg-gray-100 transition-colors duration-200"
+                onClick={() => setShowDropdown(!showDropdown)}
+                className="w-8 h-8 sm:w-10 sm:h-10 rounded-full bg-blue-600 text-white flex items-center justify-center font-semibold text-xs sm:text-sm hover:bg-blue-700 transition-all duration-200"
               >
-                <div className="w-10 h-10 rounded-full bg-blue-600 text-white flex items-center justify-center font-semibold text-sm hover:bg-blue-700 transition-all duration-200">
-                  {getUserInitials(recruiter?.name)}
-                </div>
-                <span className="font-medium text-gray-700">{recruiter?.name || "Recruiter"}</span>
-                <ChevronDown
-                  size={20}
-                  className={`text-gray-500 transition-transform duration-200 ${dropdownOpen ? "rotate-180" : ""}`}
-                />
+                {getUserInitials(recruiter?.name)}
               </button>
 
-              {dropdownOpen && (
-                <div className="absolute right-0 mt-2 w-48 bg-white rounded-xl shadow-lg py-2 border border-gray-100">
-                  <button className="w-full text-left px-4 py-2 hover:bg-gray-50 flex items-center space-x-2 text-gray-700">
-                    <Settings size={18} />
-                    <span>Settings</span>
-                  </button>
+              {showDropdown && (
+                <div className="absolute right-0 top-full mt-2 w-56 bg-white rounded-lg shadow-xl py-2 z-50 border border-gray-200">
+                  <div className="px-4 py-3 border-b">
+                    <p className="font-semibold text-gray-800 text-sm truncate">
+                      {recruiter?.name || "Recruiter"}
+                    </p>
+                    <p className="text-xs text-gray-500 truncate">{recruiter?.email}</p>
+                  </div>
+
                   <button
-                    className="w-full text-left px-4 py-2 hover:bg-gray-50 flex items-center space-x-2 text-red-600"
                     onClick={handleLogout}
+                    className="flex items-center gap-2 w-full text-left px-4 py-2 text-sm text-red-600 hover:bg-red-50 transition-colors"
                   >
-                    <LogOut size={18} />
-                    <span>Logout</span>
+                    <LogOut className="w-4 h-4" /> Logout
                   </button>
                 </div>
               )}
             </div>
-
-            {/* Mobile Menu Button */}
-            <button
-              onClick={() => setMobileMenuOpen(!mobileMenuOpen)}
-              className="md:hidden p-2 rounded-lg hover:bg-gray-100"
-            >
-              {mobileMenuOpen ? <X size={24} /> : <Menu size={24} />}
-            </button>
           </div>
         </div>
-
-        {/* Mobile Menu */}
-        {mobileMenuOpen && (
-          <div className="md:hidden bg-white border-t border-gray-200">
-            <div className="px-4 py-3 space-y-2">
-              <button
-                className="w-full text-left px-4 py-2 hover:bg-gray-50 flex items-center space-x-2 text-gray-700 rounded-lg"
-                onClick={() => setDropdownOpen(!dropdownOpen)}
-              >
-                <Settings size={18} />
-                <span>Settings</span>
-              </button>
-              <button
-                className="w-full text-left px-4 py-2 hover:bg-gray-50 flex items-center space-x-2 text-red-600 rounded-lg"
-                onClick={handleLogout}
-              >
-                <LogOut size={18} />
-                <span>Logout</span>
-              </button>
-            </div>
-          </div>
-        )}
       </nav>
-
 
       {/* Hero */}
       <div className="bg-gradient-to-r from-blue-600 to-blue-800 text-white">
