@@ -337,7 +337,7 @@ function Recruiter() {
           <div className="flex flex-wrap items-center justify-between h-16 gap-3">
             <div className="flex items-center space-x-3">
               <Link to="/" className="flex items-center gap-2 text-blue-600 font-bold text-xl hover:opacity-80 transition-opacity">
-                <img src="/logos.png" alt="Logo" className="h-34 w-auto" />
+                <img src="/logos.png" alt="Logo" className="h-30 w-auto" />
               </Link>
             </div>
 
