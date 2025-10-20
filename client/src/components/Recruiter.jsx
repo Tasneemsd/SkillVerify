@@ -334,13 +334,23 @@ function Recruiter() {
       {/* Navigation */}
       <nav className="bg-white shadow-sm border-b sticky top-0 z-50">
         <div className="max-w-7xl mx-auto px-3 sm:px-4 md:px-6 lg:px-8">
-          <div className="flex flex-wrap items-center justify-between h-16 gap-3">
+          <div className="flex flex-wrap items-center justify-between h-16 gap-3 overflow-hidden">
+            {/* Logo Section */}
             <div className="flex items-center space-x-3">
-              <Link to="/" className="flex items-center gap-2 text-blue-600 font-bold text-xl hover:opacity-80 transition-opacity">
-                <img src="/logos.png" alt="Logo" className="h-48 w-auto" />
+              <Link
+                to="/"
+                className="flex items-center gap-2 text-blue-600 font-bold text-xl hover:opacity-80 transition-opacity"
+              >
+                <div className="relative h-10 w-auto sm:h-12">
+                  <img
+                    src="/logos.png"
+                    alt="Logo"
+                    className="absolute -top-10 sm:-top-12 h-48 w-auto"
+                  />
+                </div>
+
               </Link>
             </div>
-
 
             {/* Profile Section */}
             <div className="relative flex items-center gap-3">
@@ -377,6 +387,7 @@ function Recruiter() {
           </div>
         </div>
       </nav>
+
 
       {/* Hero */}
       <div className="bg-gradient-to-r from-blue-600 to-blue-800 text-white">
