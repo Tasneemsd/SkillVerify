@@ -339,7 +339,7 @@ function Recruiter() {
               to="/"
               className="flex items-center gap-2 text-blue-600 font-bold text-lg sm:text-xl hover:opacity-80 transition-opacity min-w-0"
             >
-              <img src="/logos.png" alt="Logo" className="h-10 sm:h-12 md:h-14 w-auto" />
+              <img src="/logos.png" alt="Logo" className="h-48 sm:h-42 md:h-44 w-auto" />
               <span className="hidden xs:block sm:block md:block lg:block truncate">SkillVerify</span>
             </Link>
 
