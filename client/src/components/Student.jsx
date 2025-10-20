@@ -53,13 +53,31 @@ function Student() {
 
   // Load initial data
   useEffect(() => {
-    const email = localStorage.getItem("userEmail");
-    if (!email) return navigate("/login");
+    let mounted = true;
 
-    fetchStudentByEmail(email);
-    fetchCourses();
-    fetchJobs();
-    refreshVerificationStatus(); // ✅ Call it here to refresh status on component load
+    const init = async () => {
+      try {
+        const email = localStorage.getItem("userEmail");
+        if (!email) return navigate("/login");
+
+        await Promise.all([
+          fetchStudentByEmail(email),
+          fetchCourses(),
+          fetchJobs(),
+          refreshVerificationStatus()
+        ]);
+      } catch (err) {
+        console.error("Initial data load error:", err);
+      } finally {
+        if (mounted) setLoading(false);
+      }
+    };
+
+    init();
+
+    return () => {
+      mounted = false;
+    };
   }, []);
 
   // Fetch student
@@ -162,7 +180,7 @@ function Student() {
     }
   };
 
-  
+
 
   // Skills
   const handleAddSkill = async () => {
@@ -247,84 +265,84 @@ function Student() {
     }
   };
   // ✅ Mock Interview Payment
-// ✅ Mock Interview Payment
-const handleMockPayment = async () => {
-  try {
-    const token = localStorage.getItem("token");
-    if (!token) return alert("You must be logged in to make a payment.");
+  // ✅ Mock Interview Payment
+  const handleMockPayment = async () => {
+    try {
+      const token = localStorage.getItem("token");
+      if (!token) return alert("You must be logged in to make a payment.");
 
-    const amount = 499;
+      const amount = 499;
 
-    // 1️⃣ Create order from backend
-    const { data: order } = await API.post(
-      "/razorpay/create-order",
-      { amount },
-      { headers: { Authorization: `Bearer ${token}` } }
-    );
+      // 1️⃣ Create order from backend
+      const { data: order } = await API.post(
+        "/razorpay/create-order",
+        { amount },
+        { headers: { Authorization: `Bearer ${token}` } }
+      );
 
-    if (!order || !order.id) {
-      throw new Error("Failed to create payment order. Please try again.");
-    }
+      if (!order || !order.id) {
+        throw new Error("Failed to create payment order. Please try again.");
+      }
 
-    // 2️⃣ Initialize Razorpay checkout
-    const options = {
-      key: import.meta.env.RAZORPAY_KEY_ID || "rzp_live_RU9VteoKvCVxku", // ✅ Correct key
-      amount: order.amount, // razorpay expects in paisa internally
-      currency: order.currency,
-      name: "VHireToday Mock Interview",
-      description: "Mock Interview Verification Fee",
-      order_id: order.id,
-      handler: async function (response) {
-        try {
-          // 3️⃣ Verify payment on backend
-          const verifyRes = await API.post(
-            "/razorpay/verify-payment", // ✅ Corrected route path
-            {
-              razorpay_order_id: response.razorpay_order_id,
-              razorpay_payment_id: response.razorpay_payment_id,
-              razorpay_signature: response.razorpay_signature,
-            },
-            { headers: { Authorization: `Bearer ${token}` } }
-          );
-
-          if (verifyRes.status === 200) {
-            // 4️⃣ Mark student as verified
-            await API.post(
-              "/student/verify-payment-success",
-              {},
+      // 2️⃣ Initialize Razorpay checkout
+      const options = {
+        key: import.meta.env.RAZORPAY_KEY_ID || "rzp_live_RU9VteoKvCVxku", // ✅ Correct key
+        amount: order.amount, // razorpay expects in paisa internally
+        currency: order.currency,
+        name: "VHireToday Mock Interview",
+        description: "Mock Interview Verification Fee",
+        order_id: order.id,
+        handler: async function (response) {
+          try {
+            // 3️⃣ Verify payment on backend
+            const verifyRes = await API.post(
+              "/razorpay/verify-payment", // ✅ Corrected route path
+              {
+                razorpay_order_id: response.razorpay_order_id,
+                razorpay_payment_id: response.razorpay_payment_id,
+                razorpay_signature: response.razorpay_signature,
+              },
               { headers: { Authorization: `Bearer ${token}` } }
             );
 
-            alert("✅ Payment successful! You can now schedule your mock interview.");
-            setMockInterviewStatus(true);
-            setIsVerified(true);
-          } else {
-            alert("❌ Payment verification failed. Please contact support.");
+            if (verifyRes.status === 200) {
+              // 4️⃣ Mark student as verified
+              await API.post(
+                "/student/verify-payment-success",
+                {},
+                { headers: { Authorization: `Bearer ${token}` } }
+              );
+
+              alert("✅ Payment successful! You can now schedule your mock interview.");
+              setMockInterviewStatus(true);
+              setIsVerified(true);
+            } else {
+              alert("❌ Payment verification failed. Please contact support.");
+            }
+          } catch (err) {
+            console.error("Verification Error:", err);
+            alert("Payment verification failed. Please try again.");
           }
-        } catch (err) {
-          console.error("Verification Error:", err);
-          alert("Payment verification failed. Please try again.");
-        }
-      },
-      prefill: {
-        name: `${student?.firstName || ""} ${student?.lastName || ""}`,
-        email: student?.email || "",
-      },
-      theme: { color: "#4F46E5" },
-    };
+        },
+        prefill: {
+          name: `${student?.firstName || ""} ${student?.lastName || ""}`,
+          email: student?.email || "",
+        },
+        theme: { color: "#4F46E5" },
+      };
 
-    const razorpay = new window.Razorpay(options);
-    razorpay.open();
+      const razorpay = new window.Razorpay(options);
+      razorpay.open();
 
-    razorpay.on("payment.failed", function (response) {
-      alert("❌ Payment failed or cancelled.");
-      console.error("Payment failed:", response.error);
-    });
-  } catch (error) {
-    console.error("Payment Error:", error);
-    alert(error.response?.data?.message || "Failed to initialize payment. Please try again.");
-  }
-};
+      razorpay.on("payment.failed", function (response) {
+        alert("❌ Payment failed or cancelled.");
+        console.error("Payment failed:", response.error);
+      });
+    } catch (error) {
+      console.error("Payment Error:", error);
+      alert(error.response?.data?.message || "Failed to initialize payment. Please try again.");
+    }
+  };
 
   const getSkillColor = (level) => {
     switch (level) {
@@ -889,7 +907,7 @@ const handleMockPayment = async () => {
                       Please complete the ₹499 verification fee to enable scheduling.
                     </p>
                     <button
-                        onClick={handleMockPayment}
+                      onClick={handleMockPayment}
                       className="px-6 py-2 bg-green-600 text-white rounded-lg hover:bg-green-700 font-semibold transition-all duration-200"
                     >
                       Pay ₹499 to Proceed

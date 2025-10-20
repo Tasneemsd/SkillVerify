@@ -19,49 +19,53 @@ export default function Login() {
     setForm((prev) => ({ ...prev, [name]: value }));
   };
 
-const handleSubmit = async (e) => {
-  e.preventDefault();
-  setLoading(true);
-  setError("");
-  setSuccess("");
+  const handleSubmit = async (e) => {
+    e.preventDefault();
+    setLoading(true);
+    setError("");
+    setSuccess("");
 
-  try {
-    const res = await API.post("/auth/login", {
-      email: form.email,
-      password: form.password,
-      role: form.role,
-    });
+    try {
+      const res = await API.post("/auth/login", {
+        email: form.email,
+        password: form.password,
+        role: form.role,
+      });
 
-    console.log("Login Route Response:", res.data); // Debug response
+      console.log("Login Route Response:", res.data); // Debug response
 
-    // Check if API returned success
-    if (res.data.success) {
-      const { token, user } = res.data;
+      // Check if API returned success
+      if (res.data.success) {
+        const { token, user } = res.data;
 
-      localStorage.setItem("token", token);
-      localStorage.setItem("userEmail", user.email);
-      localStorage.setItem("userName", user.name);
-      localStorage.setItem("userRole", user.role);
+        localStorage.setItem("token", token);
+        localStorage.setItem("userEmail", user.email);
+        localStorage.setItem("userName", user.name);
+        localStorage.setItem("userRole", user.role);
 
-      setAuthToken(token);
-      setUserData(user);
-      setSuccess(`✅ Logged in as ${user.email}`);
+        setAuthToken(token);
+        setUserData(user);
+        setSuccess(`✅ Logged in as ${user.email}`);
 
-      // Navigate based on role
-      if (user.role === "student") navigate("/student");
-      else if (user.role === "recruiter") navigate("/recruiter");
-      else if (user.role === "admin") navigate("/admin");
-    } else {
-      // API returned a failed login message
-      setError(res.data.message || "Invalid email or password!");
+        // Navigate based on role
+
+        setTimeout(() => {
+          if (user.role === "student") navigate("/student");
+          else if (user.role === "recruiter") navigate("/recruiter");
+          else if (user.role === "admin") navigate("/admin");
+        }, 500);
+
+      } else {
+        // API returned a failed login message
+        setError(res.data.message || "Invalid email or password!");
+      }
+    } catch (err) {
+      console.error("Login Error:", err.response?.data || err);
+      setError("Something went wrong. Please try again.");
+    } finally {
+      setLoading(false);
     }
-  } catch (err) {
-    console.error("Login Error:", err.response?.data || err);
-    setError("Something went wrong. Please try again.");
-  } finally {
-    setLoading(false);
-  }
-};
+  };
 
 
   return (
@@ -77,7 +81,7 @@ const handleSubmit = async (e) => {
           </p>
         </div>
 
-      
+
 
         <div className="text-center text-gray-400 mb-4 text-sm">OR</div>
 
