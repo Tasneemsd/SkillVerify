@@ -304,7 +304,9 @@ function Recruiter() {
     setFilters((prev) => ({ ...prev, [key]: value }));
   };
 
-  const [showDropdown, setShowDropdown] = useState(false);
+  const [dropdownOpen, setDropdownOpen] = useState(false);
+  const [mobileMenuOpen, setMobileMenuOpen] = useState(false);
+
   const recruiter = JSON.parse(localStorage.getItem("user")) || {};
 
   const handleLogout = () => {
@@ -347,6 +349,7 @@ function Recruiter() {
               </Link>
             </div>
 
+
             {/* Desktop Nav */}
             <div className="hidden md:flex items-center space-x-4">
               <div className="relative">
@@ -363,6 +366,13 @@ function Recruiter() {
                     className={`text-gray-500 transition-transform duration-200 ${dropdownOpen ? "rotate-180" : ""}`}
                   />
                 </button>
+                <button
+                  onClick={() => setDropdownOpen(!dropdownOpen)}
+                  className="w-10 h-10 rounded-full bg-blue-600 text-white flex items-center justify-center font-semibold text-sm hover:bg-blue-700 transition-all duration-200"
+                >
+                  {getUserInitials(recruiter?.name)}
+                </button>
+
 
                 {dropdownOpen && (
                   <div className="absolute right-0 mt-2 w-48 bg-white rounded-xl shadow-lg py-2 border border-gray-100">
@@ -370,8 +380,9 @@ function Recruiter() {
                       <Settings size={18} />
                       <span>Settings</span>
                     </button>
-                    <button className="w-full text-left px-4 py-2 hover:bg-gray-50 flex items-center space-x-2 text-red-600">
+                    <button className="w-full text-left px-4 py-2 hover:bg-gray-50 flex items-center space-x-2 text-red-600" onClick={handleLogout}>
                       <LogOut size={18} />
+
                       <span>Logout</span>
                     </button>
                   </div>
@@ -391,13 +402,13 @@ function Recruiter() {
 
         {/* Mobile Menu */}
         {mobileMenuOpen && (
-          <div className="md:hidden bg-white border-t border-gray-200">
+          <div className="md:hidden bg-white border-t border-gray-200" >
             <div className="px-4 py-3 space-y-2">
-              <button className="w-full text-left px-4 py-2 hover:bg-gray-50 flex items-center space-x-2 text-gray-700 rounded-lg">
+              <button className="w-full text-left px-4 py-2 hover:bg-gray-50 flex items-center space-x-2 text-gray-700 rounded-lg" onClick={() => setDropdownOpen(!dropdownOpen)}>
                 <Settings size={18} />
                 <span>Settings</span>
               </button>
-              <button className="w-full text-left px-4 py-2 hover:bg-gray-50 flex items-center space-x-2 text-red-600 rounded-lg">
+              <button className="w-full text-left px-4 py-2 hover:bg-gray-50 flex items-center space-x-2 text-red-600 rounded-lg" onClick={handleLogout}>
                 <LogOut size={18} />
                 <span>Logout</span>
               </button>
