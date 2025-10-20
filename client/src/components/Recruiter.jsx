@@ -335,13 +335,9 @@ function Recruiter() {
       <nav className="bg-white shadow-sm border-b sticky top-0 z-50">
         <div className="max-w-7xl mx-auto px-3 sm:px-4 md:px-6 lg:px-8">
           <div className="flex flex-wrap items-center justify-between h-16 gap-3">
-            <Link
-              to="/"
-              className="flex items-center gap-2 text-blue-600 font-bold text-lg sm:text-xl hover:opacity-80 transition-opacity min-w-0"
-            >
-              <img src="/logos.png" alt="Logo" className="h-48 sm:h-42 md:h-48 w-auto" />
+             <img src="/logos.png" alt="Logo" className="h-48 sm:h-42 md:h-48 w-auto" />
          
-            </Link>
+          
 
             {/* Profile Section */}
             <div className="relative flex items-center gap-3">
