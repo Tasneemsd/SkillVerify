@@ -353,7 +353,7 @@ function Recruiter() {
                   <div className="w-10 h-10 rounded-full bg-gradient-to-br from-blue-600 to-indigo-600 flex items-center justify-center text-white font-semibold">
                     A
                   </div>
-                  <span className="font-medium text-gray-700">{admin?.name || "Admin"}</span>
+                  <span className="font-medium text-gray-700">{recruiter?.name || "Recruiter"}</span>
                   <ChevronDown
                     size={20}
                     className={`text-gray-500 transition-transform duration-200 ${dropdownOpen ? "rotate-180" : ""}`}
