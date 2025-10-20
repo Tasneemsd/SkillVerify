@@ -332,23 +332,28 @@ function Recruiter() {
   return (
     <div className="min-h-screen bg-gray-50">
       {/* Navigation */}
-      <nav className="bg-white shadow-sm border-b sticky top-0 z-50">
-        <div className="max-w-7xl mx-auto px-3 sm:px-4 md:px-6 lg:px-8">
-          <div className="flex flex-wrap items-center justify-between h-16 gap-3 overflow-hidden">
+      {/* Navigation */}
+      <nav className="bg-white shadow-sm border-b sticky top-0 z-50 overflow-visible">
+        <div className="max-w-7xl mx-auto px-3 sm:px-4 md:px-6 lg:px-8 relative">
+          <div className="flex flex-wrap items-center justify-between h-16 gap-3 relative overflow-visible">
+
             {/* Logo Section */}
-            <div className="flex items-center space-x-3">
+            <div className="flex items-center relative overflow-visible">
               <Link
                 to="/"
-                className="flex items-center gap-2 text-blue-600 font-bold text-xl hover:opacity-80 transition-opacity"
+                className="flex items-center gap-2 text-blue-600 font-bold text-xl hover:opacity-80 transition-opacity relative"
               >
-                <div className=" h-10 w-auto sm:h-12">
+                {/* Wrapper keeps navbar height fixed while logo overflows */}
+                <div className="h-16 relative overflow-visible">
                   <img
                     src="/logos.png"
                     alt="Logo"
-                    className=" h-48 w-auto"
+                    className="absolute top-1/2 -translate-y-1/2 h-48 w-auto"
                   />
                 </div>
-
+                <span className="hidden sm:inline-block ml-2 text-blue-600 font-semibold">
+                  HIRE TODAY
+                </span>
               </Link>
             </div>
 
