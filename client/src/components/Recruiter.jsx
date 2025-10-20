@@ -10,6 +10,10 @@ import {
   Star,
   Briefcase,
   Mail,
+  ChevronDown,
+  Menu,
+  Settings,
+
   Phone,
   ExternalLink,
   Filter,
