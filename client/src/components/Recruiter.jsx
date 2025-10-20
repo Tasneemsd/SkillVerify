@@ -335,9 +335,12 @@ function Recruiter() {
       <nav className="bg-white shadow-sm border-b sticky top-0 z-50">
         <div className="max-w-7xl mx-auto px-3 sm:px-4 md:px-6 lg:px-8">
           <div className="flex flex-wrap items-center justify-between h-16 gap-3">
-             <img src="/logos.png" alt="Logo" className="h-48 sm:h-42 md:h-48 w-auto" />
-         
-          
+            <div className="flex items-center space-x-3">
+              <Link to="/" className="flex items-center gap-2 text-blue-600 font-bold text-xl hover:opacity-80 transition-opacity">
+                <img src="/logos.png" alt="Logo" className="h-48 w-auto" />
+              </Link>
+            </div>
+
 
             {/* Profile Section */}
             <div className="relative flex items-center gap-3">
@@ -605,9 +608,8 @@ function Recruiter() {
             <nav className="flex -mb-px overflow-x-auto">
               <button
                 onClick={() => setActiveTab("all")}
-                className={`flex-shrink-0 px-4 sm:px-6 py-3 text-sm sm:text-base font-medium border-b-2 transition-colors ${
-                  activeTab === "all" ? "border-blue-600 text-blue-600" : "border-transparent text-gray-500 hover:text-gray-700 hover:border-gray-300"
-                }`}
+                className={`flex-shrink-0 px-4 sm:px-6 py-3 text-sm sm:text-base font-medium border-b-2 transition-colors ${activeTab === "all" ? "border-blue-600 text-blue-600" : "border-transparent text-gray-500 hover:text-gray-700 hover:border-gray-300"
+                  }`}
               >
                 <div className="flex items-center gap-2">
                   <Users className="w-4 h-4" />
@@ -616,9 +618,8 @@ function Recruiter() {
               </button>
               <button
                 onClick={() => setActiveTab("shortlisted")}
-                className={`flex-shrink-0 px-4 sm:px-6 py-3 text-sm sm:text-base font-medium border-b-2 transition-colors ${
-                  activeTab === "shortlisted" ? "border-blue-600 text-blue-600" : "border-transparent text-gray-500 hover:text-gray-700 hover:border-gray-300"
-                }`}
+                className={`flex-shrink-0 px-4 sm:px-6 py-3 text-sm sm:text-base font-medium border-b-2 transition-colors ${activeTab === "shortlisted" ? "border-blue-600 text-blue-600" : "border-transparent text-gray-500 hover:text-gray-700 hover:border-gray-300"
+                  }`}
               >
                 <div className="flex items-center gap-2">
                   <Star className="w-4 h-4" />
@@ -627,9 +628,8 @@ function Recruiter() {
               </button>
               <button
                 onClick={() => setActiveTab("interview")}
-                className={`flex-shrink-0 px-4 sm:px-6 py-3 text-sm sm:text-base font-medium border-b-2 transition-colors ${
-                  activeTab === "interview" ? "border-blue-600 text-blue-600" : "border-transparent text-gray-500 hover:text-gray-700 hover:border-gray-300"
-                }`}
+                className={`flex-shrink-0 px-4 sm:px-6 py-3 text-sm sm:text-base font-medium border-b-2 transition-colors ${activeTab === "interview" ? "border-blue-600 text-blue-600" : "border-transparent text-gray-500 hover:text-gray-700 hover:border-gray-300"
+                  }`}
               >
                 <div className="flex items-center gap-2">
                   <Calendar className="w-4 h-4" />
