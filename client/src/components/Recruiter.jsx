@@ -341,7 +341,7 @@ function Recruiter() {
                 to="/"
                 className="flex items-center gap-2 text-blue-600 font-bold text-xl hover:opacity-80 transition-opacity"
               >
-                <div className="relative h-10 w-auto sm:h-12">
+                <div className=" h-10 w-auto sm:h-12">
                   <img
                     src="/logos.png"
                     alt="Logo"
