@@ -345,7 +345,7 @@ function Recruiter() {
                   <img
                     src="/logos.png"
                     alt="Logo"
-                    className="absolute -top-10 sm:-top-12 h-48 w-auto"
+                    className=" h-48 w-auto"
                   />
                 </div>
 
