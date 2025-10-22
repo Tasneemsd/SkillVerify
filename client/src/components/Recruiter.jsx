@@ -1,4 +1,4 @@
-import React, { useState, useEffect } from "react";
+import React, { useState, useEffect, useRef } from "react";
 import { Link, useNavigate } from "react-router-dom";
 import axios from "axios";
 import {
@@ -26,13 +26,22 @@ import {
 } from "lucide-react";
 
 /**
- * Full single-file Recruiter.jsx (responsive improvements)
- * - Preserves UI, state shape, and API interactions.
- * - Adds responsive Tailwind utilities for ultra-small to 2xl screens.
- * - Adds overflow-x-auto and min-w-0 where needed to avoid text overflow.
- *
- * Note: logic unchanged; only className / tiny layout adjustments.
+ * Responsive Recruiter.jsx
+ * - Keeps your logic and API calls intact.
+ * - Only modifies/strengthens Tailwind classNames and a couple small helpers
+ *   to avoid layout overlap on very small screens.
+ * - Requires Tailwind CSS in project (default breakpoints: sm/md/lg/xl).
  */
+
+function useOutsideAlerter(ref, onOutside) {
+  useEffect(() => {
+    function handleClickOutside(event) {
+      if (ref.current && !ref.current.contains(event.target)) onOutside();
+    }
+    document.addEventListener("mousedown", handleClickOutside);
+    return () => document.removeEventListener("mousedown", handleClickOutside);
+  }, [ref, onOutside]);
+}
 
 function Recruiter() {
   const navigate = useNavigate();
@@ -60,9 +69,7 @@ function Recruiter() {
     if (!data) return [];
     if (Array.isArray(data)) return data;
     const common = ["students", "users", "data", "items", ...possibleKeys];
-    for (const k of common) {
-      if (Array.isArray(data[k])) return data[k];
-    }
+    for (const k of common) if (Array.isArray(data[k])) return data[k];
     if (Array.isArray(data?.data)) return data.data;
     if (Array.isArray(data?.data?.data)) return data.data.data;
     return [];
@@ -72,10 +79,7 @@ function Recruiter() {
     arr.map((u) => ({
       _id: u._id || u.id || u._id?.toString?.() || "",
       name:
-        u.name ||
-        `${u.firstName || ""} ${u.lastName || ""}`.trim() ||
-        u.fullName ||
-        "",
+        u.name || `${u.firstName || ""} ${u.lastName || ""}`.trim() || u.fullName || "",
       email: u.email || u.username || "",
       role: u.role || u.type || "student",
       verified: u.isVerified ?? u.verified ?? false,
@@ -107,7 +111,6 @@ function Recruiter() {
   const fetchStudents = async () => {
     setLoading(true);
     try {
-      // Try recruiter-specific endpoint first (keeps parity with your earlier code)
       const res = await axios.get(`${BASE_URL}/recruiter/students`, {
         headers: getAuthHeaders(),
       });
@@ -115,11 +118,9 @@ function Recruiter() {
       const normalized = normalizeUsers(arr);
       setStudents(normalized);
       setFilteredStudents(normalized);
-      // also set candidates for any older logic that uses it
       setCandidates(normalized);
     } catch (err) {
       console.error("fetchStudents error:", err?.response || err);
-      // fallback: try admin/students or public endpoint if needed
       try {
         const alt = await axios.get(`${BASE_URL}/admin/students`, {
           headers: getAuthHeaders(),
@@ -146,11 +147,9 @@ function Recruiter() {
       const res = await axios.get(`${BASE_URL}/recruiter/students`, {
         headers: getAuthHeaders(),
       });
-      console.log("fetchCandidates response:", res.data);
       const arr = extractArray(res.data, ["students", "users"]);
       const normalized = normalizeUsers(arr);
       setCandidates(normalized);
-      // keep students consistent
       setStudents(normalized);
       setFilteredStudents(normalized);
     } catch (err) {
@@ -174,7 +173,6 @@ function Recruiter() {
   // Toggle shortlist (keeps your relative endpoint usage; uses student._id consistently)
   const toggleShortlist = async (studentId, currentStatus) => {
     try {
-      // preserve your original relative fetch path
       await fetch(`/api/students/${studentId}/shortlist`, {
         method: "PATCH",
         headers: { "Content-Type": "application/json" },
@@ -231,11 +229,8 @@ function Recruiter() {
   const applyFilters = () => {
     let filtered = [...students];
 
-    if (activeTab === "shortlisted") {
-      filtered = filtered.filter((s) => s.shortlisted);
-    } else if (activeTab === "interview") {
-      filtered = filtered.filter((s) => s.interview_scheduled);
-    }
+    if (activeTab === "shortlisted") filtered = filtered.filter((s) => s.shortlisted);
+    else if (activeTab === "interview") filtered = filtered.filter((s) => s.interview_scheduled);
 
     if (filters.skills) {
       const skillsArray = filters.skills.toLowerCase().split(",").map((s) => s.trim());
@@ -247,16 +242,14 @@ function Recruiter() {
     }
 
     if (filters.college) {
-      filtered = filtered.filter(
-        (student) =>
-          (student.college || "").toLowerCase().includes(filters.college.toLowerCase())
+      filtered = filtered.filter((student) =>
+        (student.college || "").toLowerCase().includes(filters.college.toLowerCase())
       );
     }
 
     if (filters.branch) {
-      filtered = filtered.filter(
-        (student) =>
-          (student.branch || "").toLowerCase().includes(filters.branch.toLowerCase())
+      filtered = filtered.filter((student) =>
+        (student.branch || "").toLowerCase().includes(filters.branch.toLowerCase())
       );
     }
 
@@ -329,50 +322,54 @@ function Recruiter() {
     });
   };
 
+  // Dropdown ref for outside click
+  const dropdownRef = useRef(null);
+  useOutsideAlerter(dropdownRef, () => setShowDropdown(false));
+
   return (
-    <div className="min-h-screen bg-gray-50">
+    <div className="min-h-screen bg-gray-50 overflow-x-hidden">
       {/* Navigation */}
       <nav className="bg-white shadow-sm border-b sticky top-0 z-50">
         <div className="max-w-7xl mx-auto px-3 sm:px-4 md:px-6 lg:px-8">
-          <div className="flex flex-wrap items-center justify-between h-16 gap-3">
-            <div className="flex items-center space-x-3">
+          <div className="flex items-center justify-between h-16 gap-3">
+            <div className="flex items-center space-x-3 min-w-0">
               <Link to="/" className="flex items-center gap-2 text-blue-600 font-bold text-xl hover:opacity-80 transition-opacity">
-                <img src="/logos.png" alt="Logo" className="h-20 w-auto" />
+                <img src="/logos.png" alt="Logo" className="h-12 sm:h-16 md:h-20 w-auto" />
+                <span className="hidden sm:inline-block text-lg md:text-xl text-blue-600">SkillVerify</span>
               </Link>
             </div>
 
-
             {/* Profile Section */}
             <div className="relative flex items-center gap-3">
-              <div className="hidden sm:block">
-                <p className="text-gray-700 font-medium text-sm sm:text-base">
+              <div className="hidden sm:block min-w-0">
+                <p className="text-gray-700 font-medium text-sm sm:text-base truncate">
                   Welcome, <span className="font-bold">{recruiter?.name || "Student"}</span>
                 </p>
               </div>
-              <button
-                onClick={() => setShowDropdown(!showDropdown)}
-                className="w-8 h-8 sm:w-10 sm:h-10 rounded-full bg-blue-600 text-white flex items-center justify-center font-semibold text-xs sm:text-sm hover:bg-blue-700 transition-all duration-200"
-              >
-                {getUserInitials(recruiter?.name)}
-              </button>
+              <div ref={dropdownRef} className="relative">
+                <button
+                  onClick={() => setShowDropdown((s) => !s)}
+                  className="w-8 h-8 sm:w-10 sm:h-10 rounded-full bg-blue-600 text-white flex items-center justify-center font-semibold text-xs sm:text-sm hover:bg-blue-700 transition-all duration-200"
+                >
+                  {getUserInitials(recruiter?.name)}
+                </button>
 
-              {showDropdown && (
-                <div className="absolute right-0 top-full mt-2 w-56 bg-white rounded-lg shadow-xl py-2 z-50 border border-gray-200">
-                  <div className="px-4 py-3 border-b">
-                    <p className="font-semibold text-gray-800 text-sm truncate">
-                      {recruiter?.name || "Recruiter"}
-                    </p>
-                    <p className="text-xs text-gray-500 truncate">{recruiter?.email}</p>
+                {showDropdown && (
+                  <div className="absolute right-0 top-full mt-2 w-56 bg-white rounded-lg shadow-xl py-2 z-50 border border-gray-200">
+                    <div className="px-4 py-3 border-b">
+                      <p className="font-semibold text-gray-800 text-sm truncate">{recruiter?.name || "Recruiter"}</p>
+                      <p className="text-xs text-gray-500 truncate">{recruiter?.email}</p>
+                    </div>
+
+                    <button
+                      onClick={handleLogout}
+                      className="flex items-center gap-2 w-full text-left px-4 py-2 text-sm text-red-600 hover:bg-red-50 transition-colors"
+                    >
+                      <LogOut className="w-4 h-4" /> Logout
+                    </button>
                   </div>
-
-                  <button
-                    onClick={handleLogout}
-                    className="flex items-center gap-2 w-full text-left px-4 py-2 text-sm text-red-600 hover:bg-red-50 transition-colors"
-                  >
-                    <LogOut className="w-4 h-4" /> Logout
-                  </button>
-                </div>
-              )}
+                )}
+              </div>
             </div>
           </div>
         </div>
@@ -380,19 +377,15 @@ function Recruiter() {
 
       {/* Hero */}
       <div className="bg-gradient-to-r from-blue-600 to-blue-800 text-white">
-        <div className="max-w-7xl mx-auto px-3 sm:px-4 md:px-6 lg:px-8 py-10 sm:py-14 md:py-16">
+        <div className="max-w-7xl mx-auto px-3 sm:px-4 md:px-6 lg:px-8 py-8 sm:py-12 md:py-16">
           <div className="flex flex-col md:flex-row items-center justify-between gap-6">
             <div className="flex-1 min-w-0">
               <h1 className="text-2xl sm:text-3xl md:text-4xl lg:text-5xl font-bold mb-2 truncate">Recruiter Portal</h1>
-              <p className="text-sm sm:text-base text-blue-100 mb-2 truncate">
-                Discover verified, talented students ready for internships and jobs
-              </p>
-              <p className="text-xs sm:text-sm text-blue-200 truncate">
-                Search through profiles, filter by skills, and connect with top performers
-              </p>
+              <p className="text-sm sm:text-base text-blue-100 mb-2 truncate">Discover verified, talented students ready for internships and jobs</p>
+              <p className="text-xs sm:text-sm text-blue-200 truncate">Search through profiles, filter by skills, and connect with top performers</p>
             </div>
             <div className="flex-shrink-0">
-              <Users className="w-20 h-20 sm:w-28 sm:h-28 md:w-32 md:h-32 text-blue-300 opacity-50" />
+              <Users className="w-16 h-16 sm:w-24 sm:h-24 md:w-28 md:h-28 text-blue-300 opacity-50" />
             </div>
           </div>
         </div>
@@ -401,33 +394,31 @@ function Recruiter() {
       {/* Content */}
       <div className="max-w-7xl mx-auto px-3 sm:px-4 md:px-6 lg:px-8 py-6 sm:py-8">
         <div className="bg-gradient-to-br from-blue-50 via-white to-blue-50 rounded-2xl shadow-lg border border-blue-100 overflow-hidden mb-6">
-          <div className="bg-gradient-to-r from-blue-600 to-blue-700 px-4 sm:px-6 py-4 sm:py-5">
+          <div className="bg-gradient-to-r from-blue-600 to-blue-700 px-4 sm:px-6 py-3 sm:py-4">
             <div className="flex items-center justify-between gap-3">
               <div className="flex items-center gap-3 min-w-0">
-                <div className="p-2 bg-white/20 rounded-lg">
+                <div className="p-2 bg-white/20 rounded-lg flex-shrink-0">
                   <Search className="w-5 h-5 text-white" />
                 </div>
                 <div className="min-w-0">
                   <h2 className="text-lg sm:text-2xl font-bold text-white truncate">Advanced Search</h2>
-                  <p className="text-xs sm:text-sm text-blue-100 truncate">
-                    Find the perfect candidate with precision filters
-                  </p>
+                  <p className="text-xs sm:text-sm text-blue-100 truncate">Find the perfect candidate with precision filters</p>
                 </div>
               </div>
               <div className="flex-shrink-0">
                 <button
-                  onClick={() => setShowFilters(!showFilters)}
-                  className="flex items-center gap-2 px-3 sm:px-5 py-2.5 bg-white text-blue-700 font-semibold rounded-lg hover:bg-blue-50 transition-all shadow-md hover:shadow-lg text-xs sm:text-sm"
+                  onClick={() => setShowFilters((s) => !s)}
+                  className="flex items-center gap-2 px-3 sm:px-5 py-2 bg-white text-blue-700 font-semibold rounded-lg hover:bg-blue-50 transition-all shadow-md hover:shadow-lg text-xs sm:text-sm"
                 >
                   {showFilters ? (
                     <>
                       <X className="w-4 h-4" />
-                      <span className="hidden xs:inline">Hide Filters</span>
+                      <span className="hidden sm:inline">Hide Filters</span>
                     </>
                   ) : (
                     <>
                       <Filter className="w-4 h-4" />
-                      <span className="hidden xs:inline">Show Filters</span>
+                      <span className="hidden sm:inline">Show Filters</span>
                     </>
                   )}
                 </button>
@@ -436,10 +427,10 @@ function Recruiter() {
           </div>
 
           {showFilters && (
-            <div className="p-4 sm:p-6">
-              <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-2 gap-4 sm:gap-6 mb-4">
+            <div className="p-3 sm:p-5">
+              <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-2 gap-3 sm:gap-6 mb-4">
                 {/* Skills */}
-                <div className="bg-white rounded-xl p-4 sm:p-5 shadow-sm border border-gray-200 hover:shadow-md transition-shadow min-w-0">
+                <div className="bg-white rounded-xl p-3 sm:p-4 shadow-sm border border-gray-200 hover:shadow-md transition-shadow min-w-0">
                   <div className="flex items-center gap-3 mb-2">
                     <div className="p-2 bg-blue-100 rounded-lg">
                       <Code className="w-4 h-4 text-blue-600" />
@@ -457,7 +448,7 @@ function Recruiter() {
                 </div>
 
                 {/* College */}
-                <div className="bg-white rounded-xl p-4 sm:p-5 shadow-sm border border-gray-200 hover:shadow-md transition-shadow min-w-0">
+                <div className="bg-white rounded-xl p-3 sm:p-4 shadow-sm border border-gray-200 hover:shadow-md transition-shadow min-w-0">
                   <div className="flex items-center gap-3 mb-2">
                     <div className="p-2 bg-green-100 rounded-lg">
                       <Building2 className="w-4 h-4 text-green-600" />
@@ -475,7 +466,7 @@ function Recruiter() {
                 </div>
 
                 {/* Branch */}
-                <div className="bg-white rounded-xl p-4 sm:p-5 shadow-sm border border-gray-200 hover:shadow-md transition-shadow min-w-0">
+                <div className="bg-white rounded-xl p-3 sm:p-4 shadow-sm border border-gray-200 hover:shadow-md transition-shadow min-w-0">
                   <div className="flex items-center gap-3 mb-2">
                     <div className="p-2 bg-purple-100 rounded-lg">
                       <GraduationCap className="w-4 h-4 text-purple-600" />
@@ -493,7 +484,7 @@ function Recruiter() {
                 </div>
 
                 {/* Graduation Year */}
-                <div className="bg-white rounded-xl p-4 sm:p-5 shadow-sm border border-gray-200 hover:shadow-md transition-shadow min-w-0">
+                <div className="bg-white rounded-xl p-3 sm:p-4 shadow-sm border border-gray-200 hover:shadow-md transition-shadow min-w-0">
                   <div className="flex items-center gap-3 mb-2">
                     <div className="p-2 bg-orange-100 rounded-lg">
                       <Calendar className="w-4 h-4 text-orange-600" />
@@ -512,7 +503,7 @@ function Recruiter() {
               </div>
 
               {/* Score Range */}
-              <div className="bg-gradient-to-r from-blue-50 to-blue-100 rounded-xl p-3 sm:p-5 mb-4 border border-blue-200">
+              <div className="bg-gradient-to-r from-blue-50 to-blue-100 rounded-xl p-3 sm:p-4 mb-4 border border-blue-200">
                 <div className="flex items-center gap-3 mb-3">
                   <div className="p-2 bg-blue-600 rounded-lg">
                     <TrendingUp className="w-4 h-4 text-white" />
@@ -548,9 +539,9 @@ function Recruiter() {
                 <p className="text-xs text-gray-600 mt-3">Filter candidates by their mock interview performance (0-100)</p>
               </div>
 
-              <div className="grid grid-cols-1 sm:grid-cols-2 gap-4 sm:gap-6 mb-4">
+              <div className="grid grid-cols-1 sm:grid-cols-2 gap-3 sm:gap-6 mb-4">
                 {/* Location */}
-                <div className="bg-white rounded-xl p-4 sm:p-5 shadow-sm border border-gray-200 hover:shadow-md transition-shadow min-w-0">
+                <div className="bg-white rounded-xl p-3 sm:p-4 shadow-sm border border-gray-200 hover:shadow-md transition-shadow min-w-0">
                   <div className="flex items-center gap-3 mb-2">
                     <div className="p-2 bg-red-100 rounded-lg">
                       <MapPin className="w-4 h-4 text-red-600" />
@@ -568,7 +559,7 @@ function Recruiter() {
                 </div>
 
                 {/* Badges */}
-                <div className="bg-white rounded-xl p-4 sm:p-5 shadow-sm border border-gray-200 hover:shadow-md transition-shadow min-w-0">
+                <div className="bg-white rounded-xl p-3 sm:p-4 shadow-sm border border-gray-200 hover:shadow-md transition-shadow min-w-0">
                   <div className="flex items-center gap-3 mb-2">
                     <div className="p-2 bg-yellow-100 rounded-lg">
                       <Award className="w-4 h-4 text-yellow-600" />
@@ -592,10 +583,10 @@ function Recruiter() {
                 </div>
                 <button
                   onClick={clearFilters}
-                  className="flex items-center gap-2 px-4 py-2 text-sm font-semibold text-white bg-gradient-to-r from-gray-600 to-gray-700 hover:from-gray-700 hover:to-gray-800 rounded-lg transition-all shadow-md hover:shadow-lg"
+                  className="flex items-center gap-2 px-3 sm:px-4 py-2 text-sm font-semibold text-white bg-gradient-to-r from-gray-600 to-gray-700 hover:from-gray-700 hover:to-gray-800 rounded-lg transition-all shadow-md hover:shadow-lg"
                 >
                   <X className="w-4 h-4" />
-                  Clear All Filters
+                  <span className="hidden sm:inline">Clear All Filters</span>
                 </button>
               </div>
             </div>
@@ -605,31 +596,36 @@ function Recruiter() {
         {/* Tabs */}
         <div className="bg-white rounded-lg shadow-md mb-6">
           <div className="border-b border-gray-200">
-            <nav className="flex -mb-px overflow-x-auto">
+            <nav className="flex -mb-px overflow-x-auto px-2 sm:px-0">
               <button
                 onClick={() => setActiveTab("all")}
-                className={`flex-shrink-0 px-4 sm:px-6 py-3 text-sm sm:text-base font-medium border-b-2 transition-colors ${activeTab === "all" ? "border-blue-600 text-blue-600" : "border-transparent text-gray-500 hover:text-gray-700 hover:border-gray-300"
-                  }`}
+                className={`flex-shrink-0 px-3 sm:px-6 py-3 text-sm sm:text-base font-medium border-b-2 transition-colors ${
+                  activeTab === "all" ? "border-blue-600 text-blue-600" : "border-transparent text-gray-500 hover:text-gray-700 hover:border-gray-300"
+                }`}
               >
                 <div className="flex items-center gap-2">
                   <Users className="w-4 h-4" />
                   <span className="truncate">All Students ({candidates.length})</span>
                 </div>
               </button>
+
               <button
                 onClick={() => setActiveTab("shortlisted")}
-                className={`flex-shrink-0 px-4 sm:px-6 py-3 text-sm sm:text-base font-medium border-b-2 transition-colors ${activeTab === "shortlisted" ? "border-blue-600 text-blue-600" : "border-transparent text-gray-500 hover:text-gray-700 hover:border-gray-300"
-                  }`}
+                className={`flex-shrink-0 px-3 sm:px-6 py-3 text-sm sm:text-base font-medium border-b-2 transition-colors ${
+                  activeTab === "shortlisted" ? "border-blue-600 text-blue-600" : "border-transparent text-gray-500 hover:text-gray-700 hover:border-gray-300"
+                }`}
               >
                 <div className="flex items-center gap-2">
                   <Star className="w-4 h-4" />
                   <span className="truncate">Shortlisted ({students.filter((s) => s.shortlisted).length})</span>
                 </div>
               </button>
+
               <button
                 onClick={() => setActiveTab("interview")}
-                className={`flex-shrink-0 px-4 sm:px-6 py-3 text-sm sm:text-base font-medium border-b-2 transition-colors ${activeTab === "interview" ? "border-blue-600 text-blue-600" : "border-transparent text-gray-500 hover:text-gray-700 hover:border-gray-300"
-                  }`}
+                className={`flex-shrink-0 px-3 sm:px-6 py-3 text-sm sm:text-base font-medium border-b-2 transition-colors ${
+                  activeTab === "interview" ? "border-blue-600 text-blue-600" : "border-transparent text-gray-500 hover:text-gray-700 hover:border-gray-300"
+                }`}
               >
                 <div className="flex items-center gap-2">
                   <Calendar className="w-4 h-4" />
@@ -653,7 +649,7 @@ function Recruiter() {
             <p className="text-sm sm:text-base text-gray-500">Try adjusting your filters</p>
           </div>
         ) : (
-          <div className="grid grid-cols-1 sm:grid-cols-1 md:grid-cols-2 lg:grid-cols-2 gap-4 sm:gap-6">
+          <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-2 gap-4 sm:gap-6">
             {filteredStudents.map((student) => (
               <StudentCard
                 key={student._id || student.id}
@@ -686,12 +682,12 @@ function StudentCard({ student, onToggleShortlist, onToggleInterview, onUpdateNo
 
   return (
     <div className="bg-white rounded-lg shadow-md hover:shadow-lg transition-shadow overflow-hidden">
-      <div className="p-4 sm:p-5">
-        <div className="flex flex-col sm:flex-row items-start gap-4 mb-3">
+      <div className="p-3 sm:p-4">
+        <div className="flex flex-col sm:flex-row items-start gap-3 sm:gap-4 mb-3">
           <img
             src={student.profile_picture || student.profilePicture || "/default-avatar.png"}
             alt={student.name}
-            className="w-14 h-14 sm:w-20 sm:h-20 rounded-full object-cover border-2 border-gray-200 flex-shrink-0"
+            className="w-12 h-12 sm:w-20 sm:h-20 rounded-full object-cover border-2 border-gray-200 flex-shrink-0"
           />
           <div className="flex-1 min-w-0">
             <div className="flex items-start justify-between gap-2">
@@ -702,14 +698,18 @@ function StudentCard({ student, onToggleShortlist, onToggleInterview, onUpdateNo
               <div className="flex gap-2 items-start">
                 <button
                   onClick={() => onToggleShortlist(id, student.shortlisted)}
-                  className={`p-2 rounded-lg transition-colors ${student.shortlisted ? "bg-yellow-100 text-yellow-600 hover:bg-yellow-200" : "bg-gray-100 text-gray-400 hover:bg-gray-200"}`}
+                  className={`p-2 rounded-lg transition-colors ${
+                    student.shortlisted ? "bg-yellow-100 text-yellow-600 hover:bg-yellow-200" : "bg-gray-100 text-gray-400 hover:bg-gray-200"
+                  }`}
                   title={student.shortlisted ? "Remove from shortlist" : "Add to shortlist"}
                 >
                   <Star className={`w-4 h-4 ${student.shortlisted ? "fill-current" : ""}`} />
                 </button>
                 <button
                   onClick={() => onToggleInterview(id, student.interview_scheduled)}
-                  className={`p-2 rounded-lg transition-colors ${student.interview_scheduled ? "bg-green-100 text-green-600 hover:bg-green-200" : "bg-gray-100 text-gray-400 hover:bg-gray-200"}`}
+                  className={`p-2 rounded-lg transition-colors ${
+                    student.interview_scheduled ? "bg-green-100 text-green-600 hover:bg-green-200" : "bg-gray-100 text-gray-400 hover:bg-gray-200"
+                  }`}
                   title={student.interview_scheduled ? "Interview scheduled" : "Schedule interview"}
                 >
                   <Calendar className="w-4 h-4" />
