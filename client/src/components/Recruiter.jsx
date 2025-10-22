@@ -160,7 +160,7 @@ function Recruiter() {
   };
 
   useEffect(() => {
-    fetchStudents();
+
     fetchCandidates();
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, []);
@@ -168,7 +168,7 @@ function Recruiter() {
   useEffect(() => {
     applyFilters();
     // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [students, filters, activeTab]);
+  }, [students, filters, activeTab, searchTerm]);
 
   // Toggle shortlist (keeps your relative endpoint usage; uses student._id consistently)
   const toggleShortlist = async (studentId, currentStatus) => {
@@ -276,6 +276,14 @@ function Recruiter() {
         (student.location || "").toLowerCase().includes(filters.location.toLowerCase())
       );
     }
+    if (searchTerm) {
+      filtered = filtered.filter((s) =>
+        (s.name || "")
+          .toLowerCase()
+          .includes(searchTerm.toLowerCase())
+      );
+    }
+
 
     if (filters.badges) {
       const badgesArray = filters.badges.toLowerCase().split(",").map((b) => b.trim());
@@ -599,9 +607,8 @@ function Recruiter() {
             <nav className="flex -mb-px overflow-x-auto px-2 sm:px-0">
               <button
                 onClick={() => setActiveTab("all")}
-                className={`flex-shrink-0 px-3 sm:px-6 py-3 text-sm sm:text-base font-medium border-b-2 transition-colors ${
-                  activeTab === "all" ? "border-blue-600 text-blue-600" : "border-transparent text-gray-500 hover:text-gray-700 hover:border-gray-300"
-                }`}
+                className={`flex-shrink-0 px-3 sm:px-6 py-3 text-sm sm:text-base font-medium border-b-2 transition-colors ${activeTab === "all" ? "border-blue-600 text-blue-600" : "border-transparent text-gray-500 hover:text-gray-700 hover:border-gray-300"
+                  }`}
               >
                 <div className="flex items-center gap-2">
                   <Users className="w-4 h-4" />
@@ -611,9 +618,8 @@ function Recruiter() {
 
               <button
                 onClick={() => setActiveTab("shortlisted")}
-                className={`flex-shrink-0 px-3 sm:px-6 py-3 text-sm sm:text-base font-medium border-b-2 transition-colors ${
-                  activeTab === "shortlisted" ? "border-blue-600 text-blue-600" : "border-transparent text-gray-500 hover:text-gray-700 hover:border-gray-300"
-                }`}
+                className={`flex-shrink-0 px-3 sm:px-6 py-3 text-sm sm:text-base font-medium border-b-2 transition-colors ${activeTab === "shortlisted" ? "border-blue-600 text-blue-600" : "border-transparent text-gray-500 hover:text-gray-700 hover:border-gray-300"
+                  }`}
               >
                 <div className="flex items-center gap-2">
                   <Star className="w-4 h-4" />
@@ -623,9 +629,8 @@ function Recruiter() {
 
               <button
                 onClick={() => setActiveTab("interview")}
-                className={`flex-shrink-0 px-3 sm:px-6 py-3 text-sm sm:text-base font-medium border-b-2 transition-colors ${
-                  activeTab === "interview" ? "border-blue-600 text-blue-600" : "border-transparent text-gray-500 hover:text-gray-700 hover:border-gray-300"
-                }`}
+                className={`flex-shrink-0 px-3 sm:px-6 py-3 text-sm sm:text-base font-medium border-b-2 transition-colors ${activeTab === "interview" ? "border-blue-600 text-blue-600" : "border-transparent text-gray-500 hover:text-gray-700 hover:border-gray-300"
+                  }`}
               >
                 <div className="flex items-center gap-2">
                   <Calendar className="w-4 h-4" />
@@ -698,18 +703,16 @@ function StudentCard({ student, onToggleShortlist, onToggleInterview, onUpdateNo
               <div className="flex gap-2 items-start">
                 <button
                   onClick={() => onToggleShortlist(id, student.shortlisted)}
-                  className={`p-2 rounded-lg transition-colors ${
-                    student.shortlisted ? "bg-yellow-100 text-yellow-600 hover:bg-yellow-200" : "bg-gray-100 text-gray-400 hover:bg-gray-200"
-                  }`}
+                  className={`p-2 rounded-lg transition-colors ${student.shortlisted ? "bg-yellow-100 text-yellow-600 hover:bg-yellow-200" : "bg-gray-100 text-gray-400 hover:bg-gray-200"
+                    }`}
                   title={student.shortlisted ? "Remove from shortlist" : "Add to shortlist"}
                 >
                   <Star className={`w-4 h-4 ${student.shortlisted ? "fill-current" : ""}`} />
                 </button>
                 <button
                   onClick={() => onToggleInterview(id, student.interview_scheduled)}
-                  className={`p-2 rounded-lg transition-colors ${
-                    student.interview_scheduled ? "bg-green-100 text-green-600 hover:bg-green-200" : "bg-gray-100 text-gray-400 hover:bg-gray-200"
-                  }`}
+                  className={`p-2 rounded-lg transition-colors ${student.interview_scheduled ? "bg-green-100 text-green-600 hover:bg-green-200" : "bg-gray-100 text-gray-400 hover:bg-gray-200"
+                    }`}
                   title={student.interview_scheduled ? "Interview scheduled" : "Schedule interview"}
                 >
                   <Calendar className="w-4 h-4" />

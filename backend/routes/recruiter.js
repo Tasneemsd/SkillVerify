@@ -89,6 +89,16 @@ router.post("/create-job", async (req, res) => {
 router.get("/students", async (req, res) => {
   try {
     const { college, graduationYear, skills } = req.query;
+    router.get("/students", async (req, res) => {
+      const { search } = req.query;
+      let students = await Student.find();
+      if (search) {
+        students = students.filter(s =>
+          s.name.toLowerCase().includes(search.toLowerCase())
+        );
+      }
+      res.json(students);
+    });
 
     let query = {};
     if (college) query.college = { $regex: college, $options: "i" };
